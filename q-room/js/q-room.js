@@ -59,6 +59,10 @@ function initFB() {
       });
     } catch(e) {
       console.error(e);
+      const isNetworkBlock = (typeof firebase === 'undefined') || window._fbLoadError;
+      if (isNetworkBlock) {
+        throw new Error("NETWORK_BLOCKED");
+      }
       throw new Error("データベース接続に失敗しました。");
     }
   }
@@ -129,7 +133,11 @@ async function handleCreate() {
     }
   } catch(e) {
     console.error(e);
-    err('エラーが発生しました。通信状態を確認してください。');
+    if (e && e.message === 'NETWORK_BLOCKED') {
+      err('⚠️ 接続できません。学校・職場のWi-Fiでは通信がブロックされている場合があります。Wi-Fiをオフにするか、ネットワーク管理者に gstatic.com / firebasedatabase.app の許可を申請してください。');
+    } else {
+      err('エラーが発生しました。通信状態を確認してください。');
+    }
   }
 }
 
@@ -161,7 +169,11 @@ async function handleJoin() {
     enterRoom(false, n);
   } catch(e) {
     console.error(e);
-    err('エラーが発生しました。通信状態を確認してください。');
+    if (e && e.message === 'NETWORK_BLOCKED') {
+      err('⚠️ 接続できません。学校・職場のWi-Fiでは通信がブロックされている場合があります。Wi-Fiをオフにするか、ネットワーク管理者に gstatic.com / firebasedatabase.app の許可を申請してください。');
+    } else {
+      err('エラーが発生しました。通信状態を確認してください。');
+    }
   }
 }
 
