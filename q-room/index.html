@@ -605,9 +605,25 @@
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script>
+  // Firebaseスクリプト読み込み失敗を検知（学校Wi-Fiなどのブロック対策）
+  window._fbLoadError = false;
+  function _onFbScriptError() {
+    window._fbLoadError = true;
+    document.addEventListener('DOMContentLoaded', function() {
+      const el = document.getElementById('top-err');
+      if (el) {
+        el.innerHTML = '⚠️ 接続に必要なスクリプトを読み込めませんでした。<br>学校・職場のWi-Fiでは通信がブロックされている場合があります。<br>ネットワーク管理者に <b>gstatic.com / firebasedatabase.app</b> の許可を申請してください。';
+        el.style.display = 'block';
+        el.style.lineHeight = '1.7';
+        el.style.whiteSpace = 'normal';
+      }
+    });
+  }
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js" onerror="_onFbScriptError()"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js" onerror="_onFbScriptError()"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js" onerror="_onFbScriptError()"></script>
 <script src="js/q-room.js"></script>
 </body>
 </html>
