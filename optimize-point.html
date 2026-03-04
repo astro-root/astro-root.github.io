@@ -648,8 +648,128 @@ textarea::placeholder, .answer-input::placeholder { color:var(--dim); font-size:
 .strategy-card-body { font-size:13px; line-height:1.85; color:#b0c8d8; }
 
 /* ════════════
-   SUBMIT SECTION
+   CANDIDATES TABLE
 ════════════ */
+.candidates-table-panel {
+  background:var(--bg2);
+  border:1px solid rgba(0,200,240,0.12);
+  padding:26px 28px;
+  margin-bottom:12px;
+  animation:bootUp 0.35s 0.14s ease both;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
+  position:relative;
+}
+.candidates-table-panel::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,rgba(0,200,240,0.4),transparent 60%);
+}
+
+.cand-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+.cand-table thead tr {
+  border-bottom:1px solid rgba(0,200,240,0.15);
+}
+
+.cand-table th {
+  font-family:'Share Tech Mono', monospace;
+  font-size:8px; letter-spacing:0.18em;
+  color:var(--dim); text-transform:uppercase;
+  padding:6px 10px 8px;
+  text-align:left;
+  font-weight:400;
+}
+
+.cand-table td {
+  padding:7px 10px;
+  border-bottom:1px solid rgba(0,200,240,0.05);
+  vertical-align:middle;
+}
+
+.cand-table tbody tr:last-child td { border-bottom:none; }
+
+.cand-table tbody tr:hover td {
+  background:rgba(0,200,240,0.03);
+}
+
+.cand-table .col-phrase {
+  font-family:'Share Tech Mono', monospace;
+  font-size:13px;
+  color:#fff;
+  white-space:nowrap;
+  width:1%;
+}
+
+.cand-table .col-score {
+  width:1%;
+  white-space:nowrap;
+}
+
+.cand-score-pip {
+  display:inline-flex; align-items:center; gap:3px;
+}
+.cand-score-pip .pip {
+  width:6px; height:6px; border-radius:50%;
+  background:rgba(255,255,255,0.12);
+}
+.cand-score-pip .pip.lit-5 { background:var(--s5); box-shadow:0 0 5px var(--s5); }
+.cand-score-pip .pip.lit-4 { background:var(--s4); box-shadow:0 0 4px var(--s4); }
+.cand-score-pip .pip.lit-3 { background:var(--s3); }
+.cand-score-pip .pip.lit-2 { background:var(--s2); }
+
+.cand-table .col-candidates {
+  color:var(--sub);
+  line-height:1.7;
+}
+
+.cand-chip {
+  display:inline-block;
+  padding:2px 8px; margin:2px 3px 2px 0;
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px; letter-spacing:0.06em;
+  border-radius:1px;
+}
+.cand-chip.rank-1 {
+  background:rgba(0,200,240,0.13);
+  border:1px solid rgba(0,200,240,0.4);
+  color:var(--c);
+}
+.cand-chip.rank-2 {
+  background:rgba(0,229,160,0.08);
+  border:1px solid rgba(0,229,160,0.28);
+  color:var(--green);
+}
+.cand-chip.rank-other {
+  background:rgba(168,189,212,0.05);
+  border:1px solid rgba(168,189,212,0.18);
+  color:var(--sub);
+}
+
+.cand-table .col-tip {
+  font-size:11px;
+  color:var(--dim);
+  line-height:1.6;
+  max-width:200px;
+}
+
+.cand-push-row td {
+  background:rgba(0,229,160,0.04) !important;
+  border-top:1px solid rgba(0,229,160,0.2);
+  border-bottom:1px solid rgba(0,229,160,0.2);
+}
+.cand-push-badge {
+  display:inline-block;
+  font-family:'Share Tech Mono', monospace;
+  font-size:8px; letter-spacing:0.12em;
+  color:var(--s4);
+  background:rgba(0,229,160,0.1);
+  border:1px solid rgba(0,229,160,0.3);
+  padding:1px 6px; margin-left:6px;
+  vertical-align:middle;
+}
 .submit-section {
   display:none;
   margin-top:16px;
@@ -807,6 +927,11 @@ textarea::placeholder, .answer-input::placeholder { color:var(--dim); font-size:
     </div>
 
     <div class="strategy-grid" id="strategyGrid"></div>
+
+    <div class="candidates-table-panel" id="candidatesTablePanel" style="display:none;">
+      <div class="panel-label">CANDIDATES // 語句ごとの答え候補の変化</div>
+      <div id="candidatesTableWrap"></div>
+    </div>
 
     <div class="submit-section" id="submitSection">
       <div class="panel" style="margin-bottom:0;">
@@ -1146,6 +1271,70 @@ function renderResult(result) {
   document.getElementById('submitSection').classList.add('visible');
   document.getElementById('submitStatus').className = 'submit-status';
   document.getElementById('feedbackText').value = '';
+
+  // ── CANDIDATES TABLE ──
+  const tablePanel = document.getElementById('candidatesTablePanel');
+  const tableWrap  = document.getElementById('candidatesTableWrap');
+  const pushIdx    = result._push_idx;
+
+  // score>=2 かつ candidates がある行だけ表示
+  const tableRows = (result.chunks || [])
+    .map((c, i) => ({ ...c, _idx: i }))
+    .filter(c => c.score >= 2 && c.candidates && c.candidates.length > 0);
+
+  if (tableRows.length > 0) {
+    // 連続する同スコア・同candidatesをグループ化して代表行だけ残す
+    const deduped = [];
+    let prev = null;
+    for (const row of tableRows) {
+      const key = row.score + '|' + (row.candidates||[]).join(',');
+      if (!prev || key !== prev) {
+        deduped.push(row);
+        prev = key;
+      }
+    }
+
+    let html = `<table class="cand-table">
+      <thead><tr>
+        <th>語句</th>
+        <th>スコア</th>
+        <th>答えの候補</th>
+        <th>ポイント</th>
+      </tr></thead><tbody>`;
+
+    for (const row of deduped) {
+      const isPush = row._idx === pushIdx;
+      const rowClass = isPush ? 'cand-push-row' : '';
+
+      // pip indicator
+      const pips = [1,2,3,4,5].map(n => {
+        let cls = 'pip';
+        if (n <= row.score) cls += ` lit-${row.score}`;
+        return `<span class="${cls}"></span>`;
+      }).join('');
+
+      // candidates chips
+      const chips = (row.candidates || []).map((c, i) => {
+        const rk = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : 'rank-other';
+        return `<span class="cand-chip ${rk}">${c}</span>`;
+      }).join('');
+
+      const pushBadge = isPush ? `<span class="cand-push-badge">▼ PUSH</span>` : '';
+
+      html += `<tr class="${rowClass}">
+        <td class="col-phrase">${row.text}${pushBadge}</td>
+        <td class="col-score"><span class="cand-score-pip">${pips}</span></td>
+        <td class="col-candidates">${chips}</td>
+        <td class="col-tip">${row.tip || ''}</td>
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+    tableWrap.innerHTML = html;
+    tablePanel.style.display = 'block';
+  } else {
+    tablePanel.style.display = 'none';
+  }
 
   window._lastAnalysis = {
     question: document.getElementById('questionText').value.trim(),
