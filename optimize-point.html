@@ -1282,7 +1282,6 @@ function renderResult(result) {
   // ── CANDIDATES TABLE ──
   const tablePanel = document.getElementById('candidatesTablePanel');
   const tableWrap  = document.getElementById('candidatesTableWrap');
-  const pushIdx    = result._push_idx;
 
   // score>=2 かつ candidates がある行だけ表示
   const tableRows = (result.chunks || [])
