@@ -663,7 +663,7 @@ textarea::placeholder, .answer-input::placeholder { color:var(--dim); font-size:
       <p class="sub-title">問題文を解析し、確定ポイントをリアルタイムで可視化する</p>
       <div class="chip-row">
         <div class="chip">API KEY FREE</div>
-        <div class="chip">UNLIMITED</div>
+        <div class="chip">PUTER.JS</div>
         <div class="chip">CLAUDE SONNET 4.5</div>
       </div>
     </div>
@@ -692,7 +692,8 @@ textarea::placeholder, .answer-input::placeholder { color:var(--dim); font-size:
   </div>
 
   <p class="limit-note" id="limitNote">
-    ⚠ FREE TIER LIMIT REACHED — RETRY AFTER COOLDOWN
+    ⚠ PUTER.JS FREE TIER LIMIT — しばらく待ってから再試行してください<br>
+    <span style="font-size:9px;opacity:0.7;">Puter.jsの無料枠に上限があります。時間をおくと復旧します。</span>
   </p>
   <div class="error-box" id="errorBox"></div>
 
@@ -725,7 +726,7 @@ textarea::placeholder, .answer-input::placeholder { color:var(--dim); font-size:
     <div class="submit-section" id="submitSection">
       <div class="panel" style="margin-bottom:0;">
         <div class="panel-label">FEEDBACK // 解析結果を送信</div>
-        <div class="feedback-label">COMMENT（現在、フィードバックを受け付けておりません。）</div>
+        <div class="feedback-label">COMMENT (任意)</div>
         <textarea class="feedback-textarea" id="feedbackText" placeholder="気づいた点・改善要望など（任意）"></textarea>
         <div class="submit-row">
           <button class="btn-submit" id="submitBtn" onclick="submitResult()">
