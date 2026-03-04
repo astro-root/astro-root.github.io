@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>早押しトレーナー AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --accent: #00e5ff;
+    --accent2: #ff3d6b;
+    --accent3: #ffe600;
+    --text: #e8e8f0;
+    --text-muted: #6b6b8a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .logo-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    animation: fadeIn 0.6s ease;
+  }
+
+  h1 {
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    animation: slideUp 0.6s ease 0.1s both;
+  }
+
+  h1 span {
+    color: var(--accent);
+    position: relative;
+  }
+
+  h1 span::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    opacity: 0.35;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    animation: slideUp 0.6s ease 0.2s both;
+  }
+
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    animation: slideUp 0.6s ease 0.25s both;
+  }
+
+  .api-section label {
+    display: block;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.15em;
+    color: var(--accent3);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .api-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .api-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-input:focus { border-color: var(--accent3); }
+
+  .api-link {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  .api-link a { color: var(--accent); text-decoration: none; }
+  .api-link a:hover { text-decoration: underline; }
+
+  .input-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 24px;
+    animation: slideUp 0.6s ease 0.3s both;
+  }
+
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+    padding: 16px;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--text-muted); }
+
+  .answer-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+    align-items: center;
+  }
+
+  .answer-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .answer-input:focus { border-color: var(--accent2); }
+
+  .btn-analyze {
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-analyze:hover:not(:disabled) {
+    background: #33ecff;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0,229,255,0.3);
+  }
+
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-analyze .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+
+  .btn-analyze.loading .btn-text { display: none; }
+  .btn-analyze.loading .spinner { display: block; }
+
+  .result-section { display: none; animation: slideUp 0.5s ease; }
+  .result-section.visible { display: block; }
+
+  .viz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .question-display {
+    font-size: 18px;
+    line-height: 2.4;
+    letter-spacing: 0.02em;
+  }
+
+  .chunk {
+    display: inline;
+    position: relative;
+    cursor: default;
+    transition: all 0.15s;
+    border-radius: 2px;
+    padding: 2px 1px;
+  }
+
+  .chunk[data-score="5"] {
+    background: rgba(0,229,255,0.28);
+    color: #00e5ff;
+    font-weight: 700;
+    box-shadow: 0 0 14px rgba(0,229,255,0.2);
+  }
+  .chunk[data-score="4"] {
+    background: rgba(0,229,255,0.14);
+    color: #80f2ff;
+    font-weight: 700;
+  }
+  .chunk[data-score="3"] {
+    background: rgba(255,230,0,0.14);
+    color: #ffe600;
+  }
+  .chunk[data-score="2"] {
+    background: rgba(255,61,107,0.1);
+    color: #ff8aa0;
+  }
+  .chunk[data-score="1"] { color: var(--text-muted); }
+
+  .chunk:hover .tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+    pointer-events: auto;
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    opacity: 0;
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 10;
+    line-height: 1.6;
+    max-width: 200px;
+    white-space: normal;
+    text-align: center;
+    font-weight: 400;
+    min-width: 80px;
+  }
+
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--border);
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 2px;
+  }
+
+  .best-point-card {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .best-point-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .best-point-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .best-point-text {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .best-point-reason {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .strategy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .strategy-grid { grid-template-columns: 1fr; }
+  }
+
+  .strategy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+
+  .strategy-card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .strategy-card-body {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .difficulty-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .badge-easy { background: rgba(0,229,255,0.15); color: var(--accent); border: 1px solid var(--accent); }
+  .badge-mid { background: rgba(255,230,0,0.15); color: var(--accent3); border: 1px solid var(--accent3); }
+  .badge-hard { background: rgba(255,61,107,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
+
+  .difficulty-label { font-size: 13px; color: var(--text-muted); }
+
+  .error-box {
+    background: rgba(255,61,107,0.1);
+    border: 1px solid var(--accent2);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--accent2);
+    margin-bottom: 20px;
+    display: none;
+    white-space: pre-line;
+  }
+
+  .error-box.visible { display: block; }
+
+  .toggle-key {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .toggle-key:hover { border-color: var(--accent); color: var(--accent); }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo-tag">AI Quiz Trainer v1.0</div>
+    <h1>早押し<span>最適化</span>トレーナー</h1>
+    <p class="subtitle">問題文を解析し、最適な押しポイントをAIが可視化する</p>
+  </header>
+
+  <div class="api-section">
+    <label>Gemini API Key（無料）</label>
+    <div class="api-row">
+      <input type="password" class="api-input" id="apiKey" placeholder="AIzaSy..." autocomplete="off">
+      <button class="toggle-key" id="toggleBtn" onclick="toggleKey()">表示</button>
+    </div>
+    <p class="api-link">
+      取得先: <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>
+      （Googleアカウントで無料・クレカ不要）
+    </p>
+  </div>
+
+  <div class="input-card">
+    <div class="card-label">問題文を入力</div>
+    <textarea id="questionText" placeholder="例：「走れメロス」の中で、メロスが人質として王のもとに残した人物の名前は何でしょう？"></textarea>
+    <div class="answer-row">
+      <span class="answer-label">答え ▶</span>
+      <input type="text" class="answer-input" id="answerText" placeholder="セリヌンティウス">
+    </div>
+    <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+      <span class="btn-text">⚡ 早押しポイントを解析する</span>
+      <div class="spinner"></div>
+    </button>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="result-section" id="resultSection">
+    <div class="difficulty-row" id="difficultyRow"></div>
+
+    <div class="best-point-card">
+      <div class="best-point-title">⚡ 最適な押しポイント</div>
+      <div class="best-point-text" id="bestPointText"></div>
+      <div class="best-point-reason" id="bestPointReason"></div>
+    </div>
+
+    <div class="viz-card">
+      <div class="card-label">問題文ヒートマップ（ホバーでヒント表示）</div>
+      <div class="question-display" id="questionDisplay"></div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(0,229,255,0.5)"></div>
+          <span>今すぐ押せる</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(0,229,255,0.25)"></div>
+          <span>ほぼ確定</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(255,230,0,0.25)"></div>
+          <span>やや絞れる</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(255,61,107,0.15)"></div>
+          <span>まだ早い</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2a2a3e"></div>
+          <span>情報なし</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="strategy-grid" id="strategyGrid"></div>
+  </div>
+
+</div>
+
+<script>
+function toggleKey() {
+  const input = document.getElementById('apiKey');
+  const btn = document.getElementById('toggleBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隠す';
+  } else {
+    input.type = 'password';
+    btn.textContent = '表示';
+  }
+}
+
+async function analyze() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const question = document.getElementById('questionText').value.trim();
+  const answer = document.getElementById('answerText').value.trim();
+  const btn = document.getElementById('analyzeBtn');
+  const errorBox = document.getElementById('errorBox');
+
+  errorBox.classList.remove('visible');
+
+  if (!apiKey) { showError('APIキーを入力してください。'); return; }
+  if (!question) { showError('問題文を入力してください。'); return; }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  document.getElementById('resultSection').classList.remove('visible');
+
+  const prompt = `あなたは競技クイズの専門家です。以下のクイズ問題を分析し、早押しクイズにおける最適な押しポイントを特定してください。
+
+問題文: 「${question}」
+答え: 「${answer || '不明'}」
+
+以下のJSON形式のみで回答してください。前後に説明文や\`\`\`は不要です:
+
+{
+  "difficulty": "easy",
+  "difficulty_reason": "難易度の理由（30文字以内）",
+  "best_push_phrase": "最も早く押せる問題文中のフレーズ",
+  "best_push_reason": "なぜここで押せるか（100文字以内）",
+  "chunks": [
+    {
+      "text": "文節テキスト",
+      "score": 3,
+      "tip": "ヒント（scoreが3以上のみ、20文字以内）"
+    }
+  ],
+  "early_strategy": "早押し戦略のコツ（100文字以内）",
+  "trap_warning": "引っかかりやすいポイント（80文字以内）"
+}
+
+difficultyは "easy" "mid" "hard" のいずれか。
+chunksのscoreは1〜5の整数（5=今すぐ押せる、4=ほぼ確定、3=やや絞れる、2=まだ早い、1=情報なし）。
+chunksは問題文全体を自然な文節で余すことなく分割してください。`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2 }
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('AIの応答を解析できませんでした。もう一度お試しください。');
+
+    const result = JSON.parse(jsonMatch[0]);
+    renderResult(result);
+
+  } catch (e) {
+    showError('エラー: ' + e.message + '\n※APIキーや問題文を確認してください。');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+function renderResult(result) {
+  // Difficulty
+  const diffMap = {
+    easy: ['badge-easy', '初級'],
+    mid:  ['badge-mid',  '中級'],
+    hard: ['badge-hard', '上級']
+  };
+  const [cls, label] = diffMap[result.difficulty] || ['badge-mid', '中級'];
+  document.getElementById('difficultyRow').innerHTML =
+    `<span class="badge ${cls}">${label}</span><span class="difficulty-label">${result.difficulty_reason || ''}</span>`;
+
+  // Best push
+  document.getElementById('bestPointText').textContent = `「${result.best_push_phrase}」で押す`;
+  document.getElementById('bestPointReason').textContent = result.best_push_reason || '';
+
+  // Heatmap
+  const display = document.getElementById('questionDisplay');
+  display.innerHTML = '';
+  (result.chunks || []).forEach(chunk => {
+    const span = document.createElement('span');
+    span.className = 'chunk';
+    span.setAttribute('data-score', chunk.score || 1);
+    span.textContent = chunk.text;
+    if (chunk.tip && chunk.score >= 3) {
+      const tip = document.createElement('div');
+      tip.className = 'tooltip';
+      tip.textContent = chunk.tip;
+      span.appendChild(tip);
+    }
+    display.appendChild(span);
+  });
+
+  // Strategy
+  document.getElementById('strategyGrid').innerHTML = `
+    <div class="strategy-card">
+      <div class="strategy-card-title">⚡ 早押し戦略</div>
+      <div class="strategy-card-body">${result.early_strategy || '-'}</div>
+    </div>
+    <div class="strategy-card">
+      <div class="strategy-card-title">⚠️ 罠・注意ポイント</div>
+      <div class="strategy-card-body">${result.trap_warning || '-'}</div>
+    </div>
+  `;
+
+  document.getElementById('resultSection').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.classList.add('visible');
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
+});
+</script>
+</body>
+</html>
