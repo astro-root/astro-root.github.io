@@ -3,265 +3,325 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>早押しトレーナー AI</title>
+<title>QUIZ TRAINER // PUSH POINT ANALYZER</title>
 <script src="https://js.puter.com/v2/"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink:     #09090f;
-  --ink2:    #0f0f18;
-  --ink3:    #161621;
-  --ink4:    #1e1e2c;
-  --gold:    #c9a84c;
-  --gold2:   #e8c96a;
-  --gold3:   #f5e0a0;
-  --goldDim: rgba(201,168,76,0.15);
-  --border:  rgba(201,168,76,0.12);
-  --border2: rgba(201,168,76,0.22);
-  --text:    #e8e4d8;
-  --muted:   #5a5868;
-  --muted2:  #8a8799;
-  --s5: #c9a84c;
-  --s4: #7ec8a0;
-  --s3: #6a9fd8;
-  --s2: #7060a0;
-  --r: 4px;
+  --bg:    #06080e;
+  --bg2:   #0a0d16;
+  --bg3:   #0e1220;
+  --cyan:  #00d4ff;
+  --cyan2: #00a8cc;
+  --cyan3: rgba(0,212,255,0.08);
+  --red:   #ff2d55;
+  --green: #00ff9d;
+  --amber: #ffb800;
+  --purple:#a855f7;
+  --text:  #ccd6f0;
+  --dim:   #4a5568;
+  --s5: #00d4ff;
+  --s4: #00ff9d;
+  --s3: #ffb800;
+  --s2: #ff6b35;
+  --grid: rgba(0,212,255,0.04);
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 
 body {
-  background: var(--ink);
+  background: var(--bg);
   color: var(--text);
   font-family: 'Noto Sans JP', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* subtle top gradient */
+/* grid bg */
 body::before {
   content:'';
-  position:fixed; top:0; left:0; right:0; height:300px;
-  background: radial-gradient(ellipse 80% 100% at 50% -10%, rgba(201,168,76,0.06) 0%, transparent 100%);
-  pointer-events:none; z-index:0;
+  position: fixed; inset:0;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none; z-index:0;
+}
+
+/* scan line animation */
+body::after {
+  content:'';
+  position:fixed; top:0; left:0; right:0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%);
+  opacity: 0.15;
+  animation: scanline 8s linear infinite;
+  pointer-events:none; z-index:1;
+}
+
+@keyframes scanline {
+  0%   { top: -2px; }
+  100% { top: 100vh; }
 }
 
 .wrap {
-  max-width: 700px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 60px 24px 120px;
-  position: relative; z-index:1;
+  padding: 40px 20px 100px;
+  position: relative; z-index:2;
 }
 
-/* ════════════════════
+/* ══════════════════════
    HEADER
-════════════════════ */
+══════════════════════ */
 header {
-  text-align: center;
-  margin-bottom: 56px;
-  animation: fadeUp 0.6s ease both;
+  margin-bottom: 40px;
+  animation: bootUp 0.8s ease both;
 }
 
-.crown {
-  display: inline-block;
-  font-size: 22px;
-  margin-bottom: 16px;
-  filter: grayscale(0.2);
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
 }
 
-.logo-line {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.35em;
-  color: var(--gold);
-  text-transform: uppercase;
+.sys-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--cyan2);
+  letter-spacing: 0.15em;
+  line-height: 1.8;
   opacity: 0.7;
-  margin-bottom: 16px;
+}
+
+.sys-tag span { color: var(--cyan); }
+
+.status-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.status-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+
+.status-dot::before {
+  content:'';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 2s ease infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.3; }
+}
+
+.title-block { position: relative; }
+
+.title-prefix {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--cyan);
+  letter-spacing: 0.3em;
+  margin-bottom: 6px;
+  opacity: 0.8;
 }
 
 h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(34px, 7vw, 58px);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  margin-bottom: 14px;
-  color: var(--text);
-}
-
-h1 em {
-  font-style: italic;
-  color: var(--gold2);
-}
-
-.tagline {
-  font-size: 12px;
-  color: var(--muted2);
-  letter-spacing: 0.08em;
-}
-
-.badge-free {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 18px;
-  padding: 6px 16px;
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--muted2);
-  letter-spacing: 0.14em;
-}
-
-.badge-free::before, .badge-free::after {
-  content:'';
-  width:18px; height:1px;
-  background: var(--border2);
-}
-
-/* ════════════════════
-   DIVIDER
-════════════════════ */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 36px 0 28px;
-  opacity: 0.4;
-}
-.divider::before, .divider::after {
-  content:''; flex:1; height:1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-}
-.divider span {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 14px;
-  color: var(--gold);
-}
-
-/* ════════════════════
-   PANEL (card)
-════════════════════ */
-.panel {
-  background: var(--ink2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 28px 28px 24px;
-  margin-bottom: 14px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 6vw, 52px);
+  letter-spacing: 0.06em;
+  line-height: 1.0;
+  color: #fff;
+  text-transform: uppercase;
   position: relative;
 }
 
-.panel::before {
-  content:'';
-  position:absolute; top:0; left:24px; right:24px; height:1px;
-  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+h1 .accent { color: var(--cyan); }
+
+/* corner brackets */
+.bracket-box {
+  position: relative;
+  display: inline-block;
+  padding: 4px 10px;
+  margin-top: 8px;
 }
 
-.panel-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.28em;
-  color: var(--gold);
-  text-transform: uppercase;
+.bracket-box::before, .bracket-box::after,
+.bracket-box .br-inner::before, .bracket-box .br-inner::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+}
+.bracket-box::before      { top:0;    left:0;  border-top:1px solid var(--cyan); border-left:1px solid var(--cyan); }
+.bracket-box::after       { top:0;    right:0; border-top:1px solid var(--cyan); border-right:1px solid var(--cyan); }
+.bracket-box .br-inner::before { bottom:0; left:0;  border-bottom:1px solid var(--cyan); border-left:1px solid var(--cyan); }
+.bracket-box .br-inner::after  { bottom:0; right:0; border-bottom:1px solid var(--cyan); border-right:1px solid var(--cyan); }
+
+.bracket-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--cyan);
+  letter-spacing: 0.2em;
   opacity: 0.6;
-  margin-bottom: 14px;
 }
 
-/* ════════════════════
+/* ══════════════════════
+   HUD PANEL
+══════════════════════ */
+.hud-panel {
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid rgba(0,212,255,0.15);
+  padding: 24px;
+  margin-bottom: 12px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+
+.hud-panel::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, var(--cyan), rgba(0,212,255,0.2) 60%, transparent);
+}
+
+.hud-panel-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.7;
+}
+
+.hud-panel-label::after {
+  content:'';
+  flex:1; height:1px;
+  background: linear-gradient(90deg, rgba(0,212,255,0.3), transparent);
+}
+
+/* ══════════════════════
    INPUT
-════════════════════ */
-.input-panel { animation: fadeUp 0.6s 0.1s ease both; }
+══════════════════════ */
+.input-panel { animation: bootUp 0.6s 0.15s ease both; }
 
 textarea, .answer-input {
   width: 100%;
-  background: var(--ink);
-  border: 1px solid rgba(201,168,76,0.1);
-  border-radius: var(--r);
+  background: rgba(0,212,255,0.03);
+  border: 1px solid rgba(0,212,255,0.12);
   color: var(--text);
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 14px;
   line-height: 1.85;
-  padding: 13px 16px;
+  padding: 12px 15px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
   resize: vertical;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
 }
 
 textarea { min-height: 100px; }
 
 textarea:focus, .answer-input:focus {
-  border-color: rgba(201,168,76,0.35);
+  border-color: rgba(0,212,255,0.4);
+  background: rgba(0,212,255,0.06);
 }
 
-textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
+textarea::placeholder, .answer-input::placeholder {
+  color: var(--dim);
+  font-size: 13px;
+}
 
 .answer-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .answer-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--muted);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--cyan);
+  letter-spacing: 0.12em;
   white-space: nowrap;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  opacity: 0.7;
 }
 
 .answer-input { flex:1; }
 
-/* ── button ── */
+/* button */
 .btn-analyze {
   width: 100%;
   margin-top: 16px;
   padding: 14px;
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 50%, var(--gold) 100%);
-  background-size: 200% 100%;
-  color: var(--ink);
-  border: none;
-  border-radius: var(--r);
-  font-family: 'Noto Sans JP', sans-serif;
-  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background-position 0.4s, opacity 0.2s, transform 0.15s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 10px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-analyze:hover:not(:disabled) {
-  background-position: 100% 0;
-  transform: translateY(-1px);
+.btn-analyze::before {
+  content:'';
+  position:absolute; inset:0;
+  background: var(--cyan);
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  z-index: 0;
 }
-.btn-analyze:active:not(:disabled) { transform: translateY(0); }
-.btn-analyze:disabled { opacity: 0.35; cursor:not-allowed; }
+
+.btn-analyze:hover:not(:disabled)::before { transform: translateX(0); }
+.btn-analyze:hover:not(:disabled) { color: var(--bg); }
+.btn-analyze:disabled { opacity:0.3; cursor:not-allowed; }
+.btn-analyze .btn-text, .btn-analyze .spinner { position:relative; z-index:1; }
 .btn-analyze.loading .btn-text { display:none; }
-.btn-analyze.loading .spinner { display:block; }
+.btn-analyze.loading .spinner  { display:block; }
 
 .spinner {
   width:16px; height:16px;
-  border: 2px solid rgba(0,0,0,0.2);
-  border-top-color: var(--ink);
+  border:2px solid rgba(0,212,255,0.3);
+  border-top-color: var(--cyan);
   border-radius:50%;
-  animation: spin 0.65s linear infinite;
+  animation:spin 0.6s linear infinite;
   display:none;
 }
 
 .hint-text {
   text-align:center;
-  font-family:'JetBrains Mono', monospace;
+  font-family:'Share Tech Mono', monospace;
   font-size:9px;
-  color:var(--muted);
+  color:var(--dim);
   margin-top:8px;
-  letter-spacing:0.1em;
+  letter-spacing:0.12em;
 }
 
 /* progress */
@@ -271,42 +331,44 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
 .progress-header {
   display:flex;
   justify-content:space-between;
-  font-family:'JetBrains Mono', monospace;
+  font-family:'Share Tech Mono', monospace;
   font-size:9px;
-  color:var(--muted2);
+  color:var(--dim);
   margin-bottom:6px;
-  letter-spacing:0.08em;
+  letter-spacing:0.1em;
 }
 
-.progress-pct { color:var(--gold); }
+.progress-pct { color:var(--cyan); }
 
 .progress-bar-bg {
-  width:100%; height:1px;
-  background:var(--border);
+  width:100%; height:2px;
+  background:rgba(0,212,255,0.1);
   overflow:hidden;
 }
 
 .progress-bar-fill {
   height:100%;
-  background: linear-gradient(90deg, var(--gold2), var(--gold3));
+  background: linear-gradient(90deg, var(--cyan2), var(--cyan));
   width:0%;
   transition:width 0.5s ease;
+  box-shadow: 0 0 8px var(--cyan);
 }
 
-/* ════════════════════
+/* ══════════════════════
    ERROR
-════════════════════ */
+══════════════════════ */
 .error-box {
   display:none;
-  background: rgba(180,60,60,0.07);
-  border:1px solid rgba(180,60,60,0.22);
-  border-radius:var(--r);
-  padding:13px 17px;
-  font-size:12px;
-  color:#d08888;
+  background: rgba(255,45,85,0.07);
+  border:1px solid rgba(255,45,85,0.3);
+  padding:12px 16px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:11px;
+  color:#ff8099;
   white-space:pre-line;
   line-height:1.7;
-  margin-bottom:14px;
+  margin-bottom:12px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
 }
 .error-box.visible { display:block; }
 
@@ -314,15 +376,16 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
   display:none;
   text-align:center;
   font-size:10px;
-  color:var(--muted);
+  color:var(--dim);
   line-height:1.8;
-  margin-bottom:14px;
-  font-family:'JetBrains Mono', monospace;
+  margin-bottom:12px;
+  font-family:'Share Tech Mono', monospace;
+  letter-spacing:0.06em;
 }
 
-/* ════════════════════
+/* ══════════════════════
    RESULTS
-════════════════════ */
+══════════════════════ */
 .result-section { display:none; }
 .result-section.visible { display:block; }
 
@@ -330,97 +393,127 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
   display:flex;
   align-items:center;
   gap:10px;
-  margin-bottom:14px;
-  animation: fadeUp 0.4s ease both;
+  margin-bottom:12px;
+  animation: bootUp 0.3s ease both;
 }
 
 .badge {
-  font-family:'JetBrains Mono', monospace;
-  font-size:8px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px;
   letter-spacing:0.18em;
-  padding:3px 11px;
-  border-radius:100px;
+  padding:3px 12px;
   text-transform:uppercase;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
 }
-.badge-easy { background:rgba(201,168,76,0.1); color:var(--gold); border:1px solid var(--border2); }
-.badge-mid  { background:rgba(106,159,216,0.1); color:#7ab0e0; border:1px solid rgba(106,159,216,0.25); }
-.badge-hard { background:rgba(180,60,80,0.1);   color:#d07080; border:1px solid rgba(180,60,80,0.25); }
+.badge-easy { background:rgba(0,212,255,0.1); color:var(--cyan);   border:1px solid rgba(0,212,255,0.3); }
+.badge-mid  { background:rgba(255,184,0,0.1);  color:var(--amber); border:1px solid rgba(255,184,0,0.3); }
+.badge-hard { background:rgba(255,45,85,0.1);  color:var(--red);   border:1px solid rgba(255,45,85,0.3); }
 
-.difficulty-label { font-size:11px; color:var(--muted2); }
+.difficulty-label {
+  font-family:'Share Tech Mono', monospace;
+  font-size:10px;
+  color:var(--dim);
+  letter-spacing:0.06em;
+}
 
 /* best point */
 .best-panel {
-  background: var(--ink2);
-  border:1px solid var(--border2);
-  border-radius:var(--r);
-  padding:26px 28px;
-  margin-bottom:14px;
   position:relative;
+  background: var(--bg2);
+  border:1px solid rgba(0,212,255,0.25);
+  padding:22px 24px;
+  margin-bottom:12px;
+  animation: bootUp 0.3s 0.05s ease both;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
   overflow:hidden;
-  animation: fadeUp 0.4s 0.05s ease both;
 }
 
-.best-panel::after {
+.best-panel::before {
   content:'';
-  position:absolute; bottom:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent);
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, var(--cyan), rgba(0,212,255,0.1) 70%, transparent);
+}
+
+.best-corner {
+  position:absolute;
+  bottom:8px; right:8px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px;
+  color:var(--cyan);
+  opacity:0.3;
+  letter-spacing:0.1em;
 }
 
 .best-panel-label {
-  font-family:'JetBrains Mono', monospace;
-  font-size:8px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px;
   letter-spacing:0.28em;
-  color:var(--gold);
+  color:var(--cyan);
   text-transform:uppercase;
-  opacity:0.65;
   margin-bottom:10px;
+  opacity:0.6;
 }
 
 .best-phrase {
-  font-family:'Cormorant Garamond', serif;
-  font-size:26px;
-  font-weight:600;
-  color:var(--gold2);
-  margin-bottom:9px;
-  line-height:1.35;
+  font-family:'Rajdhani', sans-serif;
+  font-size:28px;
+  font-weight:700;
+  color:#fff;
+  margin-bottom:8px;
+  line-height:1.2;
+  letter-spacing:0.04em;
 }
+
+.best-phrase .bracket { color:var(--cyan); opacity:0.5; }
 
 .best-reason {
   font-size:12px;
-  color:var(--muted2);
+  color: #8899bb;
   line-height:1.85;
 }
 
 /* heatmap */
 .heatmap-panel {
-  background: var(--ink2);
-  border:1px solid var(--border);
-  border-radius:var(--r);
-  padding:26px 28px;
-  margin-bottom:14px;
-  animation: fadeUp 0.4s 0.1s ease both;
+  background:var(--bg2);
+  border:1px solid rgba(0,212,255,0.1);
+  padding:24px;
+  margin-bottom:12px;
+  animation: bootUp 0.3s 0.1s ease both;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  position:relative;
 }
 
 .question-display {
   font-size:17px;
   line-height:2.8;
   word-break:break-all;
-  letter-spacing:0.01em;
+  letter-spacing:0.02em;
 }
 
 .chunk {
   display:inline;
   position:relative;
   cursor:default;
-  border-radius:2px;
   padding:1px 0;
+  transition: text-shadow 0.2s;
 }
 
-.chunk[data-score="5"] { color:var(--s5); font-weight:700; }
-.chunk[data-score="4"] { color:var(--s4); font-weight:500; }
-.chunk[data-score="3"] { color:var(--s3); }
+.chunk[data-score="5"] {
+  color:var(--s5);
+  font-weight:700;
+  text-shadow: 0 0 10px rgba(0,212,255,0.6);
+}
+.chunk[data-score="4"] {
+  color:var(--s4);
+  font-weight:500;
+  text-shadow: 0 0 8px rgba(0,255,157,0.4);
+}
+.chunk[data-score="3"] {
+  color:var(--s3);
+  text-shadow: 0 0 6px rgba(255,184,0,0.3);
+}
 .chunk[data-score="2"] { color:var(--s2); }
-.chunk[data-score="1"] { color:var(--muted); }
+.chunk[data-score="1"] { color:var(--dim); }
 
 .chunk:hover .tooltip {
   opacity:1;
@@ -433,11 +526,11 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
   bottom:calc(100% + 8px);
   left:50%;
   transform:translateX(-50%) translateY(0);
-  background:var(--ink4);
-  border:1px solid var(--border2);
-  border-radius:4px;
-  padding:7px 11px;
-  font-size:11px;
+  background:var(--bg3);
+  border:1px solid rgba(0,212,255,0.25);
+  padding:6px 11px;
+  font-family:'Share Tech Mono', monospace;
+  font-size:10px;
   color:var(--text);
   opacity:0;
   transition:all 0.15s;
@@ -448,8 +541,8 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
   min-width:80px;
   max-width:180px;
   line-height:1.6;
-  font-weight:400;
-  box-shadow:0 8px 28px rgba(0,0,0,0.6);
+  box-shadow:0 8px 24px rgba(0,0,0,0.7);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
 }
 
 .tooltip::after {
@@ -457,31 +550,30 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
   position:absolute; top:100%; left:50%;
   transform:translateX(-50%);
   border:4px solid transparent;
-  border-top-color:var(--border2);
+  border-top-color:rgba(0,212,255,0.25);
 }
 
 .legend {
   display:flex;
   flex-wrap:wrap;
-  gap:10px 20px;
-  margin-top:18px;
-  padding-top:16px;
-  border-top:1px solid var(--border);
+  gap:10px 18px;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid rgba(0,212,255,0.08);
 }
 
 .legend-item {
   display:flex;
   align-items:center;
   gap:6px;
-  font-family:'JetBrains Mono', monospace;
+  font-family:'Share Tech Mono', monospace;
   font-size:9px;
-  color:var(--muted2);
-  letter-spacing:0.08em;
+  color:var(--dim);
+  letter-spacing:0.1em;
 }
 
-.legend-dot {
-  width:6px; height:6px;
-  border-radius:50%;
+.legend-dash {
+  width:12px; height:2px;
   flex-shrink:0;
 }
 
@@ -489,74 +581,96 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
 .strategy-grid {
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px;
-  animation: fadeUp 0.4s 0.15s ease both;
+  gap:10px;
+  animation: bootUp 0.3s 0.15s ease both;
 }
 
 @media (max-width:500px) { .strategy-grid { grid-template-columns:1fr; } }
 
 .strategy-card {
-  background:var(--ink2);
-  border:1px solid var(--border);
-  border-radius:var(--r);
-  padding:18px 20px;
+  background:var(--bg2);
+  border:1px solid rgba(0,212,255,0.1);
+  padding:16px 18px;
+  position:relative;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.strategy-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, rgba(0,212,255,0.4), transparent);
 }
 
 .strategy-card-title {
-  font-family:'JetBrains Mono', monospace;
-  font-size:8px;
-  letter-spacing:0.22em;
-  color:var(--muted);
+  font-family:'Share Tech Mono', monospace;
+  font-size:9px;
+  letter-spacing:0.2em;
+  color:var(--cyan);
   text-transform:uppercase;
   margin-bottom:9px;
+  opacity:0.6;
 }
 
 .strategy-card-body {
   font-size:12px;
   line-height:1.85;
-  color:var(--muted2);
+  color:#8899bb;
 }
 
-/* ════════════════════
+/* ══════════════════════
    ANIMATIONS
-════════════════════ */
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(12px); }
-  to   { opacity:1; transform:translateY(0); }
+══════════════════════ */
+@keyframes bootUp {
+  from { opacity:0; transform:translateY(8px); filter:blur(2px); }
+  to   { opacity:1; transform:translateY(0);   filter:blur(0); }
 }
 @keyframes spin { to { transform:rotate(360deg); } }
 
 ::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:var(--ink); }
-::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:rgba(0,212,255,0.2); border-radius:4px; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
+  <!-- HEADER -->
   <header>
-    <div class="crown">♛</div>
-    <div class="logo-line">AI Quiz Trainer</div>
-    <h1>早押し<em>最適化</em>トレーナー</h1>
-    <p class="tagline">問題文を解析し、確定ポイントを可視化する</p>
-    <div class="badge-free">API キー不要 &nbsp;·&nbsp; 完全無料 &nbsp;·&nbsp; Claude Sonnet 4.5</div>
+    <div class="hud-top">
+      <div class="sys-tag">
+        SYS // QUIZ_TRAINER_AI<br>
+        VER <span>3.1.0</span> // CLAUDE-SONNET-4-5
+      </div>
+      <div class="status-cluster">
+        <div class="status-dot">SYSTEM ONLINE</div>
+      </div>
+    </div>
+    <div class="title-block">
+      <div class="title-prefix">// PUSH POINT ANALYZER</div>
+      <h1>早押し<span class="accent">最適化</span><br>トレーナー</h1>
+      <div class="bracket-box">
+        <div class="br-inner"></div>
+        <span class="bracket-text">NO API KEY REQUIRED · FREE · UNLIMITED</span>
+      </div>
+    </div>
   </header>
 
-  <div class="panel input-panel">
-    <div class="panel-label">問題文を入力</div>
-    <textarea id="questionText" placeholder="例：「走れメロス」の中で、メロスが人質として王のもとに残した人物の名前は何でしょう？"></textarea>
+  <!-- INPUT -->
+  <div class="hud-panel input-panel">
+    <div class="hud-panel-label">INPUT // 問題文</div>
+    <textarea id="questionText" placeholder="問題文を入力..."></textarea>
     <div class="answer-row">
-      <span class="answer-label">答え</span>
-      <input type="text" class="answer-input" id="answerText" placeholder="セリヌンティウス">
+      <span class="answer-label">ANS &gt;</span>
+      <input type="text" class="answer-input" id="answerText" placeholder="答えを入力">
     </div>
     <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
-      <span class="btn-text">⚡ 早押しポイントを解析する</span>
+      <span class="btn-text">▶ ANALYZE PUSH POINT</span>
       <div class="spinner"></div>
     </button>
-    <p class="hint-text">Ctrl + Enter でも解析</p>
+    <p class="hint-text">// CTRL + ENTER TO EXECUTE</p>
     <div class="progress-wrap" id="progressWrap">
       <div class="progress-header">
-        <span id="progressStep">待機中...</span>
+        <span id="progressStep">STANDBY...</span>
         <span class="progress-pct" id="progressPct">0%</span>
       </div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
@@ -564,29 +678,31 @@ textarea::placeholder, .answer-input::placeholder { color: var(--muted); }
   </div>
 
   <p class="limit-note" id="limitNote">
-    ⚠️ 無料枠は1日数十〜数百回程度。制限に達したら時間をおいて再試行してください。
+    ⚠ FREE TIER LIMIT REACHED. RETRY AFTER COOLDOWN.
   </p>
   <div class="error-box" id="errorBox"></div>
 
+  <!-- RESULTS -->
   <div class="result-section" id="resultSection">
 
     <div class="difficulty-row" id="difficultyRow"></div>
 
     <div class="best-panel">
-      <div class="best-panel-label">最適な押しポイント</div>
+      <div class="best-panel-label">// OPTIMAL PUSH POINT</div>
       <div class="best-phrase" id="bestPointText"></div>
       <div class="best-reason" id="bestPointReason"></div>
+      <div class="best-corner">CONFIRMED</div>
     </div>
 
     <div class="heatmap-panel">
-      <div class="panel-label">問題文ヒートマップ（ホバーでヒント）</div>
+      <div class="hud-panel-label">HEATMAP // 確定ポイント可視化</div>
       <div class="question-display" id="questionDisplay"></div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--s5)"></div>今すぐ押せる</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--s4)"></div>ほぼ確定</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--s3)"></div>やや絞れる</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--s2)"></div>まだ早い</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>情報なし</div>
+        <div class="legend-item"><div class="legend-dash" style="background:var(--s5)"></div>今すぐ押せる</div>
+        <div class="legend-item"><div class="legend-dash" style="background:var(--s4)"></div>ほぼ確定</div>
+        <div class="legend-item"><div class="legend-dash" style="background:var(--s3)"></div>やや絞れる</div>
+        <div class="legend-item"><div class="legend-dash" style="background:var(--s2)"></div>まだ早い</div>
+        <div class="legend-item"><div class="legend-dash" style="background:var(--dim)"></div>情報なし</div>
       </div>
     </div>
 
@@ -603,7 +719,7 @@ async function analyze() {
   const errorBox = document.getElementById('errorBox');
 
   errorBox.classList.remove('visible');
-  if (!question) { showError('問題文を入力してください。'); return; }
+  if (!question) { showError('ERROR // 問題文を入力してください。'); return; }
 
   btn.classList.add('loading');
   btn.disabled = true;
@@ -617,11 +733,11 @@ async function analyze() {
   progressWrap.classList.add('visible');
 
   const steps = [
-    { pct: 10, label: '問題文を解析中...' },
-    { pct: 30, label: '確定ポイントを特定中...' },
-    { pct: 55, label: 'ヒートマップを生成中...' },
-    { pct: 75, label: '早押し戦略を構築中...' },
-    { pct: 90, label: '結果を整形中...' },
+    { pct: 10, label: 'PARSING QUESTION...' },
+    { pct: 30, label: 'DETECTING PUSH POINT...' },
+    { pct: 55, label: 'GENERATING HEATMAP...' },
+    { pct: 75, label: 'BUILDING STRATEGY...' },
+    { pct: 90, label: 'RENDERING OUTPUT...' },
   ];
   let stepIdx = 0;
   const progressTimer = setInterval(() => {
@@ -714,7 +830,7 @@ difficultyは"easy"（有名・教養）"mid"（専門知識必要）"hard"（�
     const rawText = extractText(response);
 
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('AIの応答を解析できませんでした。再度お試しください。');
+    if (!jsonMatch) throw new Error('PARSE ERROR // 再度お試しください。');
 
     const result = JSON.parse(jsonMatch[0]);
 
@@ -755,7 +871,7 @@ difficultyは"easy"（有名・教養）"mid"（専門知識必要）"hard"（�
 
     clearInterval(progressTimer);
     progressFill.style.width = '100%';
-    progressStep.textContent = '解析完了';
+    progressStep.textContent = 'ANALYSIS COMPLETE';
     progressPct.textContent = '100%';
     setTimeout(() => progressWrap.classList.remove('visible'), 700);
     renderResult(result);
@@ -763,9 +879,9 @@ difficultyは"easy"（有名・教養）"mid"（専門知識必要）"hard"（�
   } catch (e) {
     const msg = e.message || String(e);
     if (msg.includes('login') || msg.includes('auth') || msg.includes('sign')) {
-      showError('初回利用時はPuter.jsのログインが必要です。\nポップアップが表示されたらGoogleアカウントでサインインしてください。\nその後もう一度解析ボタンを押してください。');
+      showError('AUTH REQUIRED // Puter.jsのログインが必要です。\nポップアップが表示されたらGoogleアカウントでサインインしてください。');
     } else {
-      showError('エラー: ' + msg);
+      showError('ERROR // ' + msg);
     }
   } finally {
     clearInterval(progressTimer);
@@ -778,15 +894,16 @@ difficultyは"easy"（有名・教養）"mid"（専門知識必要）"hard"（�
 
 function renderResult(result) {
   const diffMap = {
-    easy: ['badge-easy', '初級'],
-    mid:  ['badge-mid',  '中級'],
-    hard: ['badge-hard', '上級']
+    easy: ['badge-easy', 'LV.01 // 初級'],
+    mid:  ['badge-mid',  'LV.02 // 中級'],
+    hard: ['badge-hard', 'LV.03 // 上級']
   };
-  const [cls, label] = diffMap[result.difficulty] || ['badge-mid', '中級'];
+  const [cls, label] = diffMap[result.difficulty] || ['badge-mid', 'LV.02 // 中級'];
   document.getElementById('difficultyRow').innerHTML =
     `<span class="badge ${cls}">${label}</span><span class="difficulty-label">${result.difficulty_reason || ''}</span>`;
 
-  document.getElementById('bestPointText').textContent = `「${result.best_push_phrase}」で押す`;
+  document.getElementById('bestPointText').innerHTML =
+    `<span class="bracket">[</span> ${result.best_push_phrase} <span class="bracket">]</span> で押す`;
   document.getElementById('bestPointReason').textContent = result.best_push_reason || '';
 
   const display = document.getElementById('questionDisplay');
@@ -807,11 +924,11 @@ function renderResult(result) {
 
   document.getElementById('strategyGrid').innerHTML = `
     <div class="strategy-card">
-      <div class="strategy-card-title">⚡ 早押し戦略</div>
+      <div class="strategy-card-title">// 早押し戦略</div>
       <div class="strategy-card-body">${result.early_strategy || '-'}</div>
     </div>
     <div class="strategy-card">
-      <div class="strategy-card-title">⚠️ 注意ポイント</div>
+      <div class="strategy-card-title">// 注意ポイント</div>
       <div class="strategy-card-body">${result.trap_warning || '-'}</div>
     </div>
   `;
