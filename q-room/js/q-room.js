@@ -708,7 +708,15 @@ function changeRuleUI(skipRender=false) {
   else if(r==='attack_surv') h = `<div class="s-grid">${mkn('life','初期ライフ',c.life)}${mkn('dmg_to_oth','自正解時他減',c.dmg_to_oth)}${mkn('heal','自正解時自加',c.heal)}${mkn('dmg_to_me','自誤時自減',c.dmg_to_me)}</div><div class="field">${mkn('surv','終了人数',c.surv)}</div>`;
   else if(r==='lucky') h = `<div class="s-grid">${mkn('win','勝ち抜け',c.win)}${mkn('lose','失格',c.lose)}</div><div class="field">${mkn('max','乱数最大',c.max)}</div>`;
   else if(r==='spiral') h = `<div class="s-grid">${mkn('up','正解上昇',c.up)}${mkn('down','誤答下降',c.down)}${mkn('top_req','最上位要正解',c.top_req)}${mkn('btm_req','最下位要誤答',c.btm_req)}</div>`;
-  else if(r==='time_race') h = `<div class="s-grid">${mkn('limit','制限時間(秒)',c.limit)}${mkn('correct_pt','正解 +pt',c.correct_pt)}${mkn('wrong_pt','誤答 -pt',c.wrong_pt)}</div>`;
+  else if(r==='time_race') {
+    const limitM = Math.floor((c.limit||300) / 60);
+    const limitS = (c.limit||300) % 60;
+    h = `<div class="s-grid">
+      <div class="field"><label>制限時間 (分)</label><input type="number" id="c_limit_m" value="${limitM}" min="0" max="99"></div>
+      <div class="field"><label>制限時間 (秒)</label><input type="number" id="c_limit_s" value="${limitS}" min="0" max="59"></div>
+    </div>
+    <div class="s-grid">${mkn('correct_pt','正解 +pt',c.correct_pt)}${mkn('wrong_pt','誤答 -pt',c.wrong_pt)}</div>`;
+  }
   else if(r==='board_quiz') h = `
     <div class="s-grid">${mkn('m','正解 +pt',c.m)}${mkn('n','誤答 -pt',c.n)}</div>
     <div class="s-grid">${mkn('x','少数正解閾値(人以下)',c.x)}${mkn('y','少数ボーナス +pt',c.y)}</div>
@@ -756,8 +764,24 @@ function changeRuleUI(skipRender=false) {
 function updateConf() {
   if(!roomData) return;
   let nc = {};
-  document.querySelectorAll('#config-area input').forEach(el => nc[el.id.replace('c_','')] = parseInt(el.value)||0);
+  document.querySelectorAll('#config-area input').forEach(el => {
+    const key = el.id.replace('c_', '');
+    if(key !== 'limit_m' && key !== 'limit_s') nc[key] = parseInt(el.value) || 0;
+  });
   document.querySelectorAll('#config-area select').forEach(el => nc[el.id.replace('c_','')] = el.value);
+
+  // time_race: 分・秒フィールドを合算して limit（秒）に変換
+  if(roomData.rule === 'time_race') {
+    const mEl = document.getElementById('c_limit_m');
+    const sEl = document.getElementById('c_limit_s');
+    if(mEl && sEl) {
+      const m = Math.max(0, parseInt(mEl.value) || 0);
+      const s = Math.max(0, Math.min(59, parseInt(sEl.value) || 0));
+      nc.limit = m * 60 + s;
+      if(nc.limit < 1) nc.limit = 1;
+    }
+  }
+
   if(Object.keys(nc).length > 0) {
     db.ref(`rooms/${rId}/conf`).update(nc);
     if(roomData.rule === 'time_race' && nc.limit !== undefined) {
@@ -1426,7 +1450,7 @@ function initTimerListener() {
 }
 
 function formatMs(ms) {
-  const totalSec = Math.max(0, Math.ceil(ms / 1000));
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -1536,7 +1560,7 @@ function updateTimerDisplay() {
       }
     };
     tick();
-    timerInterval = setInterval(tick, 100);
+    timerInterval = setInterval(tick, 50);
 
   } else if(state === 'paused' || state === 'idle') {
     co.classList.remove('show');
@@ -1584,9 +1608,13 @@ async function timerAction(action) {
       const snap = await db.ref(`rooms/${rId}/timer/state`).once('value');
       if(snap.val() === 'countdown') {
         const remSnap = await db.ref(`rooms/${rId}/timer/remaining`).once('value');
+        const rem = remSnap.val() !== null ? remSnap.val() : currentRemaining;
+        // startAt はサーバー時刻に合わせたローカル補正値で設定（DB書き込みラグを排除）
+        const startAtServer = getServerTime();
         await db.ref(`rooms/${rId}/timer`).update({
-          state: 'running', startAt: firebase.database.ServerValue.TIMESTAMP,
-          remaining: remSnap.val() !== null ? remSnap.val() : currentRemaining
+          state: 'running',
+          startAt: startAtServer,
+          remaining: rem
         });
       }
     }, 5000);
