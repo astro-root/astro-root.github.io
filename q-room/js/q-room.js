@@ -106,10 +106,18 @@ async function handleCreate() {
       const d = s.val();
       const players = d.players || {};
       const hasPlayers = Object.keys(players).length > 0;
-      if(hasPlayers) return err('そのIDは使用中です');
       const lastActive = d.lastActiveAt || d.createdAt || 0;
-      if(Date.now() - lastActive < 5*60*1000) return err('そのIDは使用中です');
-      await db.ref('rooms/'+r).remove();
+      const elapsed = Date.now() - lastActive;
+      // 1時間以上更新がない部屋は強制削除して再利用可能にする
+      if(elapsed >= 60*60*1000) {
+        await db.ref('rooms/'+r).remove();
+      } else if(hasPlayers) {
+        return err('そのIDは使用中です');
+      } else if(elapsed < 5*60*1000) {
+        return err('そのIDは使用中です');
+      } else {
+        await db.ref('rooms/'+r).remove();
+      }
     }
 
     localStorage.setItem('qr_name', n);
@@ -157,9 +165,12 @@ async function handleJoin() {
     const d = s.val();
     const players = d.players || {};
     const hasPlayers = Object.keys(players).length > 0;
+    const lastActive = d.lastActiveAt || d.createdAt || 0;
+    const elapsed = Date.now() - lastActive;
+    // 1時間以上更新がない部屋は期限切れ
+    if(elapsed >= 60*60*1000) return err('このIDは期限切れです（1時間以上更新がありませんでした）');
     if(!hasPlayers) {
-      const lastActive = d.lastActiveAt || d.createdAt || 0;
-      if(Date.now() - lastActive >= 5*60*1000) return err('このIDは期限切れです（5分以上誰もいませんでした）');
+      if(elapsed >= 5*60*1000) return err('このIDは期限切れです（5分以上誰もいませんでした）');
     }
 
     localStorage.setItem('qr_name', n);
@@ -199,6 +210,12 @@ function enterRoom(isCreate=false, playerName='') {
   db.ref(`rooms/${rId}/lastActiveAt`).set(firebase.database.ServerValue.TIMESTAMP);
   db.ref(`rooms/${rId}/lastActiveAt`).onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
 
+  // ハートビート: 30分ごとにlastActiveAtを更新（1時間タイムアウト対策）
+  if(window._heartbeatTimer) clearInterval(window._heartbeatTimer);
+  window._heartbeatTimer = setInterval(() => {
+    if(db && rId) db.ref(`rooms/${rId}/lastActiveAt`).set(firebase.database.ServerValue.TIMESTAMP);
+  }, 30 * 60 * 1000);
+
   document.getElementById('game-rid').innerText = rId;
   show('room');
   showRoomInfo(isCreate);
@@ -236,6 +253,7 @@ function enterRoom(isCreate=false, playerName='') {
 
 async function leaveRoom(kicked=false) {
   if(rRef) { rRef.off('value', rCb); rRef = null; }
+  if(window._heartbeatTimer) { clearInterval(window._heartbeatTimer); window._heartbeatTimer = null; }
   if(chatRef) { chatRef.off('child_added', chatCb); chatRef = null; }
   try {
     if(!kicked && db && rId && myId) {
