@@ -1564,29 +1564,37 @@ function updateTimerDisplay() {
 
   } else if(state === 'running') {
     _lastStartAt = startAt;
+
+    const startTick = () => {
+      const tick = () => {
+        const elapsed = Math.max(0, getServerTime() - startAt);
+        const left = Math.max(0, remaining - elapsed);
+        disp.textContent = formatMs(left);
+        if(left <= 30000) disp.className = 'timer-display danger';
+        else if(left <= 60000) disp.className = 'timer-display warning';
+        else disp.className = 'timer-display';
+        if(left <= 0) {
+          clearInterval(timerInterval); timerInterval = null;
+          db.ref(`rooms/${rId}/timer/state`).transaction(cur => {
+            if(cur === 'running') return 'finished';
+            return undefined;
+          }).then(res => { if(res && res.committed) onTimerFinished(); });
+        }
+      };
+      tick();
+      timerInterval = setInterval(tick, 50);
+    };
+
     if(prevState === 'countdown') {
       showGoAndHide(co);
+      // GO!表示中は初期値で固定、消えてからtick開始
+      disp.textContent = formatMs(remaining);
+      disp.className = 'timer-display';
+      setTimeout(startTick, 1500);
     } else {
       co.classList.remove('show');
+      startTick();
     }
-
-    const tick = () => {
-      const elapsed = Math.max(0, getServerTime() - startAt); // 負にしない（6秒問題を防止）
-      const left = Math.max(0, remaining - elapsed);
-      disp.textContent = formatMs(left);
-      if(left <= 30000) disp.className = 'timer-display danger';
-      else if(left <= 60000) disp.className = 'timer-display warning';
-      else disp.className = 'timer-display';
-      if(left <= 0) {
-        clearInterval(timerInterval); timerInterval = null;
-        db.ref(`rooms/${rId}/timer/state`).transaction(cur => {
-          if(cur === 'running') return 'finished';
-          return undefined;
-        }).then(res => { if(res && res.committed) onTimerFinished(); });
-      }
-    };
-    tick();
-    timerInterval = setInterval(tick, 50);
 
   } else if(state === 'paused' || state === 'idle') {
     co.classList.remove('show');
