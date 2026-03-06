@@ -608,14 +608,19 @@ hr { border: none; border-top: 1px solid var(--border-color); margin: 20px 0; }
 .timer-display.danger { color: var(--red); text-shadow: 0 0 24px rgba(239,68,68,0.6); animation: timerPulse 0.6s infinite alternate; }
 @keyframes timerPulse { from { opacity: 1; } to { opacity: 0.6; } }
 @keyframes timerFlash {
-  0%,100% { box-shadow: none; }
-  15%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.35); }
-  30%      { box-shadow: none; }
-  45%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.28); }
-  60%      { box-shadow: none; }
-  75%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.18); }
+  0%       { box-shadow: none; }
+  8%       { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.40); }
+  16%      { box-shadow: none; }
+  25%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.35); }
+  33%      { box-shadow: none; }
+  42%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.28); }
+  50%      { box-shadow: none; }
+  62%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.20); }
+  75%      { box-shadow: none; }
+  88%      { box-shadow: inset 0 0 0 100vmax rgba(239,68,68,0.12); }
+  100%     { box-shadow: none; }
 }
-.timer-finish-flash { animation: timerFlash 3s ease-out forwards; }
+.timer-finish-flash { animation: timerFlash 6s ease-out forwards; }
 .timer-controls { display: flex; gap: 10px; }
 .timer-btn {
   flex: 1; padding: 12px 8px; border-radius: 12px;
