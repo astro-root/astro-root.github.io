@@ -33,6 +33,20 @@
 <meta name="apple-mobile-web-app-title" content="Q-Room">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="stylesheet" href="css/q-room.css">
+<style>
+@keyframes timerFlash {
+  0%,100% { background: transparent; }
+  15%      { background: rgba(239,68,68,0.35); box-shadow: 0 0 40px rgba(239,68,68,0.6); }
+  30%      { background: transparent; }
+  45%      { background: rgba(239,68,68,0.30); box-shadow: 0 0 40px rgba(239,68,68,0.5); }
+  60%      { background: transparent; }
+  75%      { background: rgba(239,68,68,0.20); box-shadow: 0 0 30px rgba(239,68,68,0.4); }
+}
+.timer-finish-flash {
+  animation: timerFlash 3s ease-out forwards;
+  border-radius: 16px;
+}
+</style>
 </head>
 <body>
 
