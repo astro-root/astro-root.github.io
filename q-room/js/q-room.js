@@ -1484,7 +1484,7 @@ function showGoAndHide(co) {
   void numEl.offsetWidth;
   numEl.style.animation = 'cdPop 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
   co.classList.add('show');
-  setTimeout(() => { co.classList.remove('show'); }, 800);
+  setTimeout(() => { co.classList.remove('show'); }, 1500);
 }
 
 function updateTimerDisplay() {
@@ -1494,39 +1494,39 @@ function updateTimerDisplay() {
   if(!disp) return;
 
   const { state, startAt, remaining, limitMs, cdStartAt } = timerData;
+
+  // ── ガード（ここより前は _prevTimerState も interval も触らない）──
+  if(state === 'countdown') {
+    if(!cdStartAt) return;                      // 楽観的更新（タイムスタンプ未解決）→ 無視
+    if(cdStartAt === _lastCdStartAt) return;    // 同じ cdStartAt の再発火 → 無視
+  }
+  if(state === 'running' && !startAt) return;   // 楽観的更新（startAt未解決）→ 無視
+
+  // ── ここから実処理 ──
   const prevState = _prevTimerState;
   _prevTimerState = state;
 
-  // 演出フラグ：finishedから別の状態に戻ったらリセット
   if(prevState === 'finished' && state !== 'finished') {
     _timerFinishPlayed = false;
   }
 
   clearInterval(timerInterval); timerInterval = null;
-  if(state !== 'countdown') {
-    clearInterval(cdInterval); cdInterval = null;
-  }
+  clearInterval(cdInterval); cdInterval = null;
 
   setTimerBtn(state);
 
   if(state === 'countdown') {
-    // cdStartAt が null = Firebase の楽観的更新（サーバータイムスタンプ未解決）→ 無視
-    if(!cdStartAt) return;
-    // 同じ cdStartAt での再発火もスキップ
-    if(cdStartAt === _lastCdStartAt) return;
     _lastCdStartAt = cdStartAt;
-    clearInterval(cdInterval); cdInterval = null;
 
     co.classList.add('show');
     disp.textContent = formatMs(remaining !== undefined ? remaining : limitMs);
     disp.className = 'timer-display';
 
     const serverNow = getServerTime();
-    const serverElapsed = cdStartAt ? Math.max(0, serverNow - cdStartAt) : 0;
+    const serverElapsed = Math.max(0, serverNow - cdStartAt);
     const cdBaseRemaining = Math.max(0, 5000 - serverElapsed);
     const cdLocalStart = Date.now();
 
-    // 即座に正しい数字を表示（tick待ちで遅れないよう）
     const showNum = (n) => {
       const numEl = document.getElementById('countdown-num');
       if(!numEl) return;
@@ -1537,26 +1537,18 @@ function updateTimerDisplay() {
     };
 
     // 開始時点の数字を即表示
-    const initMsLeft = cdBaseRemaining;
-    const initLeft = Math.min(5, Math.floor(initMsLeft / 1000) + 1);
+    const initLeft = Math.min(5, Math.floor(cdBaseRemaining / 1000) + 1);
     showNum(initLeft);
     let lastShown = initLeft;
 
-    const tick = () => {
-      const localElapsed = Date.now() - cdLocalStart;
-      const msLeft = Math.max(0, cdBaseRemaining - localElapsed);
+    cdInterval = setInterval(() => {
+      const msLeft = Math.max(0, cdBaseRemaining - (Date.now() - cdLocalStart));
       if(msLeft <= 0) { clearInterval(cdInterval); cdInterval = null; return; }
       const left = Math.min(5, Math.floor(msLeft / 1000) + 1);
-      if(left !== lastShown) {
-        lastShown = left;
-        showNum(left);
-      }
-    };
-    cdInterval = setInterval(tick, 50);
+      if(left !== lastShown) { lastShown = left; showNum(left); }
+    }, 50);
 
   } else if(state === 'running') {
-    // startAt が null = 楽観的更新 → 無視
-    if(!startAt) return;
     if(prevState === 'countdown') {
       showGoAndHide(co);
     } else {
@@ -1564,9 +1556,7 @@ function updateTimerDisplay() {
     }
 
     const tick = () => {
-      if(!startAt || remaining === undefined) return;
-      // getServerTime() = Date.now() + serverTimeOffset でサーバー時刻と同軸で比較
-      const elapsed = getServerTime() - startAt;
+      const elapsed = Math.max(0, getServerTime() - startAt); // 負にしない（6秒問題を防止）
       const left = Math.max(0, remaining - elapsed);
       disp.textContent = formatMs(left);
       if(left <= 30000) disp.className = 'timer-display danger';
