@@ -846,6 +846,9 @@ function renderPlayers() {
   const sorted = sortPlayers(pl, r);
   
   document.getElementById('timer-panel').classList.toggle('visible', r === 'time_race');
+  // time_race時はタイマーパネルが表示されるが◯×パネルも必ず表示する
+  const myPanel = document.getElementById('mypanel');
+  if(myPanel) myPanel.style.display = '';
   
   const isHostMe = r === 'board_quiz' && roomData.board_host === myId;
   const boardPhase = roomData.board_phase || 'input';
@@ -1404,12 +1407,9 @@ function _playTimerFinishEffect() {
   if(_timerFinishPlayed) return;
   _timerFinishPlayed = true;
 
-  // --- 点滅アニメーション ---
-  const panel = document.getElementById('timer-panel');
-  if(panel) {
-    panel.classList.add('timer-finish-flash');
-    setTimeout(() => panel.classList.remove('timer-finish-flash'), 3000);
-  }
+  // --- 点滅アニメーション（画面全体）---
+  document.body.classList.add('timer-finish-flash');
+  setTimeout(() => document.body.classList.remove('timer-finish-flash'), 3000);
 
   // --- Web Audio API でビープ音 ---
   try {
@@ -1511,15 +1511,18 @@ function updateTimerDisplay() {
     disp.textContent = formatMs(remaining !== undefined ? remaining : limitMs);
     disp.className = 'timer-display';
 
-    const cdReceivedAt = Date.now();
-    const serverElapsedAtReceive = cdStartAt ? Math.max(0, getServerTime() - cdStartAt) : 0;
-    const localCdBase = cdReceivedAt - serverElapsedAtReceive;
+    // cdStartAt はサーバータイムスタンプ。受信時点のサーバー時刻との差で補正
+    const serverNow = getServerTime();
+    const serverElapsed = cdStartAt ? Math.max(0, serverNow - cdStartAt) : 0;
+    // カウントダウン残り = 5000ms - サーバー側での経過時間
+    const cdBaseRemaining = Math.max(0, 5000 - serverElapsed);
+    const cdLocalStart = Date.now();
 
     let lastShown = -1;
     const tick = () => {
-      const elapsed = Date.now() - localCdBase;
-      let left = Math.ceil((5000 - elapsed) / 1000);
-      if(left > 5) left = 5;
+      const localElapsed = Date.now() - cdLocalStart;
+      const msLeft = Math.max(0, cdBaseRemaining - localElapsed);
+      const left = Math.ceil(msLeft / 1000);
       if(left <= 0) {
         clearInterval(cdInterval); cdInterval = null;
         return;
@@ -1545,6 +1548,7 @@ function updateTimerDisplay() {
 
     const tick = () => {
       if(!startAt || remaining === undefined) return;
+      // startAt はサーバータイムスタンプ（ServerValue.TIMESTAMP で書いた値）
       const elapsed = getServerTime() - startAt;
       const left = Math.max(0, remaining - elapsed);
       disp.textContent = formatMs(left);
@@ -1556,7 +1560,7 @@ function updateTimerDisplay() {
         db.ref(`rooms/${rId}/timer/state`).transaction(cur => {
           if(cur === 'running') return 'finished';
           return undefined;
-        }).then(res => { if(res && res.committed) finishTimeRace(); });
+        }).then(res => { if(res && res.committed) onTimerFinished(); });
       }
     };
     tick();
@@ -1609,11 +1613,9 @@ async function timerAction(action) {
       if(snap.val() === 'countdown') {
         const remSnap = await db.ref(`rooms/${rId}/timer/remaining`).once('value');
         const rem = remSnap.val() !== null ? remSnap.val() : currentRemaining;
-        // startAt はサーバー時刻に合わせたローカル補正値で設定（DB書き込みラグを排除）
-        const startAtServer = getServerTime();
         await db.ref(`rooms/${rId}/timer`).update({
           state: 'running',
-          startAt: startAtServer,
+          startAt: firebase.database.ServerValue.TIMESTAMP,
           remaining: rem
         });
       }
@@ -1638,6 +1640,26 @@ async function timerAction(action) {
     const lm = (conf2.limit || 300) * 1000;
     await db.ref(`rooms/${rId}/timer`).set({ state: 'idle', limitMs: lm, remaining: lm, startAt: null, cdStartAt: null });
   }
+}
+
+// タイマー時間切れ時の処理（リザルト画面には遷移しない）
+function onTimerFinished() {
+  // 演出は updateTimerDisplay の finished ブランチが担当
+  // スコアによる勝敗フラグだけ立てる（画面遷移なし）
+  _applyTimeRaceResults();
+}
+
+async function _applyTimeRaceResults() {
+  if(!roomData || !roomData.players) return;
+  const pData = JSON.parse(JSON.stringify(roomData.players));
+  const actives = Object.values(pData).filter(p => p.st === 'active');
+  if(actives.length === 0) return;
+  const maxSc = Math.max(...actives.map(p => p.sc || 0));
+  Object.keys(pData).forEach(k => {
+    if(pData[k].st === 'active') pData[k].st = (pData[k].sc || 0) >= maxSc ? 'win' : 'lose';
+  });
+  await db.ref(`rooms/${rId}/players`).update(pData);
+  // status は 'finished' にしない → リザルト画面に自動遷移しない
 }
 
 async function finishTimeRace() {
