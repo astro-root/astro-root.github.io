@@ -31,7 +31,7 @@ const DEF_CONF = {
   divide: {init:10, add:10, win:100}, combo: {win:10, lose:3},
   attack_surv: {life:20, dmg_to_oth:1, heal:0, dmg_to_me:2, surv:1},
   lucky: {win:50, lose:-20, max:10}, spiral: {up:1, down:1, top_req:3, btm_req:3},
-  time_race: {limit:5, correct_pt:1, wrong_pt:1},
+  time_race: {limit:300, correct_pt:1, wrong_pt:1},
   board_quiz: {m:10, n:3, x:1, y:10, z:5, a:15}
 };
 
@@ -708,7 +708,7 @@ function changeRuleUI(skipRender=false) {
   else if(r==='attack_surv') h = `<div class="s-grid">${mkn('life','初期ライフ',c.life)}${mkn('dmg_to_oth','自正解時他減',c.dmg_to_oth)}${mkn('heal','自正解時自加',c.heal)}${mkn('dmg_to_me','自誤時自減',c.dmg_to_me)}</div><div class="field">${mkn('surv','終了人数',c.surv)}</div>`;
   else if(r==='lucky') h = `<div class="s-grid">${mkn('win','勝ち抜け',c.win)}${mkn('lose','失格',c.lose)}</div><div class="field">${mkn('max','乱数最大',c.max)}</div>`;
   else if(r==='spiral') h = `<div class="s-grid">${mkn('up','正解上昇',c.up)}${mkn('down','誤答下降',c.down)}${mkn('top_req','最上位要正解',c.top_req)}${mkn('btm_req','最下位要誤答',c.btm_req)}</div>`;
-  else if(r==='time_race') h = `<div class="s-grid">${mkn('limit','制限時間(分)',c.limit)}${mkn('correct_pt','正解 +pt',c.correct_pt)}${mkn('wrong_pt','誤答 -pt',c.wrong_pt)}</div>`;
+  else if(r==='time_race') h = `<div class="s-grid">${mkn('limit','制限時間(秒)',c.limit)}${mkn('correct_pt','正解 +pt',c.correct_pt)}${mkn('wrong_pt','誤答 -pt',c.wrong_pt)}</div>`;
   else if(r==='board_quiz') h = `
     <div class="s-grid">${mkn('m','正解 +pt',c.m)}${mkn('n','誤答 -pt',c.n)}</div>
     <div class="s-grid">${mkn('x','少数正解閾値(人以下)',c.x)}${mkn('y','少数ボーナス +pt',c.y)}</div>
@@ -743,7 +743,7 @@ function changeRuleUI(skipRender=false) {
     }
 
     if(r === 'time_race') {
-      const lm = (DEF_CONF.time_race.limit) * 60 * 1000;
+      const lm = (DEF_CONF.time_race.limit) * 1000;
       db.ref(`rooms/${rId}/timer`).set({state:'idle', limitMs:lm, remaining:lm, startAt:null, cdStartAt:null});
     }
     if(r === 'board_quiz') {
@@ -761,7 +761,7 @@ function updateConf() {
   if(Object.keys(nc).length > 0) {
     db.ref(`rooms/${rId}/conf`).update(nc);
     if(roomData.rule === 'time_race' && nc.limit !== undefined) {
-      const limitMs = nc.limit * 60 * 1000;
+      const limitMs = nc.limit * 1000;
       db.ref(`rooms/${rId}/timer`).transaction(cur => {
         if(!cur) return cur;
         if(cur.limitMs !== limitMs) {
@@ -1231,7 +1231,7 @@ async function resetPoints() {
   });
   await db.ref(`rooms/${rId}/players`).set(pData);
   if(roomData.rule === 'time_race') {
-    const lm = (c.limit||5) * 60 * 1000;
+    const lm = (c.limit||300) * 1000;
     await db.ref(`rooms/${rId}/timer`).set({state:'idle', limitMs:lm, remaining:lm, startAt:null, cdStartAt:null});
   }
   closeModal(); toast('リセットしました');
@@ -1373,6 +1373,48 @@ let timerRef = null;
 let timerCb = null;
 let cdInterval = null;
 let cdStartTimeout = null;
+let _timerFinishPlayed = false; // 時間切れ演出の重複防止
+
+// ===== 時間切れ演出：点滅 + 音 =====
+function _playTimerFinishEffect() {
+  if(_timerFinishPlayed) return;
+  _timerFinishPlayed = true;
+
+  // --- 点滅アニメーション ---
+  const panel = document.getElementById('timer-panel');
+  if(panel) {
+    panel.classList.add('timer-finish-flash');
+    setTimeout(() => panel.classList.remove('timer-finish-flash'), 3000);
+  }
+
+  // --- Web Audio API でビープ音 ---
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // ドン・ドン・ドン・ドーン の4音パターン
+    const beeps = [
+      { t: 0,    freq: 880, dur: 0.12, vol: 0.6 },
+      { t: 0.18, freq: 880, dur: 0.12, vol: 0.6 },
+      { t: 0.36, freq: 880, dur: 0.12, vol: 0.6 },
+      { t: 0.60, freq: 660, dur: 0.55, vol: 0.9 },
+    ];
+    beeps.forEach(({ t, freq, dur, vol }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + t);
+      gain.gain.setValueAtTime(vol, ctx.currentTime + t);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + dur);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + dur + 0.05);
+    });
+    // 1.5秒後にコンテキストを閉じる
+    setTimeout(() => ctx.close().catch(() => {}), 1800);
+  } catch(e) {
+    console.warn('[TimerFinish] 音声再生失敗:', e);
+  }
+}
 
 function initTimerListener() {
   if(timerRef) { timerRef.off('value', timerCb); timerRef = null; }
@@ -1429,6 +1471,11 @@ function updateTimerDisplay() {
   const { state, startAt, remaining, limitMs, cdStartAt } = timerData;
   const prevState = _prevTimerState;
   _prevTimerState = state;
+
+  // 演出フラグ：finishedから別の状態に戻ったらリセット
+  if(prevState === 'finished' && state !== 'finished') {
+    _timerFinishPlayed = false;
+  }
 
   clearInterval(timerInterval); timerInterval = null;
   clearInterval(cdInterval); cdInterval = null;
@@ -1503,6 +1550,7 @@ function updateTimerDisplay() {
     co.classList.remove('show');
     disp.textContent = '00:00';
     disp.className = 'timer-display danger';
+    _playTimerFinishEffect();
   }
 }
 
@@ -1510,7 +1558,7 @@ async function timerAction(action) {
   if(!rId || !db) return;
 
   const conf = (roomData && roomData.conf) ? roomData.conf : DEF_CONF.time_race;
-  const limitMs = (conf.limit || 5) * 60 * 1000;
+  const limitMs = (conf.limit || 300) * 1000;
   const td = timerData || {};
 
   if(action === 'toggle') {
@@ -1559,7 +1607,7 @@ async function timerAction(action) {
     clearInterval(timerInterval); timerInterval = null;
     clearInterval(cdInterval); cdInterval = null;
     const conf2 = (roomData && roomData.conf) ? roomData.conf : DEF_CONF.time_race;
-    const lm = (conf2.limit || 5) * 60 * 1000;
+    const lm = (conf2.limit || 300) * 1000;
     await db.ref(`rooms/${rId}/timer`).set({ state: 'idle', limitMs: lm, remaining: lm, startAt: null, cdStartAt: null });
   }
 }
