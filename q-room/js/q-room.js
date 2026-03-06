@@ -1510,9 +1510,10 @@ function updateTimerDisplay() {
   setTimerBtn(state);
 
   if(state === 'countdown') {
-    // Firebase の on('value') は書き込み時に楽観的更新+サーバー確認で2回発火する。
-    // _lastCdStartAt で前回と同じ cdStartAt なら再初期化せずスキップ。
-    if(cdStartAt && cdStartAt === _lastCdStartAt) return;
+    // cdStartAt が null = Firebase の楽観的更新（サーバータイムスタンプ未解決）→ 無視
+    if(!cdStartAt) return;
+    // 同じ cdStartAt での再発火もスキップ
+    if(cdStartAt === _lastCdStartAt) return;
     _lastCdStartAt = cdStartAt;
     clearInterval(cdInterval); cdInterval = null;
 
@@ -1545,6 +1546,8 @@ function updateTimerDisplay() {
     cdInterval = setInterval(tick, 50);
 
   } else if(state === 'running') {
+    // startAt が null = 楽観的更新 → 無視
+    if(!startAt) return;
     if(prevState === 'countdown') {
       showGoAndHide(co);
     } else {
