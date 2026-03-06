@@ -1211,7 +1211,17 @@ async function sendAction(type) {
   if (me.c !== prevParsed.c || me.w !== prevParsed.w) me.statsAt = Date.now();
   if (me.st === 'win' && prevParsed.st !== 'win') me.winAt = Date.now();
 
-  await db.ref(`rooms/${rId}/players`).update(pData);
+  // 自分のデータだけ書く（全員分書くより大幅に速い）
+  await db.ref(`rooms/${rId}/players/${myId}`).update(me);
+
+  // 他プレイヤーのデータも変わるルールは追加書き込み
+  if(r === 'attack_surv' || (r === 'rentou' && type === 'correct' && (c.mode === 'const'))) {
+    const otherUpdates = {};
+    Object.entries(pData).forEach(([id, p]) => { if(id !== myId) otherUpdates[id] = p; });
+    if(Object.keys(otherUpdates).length > 0) {
+      await db.ref(`rooms/${rId}/players`).update(otherUpdates);
+    }
+  }
   
   if(currentUser && (type === 'correct' || type === 'wrong')) {
     updateAccountStats(type, me.st === 'win' && JSON.parse(mePrev).st !== 'win');
@@ -1402,6 +1412,7 @@ let cdInterval = null;
 let cdStartTimeout = null;
 let _timerFinishPlayed = false;
 let _lastCdStartAt = null;
+let _lastStartAt = null;
 
 // ===== 時間切れ演出：点滅 + 音 =====
 function _playTimerFinishEffect() {
@@ -1497,10 +1508,13 @@ function updateTimerDisplay() {
 
   // ── ガード（ここより前は _prevTimerState も interval も触らない）──
   if(state === 'countdown') {
-    if(!cdStartAt) return;                      // 楽観的更新（タイムスタンプ未解決）→ 無視
-    if(cdStartAt === _lastCdStartAt) return;    // 同じ cdStartAt の再発火 → 無視
+    if(!cdStartAt) return;
+    if(cdStartAt === _lastCdStartAt) return;
   }
-  if(state === 'running' && !startAt) return;   // 楽観的更新（startAt未解決）→ 無視
+  if(state === 'running') {
+    if(!startAt) return;
+    if(startAt === _lastStartAt) return;
+  }
 
   // ── ここから実処理 ──
   const prevState = _prevTimerState;
@@ -1549,6 +1563,7 @@ function updateTimerDisplay() {
     }, 50);
 
   } else if(state === 'running') {
+    _lastStartAt = startAt;
     if(prevState === 'countdown') {
       showGoAndHide(co);
     } else {
@@ -1610,8 +1625,9 @@ async function timerAction(action) {
   if(action === 'start') {
     if(td.state === 'running' || td.state === 'countdown') return;
     const currentRemaining = (td.state === 'paused') ? (td.remaining !== undefined ? td.remaining : limitMs) : limitMs;
+    const cdStartAt = getServerTime();
     await db.ref(`rooms/${rId}/timer`).set({
-      state: 'countdown', cdStartAt: firebase.database.ServerValue.TIMESTAMP,
+      state: 'countdown', cdStartAt,
       remaining: currentRemaining, limitMs: td.limitMs || limitMs, startAt: null
     });
     clearTimeout(cdStartTimeout);
@@ -1620,9 +1636,10 @@ async function timerAction(action) {
       if(snap.val() === 'countdown') {
         const remSnap = await db.ref(`rooms/${rId}/timer/remaining`).once('value');
         const rem = remSnap.val() !== null ? remSnap.val() : currentRemaining;
+        const startAt = getServerTime();
         await db.ref(`rooms/${rId}/timer`).update({
           state: 'running',
-          startAt: firebase.database.ServerValue.TIMESTAMP,
+          startAt,
           remaining: rem
         });
       }
@@ -1644,6 +1661,7 @@ async function timerAction(action) {
     clearInterval(timerInterval); timerInterval = null;
     clearInterval(cdInterval); cdInterval = null;
     _lastCdStartAt = null;
+    _lastStartAt = null;
     const conf2 = (roomData && roomData.conf) ? roomData.conf : DEF_CONF.time_race;
     const lm = (conf2.limit || 300) * 1000;
     await db.ref(`rooms/${rId}/timer`).set({ state: 'idle', limitMs: lm, remaining: lm, startAt: null, cdStartAt: null });
