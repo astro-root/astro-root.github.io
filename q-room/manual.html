@@ -28,7 +28,8 @@
       <li><a href="#chat"><span class="toc-num">05</span>チャット機能</a></li>
       <li><a href="#status"><span class="toc-num">06</span>プレイヤーの状態</a></li>
       <li><a href="#notes"><span class="toc-num">07</span>注意事項</a></li>
-      <li><a href="#faq"><span class="toc-num">08</span>よくある質問</a></li>
+      <li><a href="#account"><span class="toc-num">08</span>アカウント登録（強く推奨）</a></li>
+      <li><a href="#faq"><span class="toc-num">09</span>よくある質問</a></li>
     </ul>
   </nav>
 
@@ -117,8 +118,11 @@
       <div class="caution warn">
         <div class="caution-icon">⏱</div>
         <div>
-          <div class="caution-title">部屋の有効期限</div>
-          <div class="caution-body">全員が退室してから<span class="hl-yellow">5分以上</span>が誰もいない状態が続くと、そのルームIDは自動的にリセットされ使用できなくなります。</div>
+          <div class="caution-title">部屋の自動削除（有効期限）</div>
+          <div class="caution-body">以下のいずれかの条件で部屋が自動削除され、そのルームIDが再利用可能になります。<br>
+            <span class="hl-yellow">① 全員が退室してから5分以上</span>誰もいない状態が続いた場合<br>
+            <span class="hl-yellow">② 誰かがいても1時間以上</span>操作（スコア更新など）がない状態が続いた場合<br>
+            長時間放置する場合はご注意ください。</div>
         </div>
       </div>
     </div>
@@ -507,11 +511,106 @@
           <div class="caution-body">無料プランのデータベースを利用しているため、サービス全体での同時接続数は100までです。極端に多人数での同時利用は動作が不安定になる場合があります。</div>
         </div>
       </div>
+      <div class="caution warn">
+        <div class="caution-icon">⏳</div>
+        <div>
+          <div class="caution-title">長時間放置すると部屋が削除されます</div>
+          <div class="caution-body">部屋に誰もいない状態が<span class="hl-yellow">5分以上</span>続いた場合、または誰かいても<span class="hl-yellow">1時間以上</span>スコア操作などの更新がない場合、部屋は自動的に削除されます。長時間の休憩を挟む場合は、戻ってから操作（◯✕など）を1回行うことで有効期限がリセットされます。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="account">
+    <div class="section-label">08</div>
+    <h2 class="section-title">アカウント登録（強く推奨！）</h2>
+    <div class="section-body">
+      <p>Q-Roomはアカウントなしでも遊べますが、<span class="highlight">アカウントを作ると体験がまるごとグレードアップ</span>します。無料・メールアドレスのみで登録できます。ぜひ作ってみてください。</p>
+    </div>
+
+    <div class="caution info" style="margin-top:24px;">
+      <div class="caution-icon">🌟</div>
+      <div>
+        <div class="caution-title">登録は無料・30秒で完了</div>
+        <div class="caution-body">トップ画面右上の人型アイコン → 「REGISTER」タブから登録できます。必要なのはメールアドレス・ユーザーID・パスワードだけです。</div>
+      </div>
+    </div>
+
+    <div class="chat-features" style="margin-top:28px;">
+      <div class="chat-feat">
+        <div class="chat-feat-icon">👥</div>
+        <div class="chat-feat-title">フレンド機能</div>
+        <div class="chat-feat-desc">ユーザーIDでフレンド申請・承認ができます。フレンドが部屋を作ると通知が届くので、「一緒にやろう！」のやりとりがゼロになります。</div>
+      </div>
+      <div class="chat-feat">
+        <div class="chat-feat-icon">🔔</div>
+        <div class="chat-feat-title">プッシュ通知</div>
+        <div class="chat-feat-desc">フレンドからの招待・フレンド申請をロック画面にも通知します。アプリを開いていなくてもすぐ気づけます。</div>
+      </div>
+      <div class="chat-feat">
+        <div class="chat-feat-icon">📊</div>
+        <div class="chat-feat-title">対戦成績の記録</div>
+        <div class="chat-feat-desc">正解数・誤答数・勝利数・勝率がアカウントに蓄積されます。プレイを重ねるほど自分の成長が見える！</div>
+      </div>
+      <div class="chat-feat">
+        <div class="chat-feat-icon">🎨</div>
+        <div class="chat-feat-title">プロフィールのカスタマイズ</div>
+        <div class="chat-feat-desc">絵文字アイコンや画像アイコン、称号テキストを設定できます。部屋内のプレイヤーカードにリアルタイム反映されます。</div>
+      </div>
+      <div class="chat-feat">
+        <div class="chat-feat-icon">🚀</div>
+        <div class="chat-feat-title">フレンドへの招待</div>
+        <div class="chat-feat-desc">部屋に入った状態でフレンド一覧から「招待」ボタンを押すだけ。面倒なID共有なしに仲間を呼び込めます。</div>
+      </div>
+      <div class="chat-feat">
+        <div class="chat-feat-icon">🏅</div>
+        <div class="chat-feat-title">ユーザーID（固定表示名）</div>
+        <div class="chat-feat-desc">ゲスト参加では毎回名前を入力しますが、アカウントがあれば前回の名前が自動入力。フレンドにも固定IDで覚えてもらえます。</div>
+      </div>
+    </div>
+
+    <div class="steps" style="margin-top:32px;">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">トップ画面の人型アイコンをタップ</div>
+          <div class="step-desc">右上の <span class="highlight">👤 アイコン</span> をタップしてアカウント画面を開きます。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">「REGISTER」タブを選んで情報を入力</div>
+          <div class="step-desc">ユーザーID（半角英数字・_）、メールアドレス、パスワード（英字＋数字＋記号 8文字以上）を入力して登録します。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">確認メールのリンクをクリック</div>
+          <div class="step-desc">登録したメールアドレスに確認メールが届きます。メール内のリンクをクリックして認証を完了させましょう。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">プロフィールを設定してフレンドを探す</div>
+          <div class="step-desc">アカウント画面でアイコン・称号を設定したら、フレンドのユーザーIDを検索して申請しましょう。承認されたらすぐに招待・通知が使えます。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="caution warn" style="margin-top:28px;">
+      <div class="caution-icon">⚠️</div>
+      <div>
+        <div class="caution-title">ゲスト参加との違い</div>
+        <div class="caution-body">アカウントなし（ゲスト）でも部屋の作成・参加・◯✕入力はすべて使えます。ただし成績記録・フレンド・プッシュ通知はアカウント登録が必要です。</div>
+      </div>
     </div>
   </section>
 
   <section class="section" id="faq">
-    <div class="section-label">08</div>
+    <div class="section-label">09</div>
     <h2 class="section-title">よくある質問</h2>
     <div class="faq">
       <div class="faq-item">
@@ -562,6 +661,13 @@
           <span class="faq-arrow">▾</span>
         </div>
         <div class="faq-a">人数制限は設けていませんが、データベース無料プランの同時接続100人というシステム全体の制限があります。また、参加者が増えるほど画面が長くなりスクロール操作が必要になります。現実的には10〜20人程度でのプレイを推奨します。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>部屋が消えてしまいました。なぜですか？</span>
+          <span class="faq-arrow">▾</span>
+        </div>
+        <div class="faq-a">以下の2つの条件のいずれかで部屋は自動削除されます。① 全員が退室してから5分以上誰もいない状態が続いた場合、② 誰かいても1時間以上スコア操作などの更新がない場合です。長時間の休憩を挟む際は戻ってから◯✕などを1回操作すると有効期限がリセットされます。</div>
       </div>
     </div>
   </section>
