@@ -7,11 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- Firebase compat (non-module, global scope) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-const _fbApp = firebase.initializeApp({
+firebase.initializeApp({
   apiKey: "AIzaSyDXI7ciwEFiCo3yPQmFjg0DxZSNptWKkIc",
   authDomain: "q-mark-d19c7.firebaseapp.com",
   databaseURL: "https://q-mark-d19c7-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -20,60 +19,36 @@ const _fbApp = firebase.initializeApp({
   messagingSenderId: "522566486976",
   appId: "1:522566486976:web:82860744ebd31f6d141625"
 });
-const _fbDatabase = firebase.database();
-
-// Wrap to match the modular API shape used elsewhere
-window.fbDb = _fbDatabase;
-window.fbRef  = (db, path) => db.ref(path);
-window.fbSet  = (r, val)   => r.set(val);
-window.fbGet  = (r)        => r.get();
-window.fbOnValue = (r, cb) => { r.on('value', cb); return () => r.off('value', cb); };
-window.fbUpdate  = (r, val) => r.update(val);
-window.fbRemove  = (r)      => r.remove();
-window.firebaseReady = true;
-window.dispatchEvent(new Event('firebaseReady'));
+const fbDB = firebase.database();
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
 :root {
-    --bg-base: #080e1a;
-    --bg-surface: #0f1829;
-    --bg-panel: #111827;
-    --bg-elevated: #1a2540;
-    --border: #1e2d4a;
-    --border-light: #243350;
-    --primary: #6366f1;
-    --primary-hover: #818cf8;
-    --primary-active: #4f46e5;
-    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    --primary-glow: 0 0 20px rgba(99,102,241,0.35);
-    --text-main: #f0f4ff;
-    --text-sub: #8fa3c8;
-    --text-muted: #4a5a7a;
-    --success: #10d9a0;
-    --success-dim: rgba(16,217,160,0.12);
+    --bg-base: #0f172a;
+    --bg-surface: #1e293b;
+    --bg-panel: #1e293b;
+    --border: #334155;
+    --primary: #818cf8;
+    --primary-hover: #a5b4fc;
+    --primary-active: #6366f1;
+    --primary-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --text-main: #f1f5f9;
+    --text-sub: #94a3b8;
+    --text-muted: #64748b;
+    --success: #34d399;
     --danger: #f87171;
-    --danger-dim: rgba(248,113,113,0.12);
     --warning: #fbbf24;
-    --warning-dim: rgba(251,191,36,0.12);
     --info: #38bdf8;
-    --info-dim: rgba(56,189,248,0.12);
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-    --shadow-xl: 0 20px 60px rgba(0,0,0,0.6);
-    --radius-xs: 4px;
-    --radius-sm: 8px;
-    --radius: 10px;
-    --radius-lg: 14px;
-    --radius-xl: 20px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4);
+    --radius-sm: 6px;
+    --radius: 8px;
+    --radius-lg: 12px;
 }
-
-*, *::before, *::after { box-sizing: border-box; }
-
 body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: var(--bg-base);
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-base);
     color: var(--text-main);
     margin: 0;
     height: 100vh;
@@ -81,874 +56,378 @@ body {
     flex-direction: column;
     overflow: hidden;
     user-select: none;
-    -webkit-font-smoothing: antialiased;
 }
-
-/* ===== HEADER ===== */
 header {
-    background: var(--bg-surface);
-    height: 52px;
-    padding: 0 14px;
+    background-color: var(--bg-surface);
+    height: 56px;
+    padding: 0 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border);
     z-index: 50;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
     flex-shrink: 0;
     gap: 8px;
-    position: relative;
 }
-header::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.3), transparent);
-}
-
 .logo {
-    font-weight: 900;
-    font-size: 1.2rem;
+    font-weight: 800;
+    font-size: 1.3rem;
     color: var(--text-main);
     display: flex;
     align-items: center;
-    gap: 2px;
-    letter-spacing: -1px;
+    gap: 6px;
+    letter-spacing: -0.5px;
     flex-shrink: 0;
     cursor: pointer;
-    transition: opacity 0.2s;
 }
-.logo:hover { opacity: 0.75; }
+.logo:hover { opacity: 0.8; }
 .logo span {
     background: var(--primary-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
-
-.toolbar { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
-.divider { width: 1px; height: 20px; background: var(--border-light); margin: 0 3px; flex-shrink: 0; }
-
-/* ===== BUTTONS ===== */
+.toolbar { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.divider { width: 1px; height: 22px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
 .btn {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border-light);
+    background: var(--bg-base);
+    border: 1px solid var(--border);
     color: var(--text-sub);
-    padding: 0 10px;
-    height: 32px;
+    padding: 0 11px;
+    height: 34px;
     border-radius: var(--radius-sm);
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 5px;
-    transition: all 0.15s;
+    transition: all 0.2s;
     white-space: nowrap;
     flex-shrink: 0;
     line-height: 1;
-    letter-spacing: 0.1px;
 }
-.btn:hover:not(:disabled) {
-    background: rgba(255,255,255,0.09);
-    color: var(--text-main);
-    border-color: rgba(255,255,255,0.15);
-    transform: translateY(-1px);
-}
-.btn:active:not(:disabled) { transform: translateY(0); }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
+.btn:hover:not(:disabled) { background: #334155; color: var(--text-main); border-color: #475569; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary {
     background: var(--primary-gradient);
     color: white;
     border: none;
-    box-shadow: 0 2px 8px rgba(99,102,241,0.4);
-    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
 }
-.btn-primary:hover:not(:disabled) {
-    box-shadow: 0 4px 16px rgba(99,102,241,0.5);
-    opacity: 0.92;
-    transform: translateY(-1px);
-}
-.btn-danger {
-    background: var(--danger-dim);
-    border-color: rgba(248,113,113,0.35);
-    color: var(--danger);
-}
-.btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.22); border-color: var(--danger); }
-.btn-success {
-    background: var(--success-dim);
-    border-color: rgba(16,217,160,0.35);
-    color: var(--success);
-}
-.btn-success:hover:not(:disabled) { background: rgba(16,217,160,0.22); border-color: var(--success); }
-
-/* ===== TOOL BUTTONS (special) ===== */
-.tool-btn {
-    height: 34px;
-    padding: 0 12px;
-    border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    font-weight: 700;
-    border: 1.5px solid var(--border-light);
-    background: rgba(255,255,255,0.03);
-    color: var(--text-sub);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-}
-.tool-btn:hover:not(:disabled) {
-    background: rgba(255,255,255,0.08);
-    color: var(--text-main);
-    transform: translateY(-1px);
-}
-.tool-btn.active {
-    color: white;
-    border-color: transparent;
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-}
-.tool-btn-o.active  { background: linear-gradient(135deg, #059669, #10d9a0); box-shadow: 0 4px 12px rgba(16,217,160,0.4); }
-.tool-btn-x.active  { background: linear-gradient(135deg, #dc2626, #f87171); box-shadow: 0 4px 12px rgba(248,113,113,0.4); }
-.tool-btn-tri.active { background: linear-gradient(135deg, #d97706, #fbbf24); box-shadow: 0 4px 12px rgba(251,191,36,0.4); }
-.tool-btn-text.active { background: var(--primary-gradient); box-shadow: 0 4px 12px rgba(99,102,241,0.4); }
-.tool-icon { font-size: 1rem; line-height: 1; }
-
-.btn.active {
-    background: rgba(99,102,241,0.15);
-    border-color: rgba(99,102,241,0.5);
-    color: var(--primary-hover);
-}
-
-/* ===== SCORE DISPLAY ===== */
-.score-display {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(99,102,241,0.08);
-    border: 1px solid rgba(99,102,241,0.2);
-    border-radius: var(--radius-sm);
-    padding: 0 12px;
-    height: 32px;
-    flex-shrink: 0;
-}
-.score-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
-.score-value { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--primary-hover); line-height: 1; }
-
-/* ===== CONTROL GROUP ===== */
+.btn-primary:hover:not(:disabled) { box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4); opacity: 0.95; }
+.btn-danger { background: rgba(248,113,113,0.1); border-color: var(--danger); color: var(--danger); }
+.btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.2); }
+.btn-success { background: rgba(52,211,153,0.1); border-color: var(--success); color: var(--success); }
+.btn-success:hover:not(:disabled) { background: rgba(52,211,153,0.2); }
+.btn.active { background: rgba(99, 102, 241, 0.15); border-color: var(--primary); color: var(--primary-hover); }
 .control-group {
     display: flex;
     align-items: center;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border-light);
+    background: var(--bg-base);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 0 6px;
-    height: 32px;
+    padding: 0 4px;
+    height: 34px;
     flex-shrink: 0;
-    gap: 2px;
 }
-.control-label { font-size: 0.68rem; color: var(--text-muted); padding: 0 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-input[type="range"] { width: 68px; margin: 0 2px; accent-color: var(--primary); cursor: pointer; }
-
-/* ===== ZOOM GROUP ===== */
-.zoom-group { display: flex; align-items: center; gap: 0; }
-.zoom-btn {
-    width: 26px; height: 26px; border: none;
-    background: transparent; color: var(--text-sub);
-    cursor: pointer; font-size: 0.95rem; border-radius: var(--radius-xs);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-}
+.control-label { font-size: 0.72rem; color: var(--text-muted); padding: 0 5px; font-weight: 600; }
+input[type="range"] { width: 70px; margin: 0 4px; accent-color: var(--primary); cursor: pointer; }
+.zoom-group { display: flex; align-items: center; }
+.zoom-btn { width: 28px; height: 28px; border: none; background: transparent; color: var(--text-sub); cursor: pointer; font-size: 1rem; border-radius: 4px; }
 .zoom-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-.zoom-val {
-    width: 46px; text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; font-weight: 700;
-    color: var(--text-main);
-}
-
-/* ===== WORKSPACE ===== */
+.zoom-val { width: 48px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
 .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
 .pane { display: flex; flex-direction: column; position: relative; background: var(--bg-panel); min-width: 200px; }
-
 .resizer {
-    width: 6px;
-    background: var(--bg-base);
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    cursor: col-resize;
-    z-index: 100;
-    transition: background 0.2s, width 0.2s;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
+    width: 8px; background: var(--bg-base); border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+    cursor: col-resize; z-index: 100; transition: background 0.2s; display: flex; align-items: center; justify-content: center;
 }
-.resizer::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    width: 2px; height: 32px;
-    background: var(--border-light);
-    border-radius: 2px;
-    transition: background 0.2s;
-}
-.resizer:hover, .resizer.resizing {
-    background: rgba(99,102,241,0.15);
-    border-color: rgba(99,102,241,0.4);
-    width: 8px;
-}
-.resizer:hover::before, .resizer.resizing::before { background: var(--primary); }
-
-/* ===== PANE HEADER ===== */
+.resizer:hover, .resizer.resizing { background: var(--primary); border-color: var(--primary); }
+.resizer::after { content: ''; height: 20px; width: 2px; background: var(--text-muted); border-radius: 1px; }
+.resizer:hover::after { background: white; }
 .pane-header {
-    height: 44px;
-    padding: 0 14px;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-sub);
+    height: 46px; padding: 0 12px; background: rgba(30, 41, 59, 0.95); border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; font-weight: 600; color: var(--text-sub);
     flex-shrink: 0;
-    letter-spacing: 0.2px;
 }
-
-/* ===== CANVAS ===== */
 .canvas-container {
-    flex: 1; overflow: auto; position: relative;
-    background-color: #050a14;
-    background-image:
-        radial-gradient(circle, rgba(30,45,74,0.6) 1px, transparent 1px);
-    background-size: 22px 22px;
-    display: flex; flex-direction: column;
-    align-items: flex-start;
-    padding: 36px;
-    touch-action: none;
+    flex: 1; overflow: auto; position: relative; background-color: #0b0f19;
+    background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;
+    display: flex; flex-direction: column; align-items: flex-start; padding: 40px; touch-action: none;
 }
-.canvas-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.canvas-container::-webkit-scrollbar { width: 10px; height: 10px; }
 .canvas-container::-webkit-scrollbar-track { background: var(--bg-base); }
-.canvas-container::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 4px; }
-.canvas-container::-webkit-scrollbar-thumb:hover { background: #2a3f63; }
-
-.sheet-wrap {
-    position: relative;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
-    background: white;
-    transform-origin: top center;
-    margin-bottom: 36px;
-    margin-left: auto; margin-right: auto;
-    border-radius: 3px;
-    flex-shrink: 0;
-}
+.canvas-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 5px; }
+.sheet-wrap { position: relative; box-shadow: var(--shadow-xl); background: white; transform-origin: top center; margin-bottom: 40px; margin-left: auto; margin-right: auto; border-radius: 2px; flex-shrink: 0; }
 canvas { display: block; width: 100%; height: auto; }
-
-/* ===== CURSOR GUIDE ===== */
 #cursorGuide {
-    position: absolute; pointer-events: none;
-    width: var(--mark-size, 40px); height: var(--mark-size, 40px);
-    border: 2px solid rgba(255,255,255,0.7);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 100; display: none;
-    transition: width 0.1s, height 0.1s, border-color 0.15s;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+    position: absolute; pointer-events: none; width: var(--mark-size, 40px); height: var(--mark-size, 40px);
+    border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; display: none; transition: width 0.1s, height 0.1s;
 }
-#cursorGuide.snapped { border-color: var(--info); box-shadow: 0 0 0 3px rgba(56,189,248,0.2); }
-
-/* ===== MARKS ===== */
-.mark {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    width: var(--mark-size, 44px); height: var(--mark-size, 44px);
-    display: flex; justify-content: center; align-items: center;
-    font-weight: 800; pointer-events: none; z-index: 10;
-    font-family: 'JetBrains Mono', monospace;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
-}
-.mark-badge {
-    position: absolute; bottom: -9px; right: -9px;
-    background: var(--bg-surface);
-    color: var(--text-main);
-    font-size: 9px; padding: 2px 5px;
-    border-radius: var(--radius-xs);
-    border: 1px solid var(--border-light);
-    font-weight: 800;
-    box-shadow: var(--shadow-sm);
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-}
-.mark-o {
-    border-radius: 50%;
-    border: 3px solid var(--success);
-    color: var(--success);
-    background: rgba(16,217,160,0.12);
-}
+#cursorGuide.snapped { border-color: var(--info); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3); }
+.mark { position: absolute; transform: translate(-50%, -50%); width: var(--mark-size, 44px); height: var(--mark-size, 44px); display: flex; justify-content: center; align-items: center; font-weight: 800; pointer-events: none; z-index: 10; font-family: 'JetBrains Mono', monospace; }
+.mark-badge { position: absolute; bottom: -8px; right: -8px; background: var(--bg-surface); color: var(--text-main); font-size: 10px; padding: 2px 5px; border-radius: 4px; border: 1px solid var(--border); font-weight: 700; box-shadow: var(--shadow-sm); white-space: nowrap; }
+.mark-o { border-radius: 50%; border: 3px solid var(--success); color: var(--success); background: rgba(52, 211, 153, 0.15); }
 .mark-o::after { content: ""; }
 .mark-x { color: var(--danger); }
-.mark-x::before, .mark-x::after {
-    content: '';
-    position: absolute;
-    width: 3px; height: 90%;
-    background: var(--danger);
-    border-radius: 2px;
-}
+.mark-x::before, .mark-x::after { content: ''; position: absolute; width: 3px; height: 100%; background: var(--danger); border-radius: 2px; }
 .mark-x::before { transform: rotate(45deg); }
-.mark-x::after  { transform: rotate(-45deg); }
+.mark-x::after { transform: rotate(-45deg); }
 .mark-tri { color: var(--warning); display: flex; justify-content: center; align-items: center; }
-.mark-tri-shape {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    background: rgba(251,191,36,0.15);
-    border: none;
-}
-.mark-tri-text { position: relative; z-index: 2; font-size: 0.9rem; padding-top: 22%; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
-.mark-text {
-    position: absolute; transform: translateY(-50%);
-    white-space: nowrap; z-index: 11;
-    font-weight: bold;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-    background: rgba(8,14,26,0.75);
-    backdrop-filter: blur(4px);
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    border: 1.5px solid transparent;
-    cursor: grab;
-    transition: border-color 0.15s, background 0.15s;
-}
-.mark-text:hover { background: rgba(8,14,26,0.92); border-color: rgba(255,255,255,0.25); }
-.mark-text.selected { border-color: var(--primary); background: rgba(8,14,26,0.95); }
-.zone {
-    position: absolute;
-    border: 1.5px dashed rgba(251,191,36,0.6);
-    background: rgba(251,191,36,0.06);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    display: flex; justify-content: center; align-items: center;
-    color: var(--warning);
-    font-size: 0.68rem; font-weight: 800;
-    border-radius: var(--radius-xs);
-    letter-spacing: 0.3px;
-}
+.mark-tri-shape { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-left: 3px solid transparent; border-right: 3px solid transparent; border-bottom: 3px solid var(--warning); box-sizing: border-box; transform-origin: center bottom; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: rgba(251, 191, 36, 0.15); }
+.mark-tri-text { position: relative; z-index: 2; font-size: 0.9rem; padding-top: 15%; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+.mark-text { position: absolute; transform: translateY(-50%); white-space: nowrap; z-index: 11; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8); background: rgba(0, 0, 0, 0.6); padding: 4px 10px; border-radius: 4px; border: 2px solid transparent; cursor: grab; }
+.mark-text:hover { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.3); }
+.mark-text.selected { border-color: var(--primary); background: rgba(0,0,0,0.9); }
+.zone { position: absolute; border: 1px dashed var(--warning); background: rgba(245, 158, 11, 0.1); transform: translate(-50%, -50%); pointer-events: none; display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 0.7rem; font-weight: bold; border-radius: 4px; }
 
 /* ===== OVERLAY / START MODAL ===== */
 #overlay {
-    position: fixed; inset: 0;
-    background: rgba(5, 10, 20, 0.92);
-    z-index: 999;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.9); z-index: 999;
     display: flex; justify-content: center; align-items: center;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(8px);
 }
 .modal {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-light);
-    width: min(680px, 95vw);
-    padding: 44px 48px;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(99,102,241,0.08);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    width: 700px; padding: 48px; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl); text-align: center; position: relative; overflow: hidden;
 }
-.modal::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--primary-gradient);
-}
-.modal-logo {
-    font-size: 2.8rem;
-    font-weight: 900;
-    letter-spacing: -2px;
-    margin-bottom: 6px;
-}
-.modal-subtitle {
-    color: var(--text-sub);
-    font-size: 0.88rem;
-    margin: 0 0 32px;
-    line-height: 1.5;
-}
+.modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary-gradient); }
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 40px 0; }
+.upload-box { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px; background: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.upload-box:hover, .upload-box.dragover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+.upload-status.ok { color: var(--success); background: rgba(52, 211, 153, 0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
 
-.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-.upload-box {
-    border: 2px dashed var(--border-light);
-    border-radius: var(--radius-lg);
-    padding: 32px 16px;
-    background: rgba(255,255,255,0.015);
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    position: relative;
-    overflow: hidden;
+/* Overlay auth section */
+.overlay-divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 24px; }
+.overlay-divider::before, .overlay-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.overlay-divider span { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.auth-promo {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08));
+    border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius);
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
-.upload-box::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: var(--primary-gradient);
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.upload-box:hover, .upload-box.dragover {
-    border-color: var(--primary);
-    background: rgba(99,102,241,0.06);
-    transform: translateY(-2px);
-}
-.upload-box:hover::before { opacity: 0.04; }
-.upload-box-icon { font-size: 2.2rem; position: relative; }
-.upload-box-title { font-weight: 700; font-size: 0.95rem; position: relative; color: var(--text-main); }
-.upload-box-hint { font-size: 0.75rem; color: var(--text-muted); position: relative; }
-.upload-status { font-size: 0.78rem; color: var(--text-muted); position: relative; }
-.upload-status.ok {
-    color: var(--success);
-    background: var(--success-dim);
-    border: 1px solid rgba(16,217,160,0.25);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.btn-start {
-    width: 100%;
-    height: 52px;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 800;
-    border-radius: var(--radius);
-    letter-spacing: 0.3px;
-    margin-bottom: 4px;
-}
-
-/* Overlay folder section */
-.overlay-divider {
-    display: flex; align-items: center; gap: 12px;
-    margin: 28px 0 16px;
-}
-.overlay-divider::before, .overlay-divider::after {
-    content: ''; flex: 1; height: 1px;
-    background: var(--border-light);
-}
-.overlay-divider span {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-}
-.folder-open-section { margin-top: 0; }
-
-.shortcut-hint {
-    margin-top: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-.shortcut-hint a, .shortcut-hint span {
-    color: var(--text-muted);
-    font-size: 0.74rem;
-    text-decoration: none;
-    display: flex; align-items: center; gap: 4px;
-}
-.shortcut-hint a:hover { color: var(--text-sub); }
-kbd {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-light);
-    border-radius: 3px;
-    padding: 1px 5px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--text-sub);
-}
+.auth-promo-text { text-align: left; }
+.auth-promo-text strong { display: block; font-size: 0.9rem; color: var(--text-main); margin-bottom: 4px; }
+.auth-promo-text span { font-size: 0.78rem; color: var(--text-muted); }
+.auth-promo-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.folder-open-section { margin-top: 16px; }
 
 /* ===== TOAST ===== */
 #toast {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%) translateY(16px);
-    background: var(--bg-elevated);
-    color: var(--text-main);
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-lg);
-    opacity: 0;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    pointer-events: none;
-    z-index: 2000;
-    white-space: nowrap;
-    display: flex; align-items: center; gap: 8px;
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(40px);
+    background: #0f172a; color: white; padding: 12px 24px; border-radius: 50px;
+    font-weight: 500; font-size: 0.95rem; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); opacity: 0; transition: all 0.3s;
+    pointer-events: none; z-index: 2000;
 }
-#toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ===== LAYOUT BAR ===== */
-#layoutBar {
-    background: rgba(56,189,248,0.06);
-    border-bottom: 1px solid rgba(56,189,248,0.2);
-    padding: 8px 16px;
-    display: none;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.82rem;
-    flex-shrink: 0;
-}
-.input-num {
-    width: 60px; padding: 5px 8px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-light);
-    background: var(--bg-base);
-    color: var(--text-main);
-    text-align: center;
-    font-size: 0.82rem;
-}
-.input-num:focus { outline: none; border-color: var(--primary); }
+#layoutBar { background: var(--bg-surface); padding: 8px 20px; border-bottom: 1px solid var(--border); display: none; align-items: center; gap: 12px; font-size: 0.9rem; }
+.input-num { width: 60px; padding: 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-base); color: white; text-align: center; }
 
 /* ===== TEXT EDITOR ===== */
-#textEditor {
-    position: absolute;
-    background: rgba(15,24,42,0.96);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 8px 10px;
-    display: none;
-    gap: 8px;
-    align-items: center;
-    box-shadow: var(--shadow-lg);
-    z-index: 200;
+#textEditor { position: absolute; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; display: none; gap: 8px; align-items: center; box-shadow: var(--shadow-lg); z-index: 200; }
+
+/* ===== AUTH BADGE (header) ===== */
+.user-badge {
+    display: none; align-items: center; gap: 6px;
+    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 20px; padding: 3px 10px 3px 6px; height: 34px; flex-shrink: 0;
 }
+.user-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--primary-gradient); display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 800; color: white; flex-shrink: 0;
+}
+.user-name { font-size: 0.8rem; font-weight: 700; color: var(--primary-hover); max-width: 80px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.folder-badge {
+    background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3);
+    color: var(--success); border-radius: 6px; padding: 2px 8px;
+    font-size: 0.72rem; font-weight: 700; white-space: nowrap; display: none;
+}
+
+/* ===== GENERIC MODAL OVERLAY ===== */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15,23,42,0.85); z-index: 1000;
+    display: none; justify-content: center; align-items: center;
+    backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
+    position: relative; overflow: hidden;
+    animation: modalIn 0.2s ease;
+}
+.modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--primary-gradient); }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: none; } }
+.modal-header { padding: 24px 28px 0; display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font-size: 1.15rem; font-weight: 800; }
+.modal-close { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+.modal-body { padding: 20px 28px 28px; }
+
+/* ===== AUTH MODAL ===== */
+
+.auth-tabs { display: flex; gap: 4px; background: var(--bg-base); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 24px; }
+.auth-tab { flex: 1; height: 34px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+.auth-tab.active { background: var(--bg-surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
+.form-group { margin-bottom: 16px; text-align: left; }
+.form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
+.form-input {
+    width: 100%; height: 40px; background: var(--bg-base); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.9rem;
+    padding: 0 12px; box-sizing: border-box; outline: none; transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--primary); }
+.form-input::placeholder { color: var(--text-muted); }
+.form-error { color: var(--danger); font-size: 0.78rem; margin-top: 8px; min-height: 18px; }
+.form-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 12px; line-height: 1.5; }
+
+/* ===== FOLDER MODAL ===== */
+#folderModal .modal-box { width: 640px; max-height: 80vh; display: flex; flex-direction: column; }
+#folderModal .modal-body { overflow-y: auto; flex: 1; }
+#folderModal .modal-body::-webkit-scrollbar { width: 6px; }
+#folderModal .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+.folder-create-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+.folder-create-bar .form-input { flex: 1; }
+.folder-list { display: flex; flex-direction: column; gap: 10px; }
+.folder-card {
+    background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+    transition: all 0.15s; cursor: pointer;
+}
+.folder-card:hover { border-color: var(--primary); background: rgba(99,102,241,0.04); }
+.folder-icon { font-size: 1.6rem; flex-shrink: 0; }
+.folder-info { flex: 1; min-width: 0; }
+.folder-name { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; }
+.folder-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 12px; }
+.folder-stat { color: var(--info); font-weight: 600; }
+.folder-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.folder-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.folder-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.folder-empty-text { font-size: 0.9rem; line-height: 1.6; }
+
+/* ===== SAVE TO FOLDER MODAL ===== */
+#saveFolderModal .modal-box { width: 380px; }
+
+/* ===== STATS MODAL ===== */
+#statsModal .modal-box { width: 720px; max-height: 85vh; display: flex; flex-direction: column; }
+#statsModal .modal-body { overflow-y: auto; flex: 1; padding-bottom: 20px; }
+#statsModal .modal-body::-webkit-scrollbar { width: 6px; }
+#statsModal .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+.stats-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+.stat-card-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card-value { font-size: 1.6rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.stat-card-value.mean { color: var(--primary-hover); }
+.stat-card-value.sd { color: var(--info); }
+.stat-card-value.max { color: var(--success); }
+.stat-card-value.min { color: var(--danger); }
+.stats-table-wrap { overflow-x: auto; }
+.stats-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.stats-table th { padding: 10px 12px; background: rgba(99,102,241,0.08); border-bottom: 1px solid var(--border); font-weight: 700; color: var(--text-sub); text-align: left; white-space: nowrap; }
+.stats-table td { padding: 9px 12px; border-bottom: 1px solid rgba(51,65,85,0.5); }
+.stats-table tr:hover td { background: rgba(255,255,255,0.02); }
+.stats-table tr.current-student td { background: rgba(99,102,241,0.08); }
+.rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 22px; border-radius: 4px; font-weight: 800; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; }
+.rank-1 { background: rgba(251,191,36,0.2); color: var(--warning); border: 1px solid rgba(251,191,36,0.4); }
+.rank-2 { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+.rank-3 { background: rgba(180,83,9,0.15); color: #d97706; border: 1px solid rgba(180,83,9,0.3); }
+.rank-other { background: var(--bg-base); color: var(--text-muted); border: 1px solid var(--border); }
+.deviation-bar { display: flex; align-items: center; gap: 8px; }
+.deviation-fill { height: 6px; border-radius: 3px; background: var(--primary-gradient); min-width: 2px; }
+.stats-export-bar { display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); margin-top: 4px; }
+.bar-chart { margin-bottom: 24px; }
+.bar-chart-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.bar-chart-container { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bar-fill { width: 100%; background: var(--primary-gradient); border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.3s; }
+.bar-label { font-size: 0.62rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40px; text-align: center; }
 
 /* ===== SESSION BAR ===== */
 #sessionBar {
     display: none;
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
-    padding: 0 14px;
-    font-size: 0.75rem;
+    padding: 0 16px;
+    font-size: 0.78rem;
     color: var(--text-sub);
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     flex-shrink: 0;
-    height: 30px;
+    height: 32px;
+    box-sizing: border-box;
 }
 #sessionBar.visible { display: flex; }
-#folderIndicator { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
-
-/* ===== MODAL OVERLAY ===== */
-.modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(5,10,20,0.88);
-    z-index: 1000;
-    display: none;
-    justify-content: center; align-items: center;
-    backdrop-filter: blur(8px);
-}
-.modal-overlay.open { display: flex; }
-.modal-box {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
-    position: relative; overflow: hidden;
-    animation: modalIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.modal-box::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--primary-gradient);
-}
-@keyframes modalIn {
-    from { opacity: 0; transform: scale(0.94) translateY(12px); }
-    to   { opacity: 1; transform: none; }
-}
-.modal-header {
-    padding: 22px 26px 0;
-    display: flex; justify-content: space-between; align-items: center;
-}
-.modal-title { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px; }
-.modal-close {
-    width: 30px; height: 30px;
-    border: none; background: rgba(255,255,255,0.05);
-    color: var(--text-muted); cursor: pointer;
-    font-size: 1rem; border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-}
-.modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
-.modal-body { padding: 18px 26px 26px; }
-
-/* ===== FORM INPUTS ===== */
-.form-group { margin-bottom: 14px; text-align: left; }
-.form-label {
-    display: block;
-    font-size: 0.75rem; font-weight: 700;
-    color: var(--text-sub);
-    margin-bottom: 6px;
-    text-transform: uppercase; letter-spacing: 0.5px;
-}
-.form-input {
-    width: 100%; height: 40px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    color: var(--text-main);
-    font-size: 0.88rem;
-    padding: 0 12px;
-    outline: none;
-    transition: border-color 0.15s, background 0.15s;
-    font-family: 'Inter', sans-serif;
-}
-.form-input:focus {
-    border-color: var(--primary);
-    background: rgba(99,102,241,0.06);
-}
-.form-input::placeholder { color: var(--text-muted); }
-select.form-input { padding: 0 12px; cursor: pointer; }
-.form-error { color: var(--danger); font-size: 0.78rem; margin-top: 8px; min-height: 18px; }
-
-/* ===== FOLDER MODAL ===== */
-#folderModal .modal-box { width: min(660px, 95vw); max-height: 82vh; display: flex; flex-direction: column; }
-#folderModal .modal-body { overflow-y: auto; flex: 1; }
-#folderModal .modal-body::-webkit-scrollbar { width: 5px; }
-#folderModal .modal-body::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-.folder-sync-info {
-    background: rgba(56,189,248,0.06);
-    border: 1px solid rgba(56,189,248,0.18);
-    border-radius: var(--radius);
-    padding: 11px 14px;
-    margin-bottom: 16px;
-    font-size: 0.78rem;
-    color: var(--info);
-    line-height: 1.6;
-}
-.folder-create-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-.folder-create-bar .form-input { flex: 1; }
-.folder-list { display: flex; flex-direction: column; gap: 8px; }
-
-.folder-card {
-    background: rgba(255,255,255,0.025);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 13px 15px;
-    display: flex; align-items: center; gap: 13px;
-    transition: all 0.15s; cursor: pointer;
-}
-.folder-card:hover {
-    border-color: rgba(99,102,241,0.4);
-    background: rgba(99,102,241,0.05);
-    transform: translateX(2px);
-}
-.folder-icon { font-size: 1.5rem; flex-shrink: 0; }
-.folder-info { flex: 1; min-width: 0; }
-.folder-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
-.folder-meta { font-size: 0.72rem; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; }
-.folder-stat { color: var(--info); font-weight: 600; }
-.folder-actions { display: flex; gap: 5px; flex-shrink: 0; }
-.folder-empty { text-align: center; padding: 36px 20px; color: var(--text-muted); }
-.folder-empty-icon { font-size: 2.8rem; margin-bottom: 10px; opacity: 0.5; }
-.folder-empty-text { font-size: 0.86rem; line-height: 1.7; }
-.folder-badge {
-    background: var(--success-dim);
-    border: 1px solid rgba(16,217,160,0.3);
-    color: var(--success);
-    border-radius: var(--radius-xs);
-    padding: 1px 7px;
-    font-size: 0.68rem; font-weight: 700;
-    white-space: nowrap;
-    display: none;
-}
-
-/* ===== SAVE FOLDER MODAL ===== */
-#saveFolderModal .modal-box { width: min(400px, 95vw); }
-
-/* ===== STATS MODAL ===== */
-#statsModal .modal-box { width: min(740px, 95vw); max-height: 87vh; display: flex; flex-direction: column; }
-#statsModal .modal-body { overflow-y: auto; flex: 1; padding-bottom: 20px; }
-#statsModal .modal-body::-webkit-scrollbar { width: 5px; }
-#statsModal .modal-body::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-.stats-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-.stat-card {
-    background: rgba(255,255,255,0.025);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 14px; text-align: center;
-    transition: transform 0.15s;
-}
-.stat-card:hover { transform: translateY(-2px); }
-.stat-card-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
-.stat-card-value { font-size: 1.7rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-.stat-card-value.mean { color: var(--primary-hover); }
-.stat-card-value.sd   { color: var(--info); }
-.stat-card-value.max  { color: var(--success); }
-.stat-card-value.min  { color: var(--danger); }
-
-.stats-table-wrap { overflow-x: auto; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
-.stats-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-.stats-table th {
-    padding: 10px 14px;
-    background: rgba(99,102,241,0.08);
-    border-bottom: 1px solid var(--border-light);
-    font-weight: 700; color: var(--text-sub);
-    text-align: left; white-space: nowrap;
-    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.stats-table td { padding: 9px 14px; border-bottom: 1px solid rgba(30,45,74,0.7); }
-.stats-table tr:last-child td { border-bottom: none; }
-.stats-table tr:hover td { background: rgba(255,255,255,0.02); }
-.stats-table tr.current-student td { background: rgba(99,102,241,0.07); }
-
-.rank-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 26px; height: 20px;
-    border-radius: var(--radius-xs);
-    font-weight: 800; font-size: 0.74rem;
-    font-family: 'JetBrains Mono', monospace;
-}
-.rank-1 { background: rgba(251,191,36,0.18); color: var(--warning); border: 1px solid rgba(251,191,36,0.35); }
-.rank-2 { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.25); }
-.rank-3 { background: rgba(180,83,9,0.12); color: #d97706; border: 1px solid rgba(180,83,9,0.25); }
-.rank-other { background: var(--bg-base); color: var(--text-muted); border: 1px solid var(--border); }
-
-.deviation-bar { display: flex; align-items: center; gap: 8px; }
-.deviation-fill { height: 5px; border-radius: 3px; background: var(--primary-gradient); min-width: 2px; transition: width 0.4s; }
-
-.stats-export-bar { display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); margin-top: 4px; }
-
-.bar-chart { margin-bottom: 20px; }
-.bar-chart-title { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.8px; }
-.bar-chart-container { display: flex; align-items: flex-end; gap: 3px; height: 76px; }
-.bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.bar-fill { width: 100%; background: var(--primary-gradient); border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.4s; }
-.bar-label { font-size: 0.58rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40px; text-align: center; }
-
-/* ===== STUDENT NAV ===== */
-.student-nav {
-    display: flex; align-items: center; gap: 6px;
-}
-.nav-btn {
-    width: 28px; height: 28px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border-light);
-    color: var(--text-sub);
-    border-radius: var(--radius-sm);
-    cursor: pointer; font-size: 0.8rem;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s; flex-shrink: 0;
-}
-.nav-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); border-color: rgba(255,255,255,0.15); }
-.student-info { text-align: center; min-width: 100px; max-width: 160px; }
-.student-name { font-weight: 700; font-size: 0.82rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-main); }
-.student-count { font-size: 0.68rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-
-/* ===== NEXT Q BADGE ===== */
-.next-q-badge {
-    display: flex; align-items: center; gap: 5px;
-    background: rgba(99,102,241,0.1);
-    border: 1px solid rgba(99,102,241,0.25);
-    border-radius: var(--radius-sm);
-    padding: 0 9px; height: 28px;
-    font-size: 0.75rem; color: var(--text-sub);
-    flex-shrink: 0;
-}
-.next-q-num {
-    color: var(--primary-hover);
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 800; font-size: 0.9rem;
-}
-
-/* ===== SYNC INDICATOR ===== */
-.sync-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--success);
-    box-shadow: 0 0 6px var(--success);
-    flex-shrink: 0;
-    animation: syncPulse 2s infinite;
-}
-@keyframes syncPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
+#sessionBar .folder-row { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; color: var(--success); }
+#sessionBar .folder-row.hidden { display: none; }
+/* Keep old ID working too */
+#folderIndicator { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
 </style>
 </head>
 <body>
 
 <div id="overlay">
 <div class="modal">
-  <div class="modal-logo">
-    <span style="background:var(--primary-gradient);-webkit-background-clip:text;background-clip:text;color:transparent;">Q</span>-Mark
+  <div class="logo" style="justify-content:center; font-size:2.5rem; margin-bottom:8px;">
+    <span>Q</span>-Mark
   </div>
-  <p class="modal-subtitle">模範解答と生徒答案（画像 / PDF）をアップロードして採点を開始</p>
+  <p style="color: var(--text-sub); margin-bottom: 0; font-size:0.9rem;">模範解答と生徒答案（画像/PDF）をアップロードしてください</p>
 
   <div class="upload-grid">
     <div class="upload-box" id="dropKey">
-      <div class="upload-box-icon">🔑</div>
-      <div class="upload-box-title">模範解答</div>
-      <div class="upload-box-hint">画像 / PDF</div>
-      <div class="upload-status" id="statKey">クリックまたはドロップ</div>
+      <div style="font-size:2.5rem;">🔑</div>
+      <div style="font-weight:700;">模範解答</div>
+      <div class="upload-status" id="statKey">選択してください</div>
       <input type="file" id="inpKey" style="display:none" accept="image/*,application/pdf">
     </div>
     <div class="upload-box" id="dropStu">
-      <div class="upload-box-icon">📚</div>
-      <div class="upload-box-title">生徒答案</div>
-      <div class="upload-box-hint">複数選択可</div>
-      <div class="upload-status" id="statStu">クリックまたはドロップ</div>
+      <div style="font-size:2.5rem;">📚</div>
+      <div style="font-weight:700;">生徒答案</div>
+      <div class="upload-status" id="statStu">選択してください (複数可)</div>
       <input type="file" id="inpStu" multiple style="display:none" accept="image/*,application/pdf">
     </div>
   </div>
 
-  <button id="btnStart" class="btn btn-primary btn-start" disabled>
-    ✦ 採点スタート
+  <button id="btnStart" class="btn btn-primary" style="width:100%; height:50px; justify-content:center; font-size:1.1rem;" disabled>
+    採点スタート
   </button>
 
-  <div id="overlayFolderSection">
-    <div class="overlay-divider"><span>フォルダから再開</span></div>
-    <div class="folder-open-section">
-      <button class="btn btn-success" style="width:100%; height:42px; justify-content:center; font-size:0.88rem; font-weight:700;" onclick="openFolderModal()">
-        📁 フォルダを開く / 作成
-      </button>
-    </div>
+  <div>
+    <div class="overlay-divider"><span>フォルダ</span></div>
+    <button class="btn btn-success" style="width:100%; height:44px; justify-content:center;" onclick="openFolderModal()">
+      📁 フォルダを開く / 作成
+    </button>
+    <p style="text-align:center; color:var(--text-muted); font-size:0.75rem; margin-top:10px;">
+      ☁️ 採点マークはFirebaseでデバイス間同期。フォルダURLを共有するだけで誰でも編集可能。
+    </p>
   </div>
 
-  <div class="shortcut-hint">
-    <a href="https://astro-root.github.io/quiz.pointshow/Q-Mark-how-to-use.html" target="_blank">📖 使い方ガイド</a>
-    <span style="color:var(--border-light);">|</span>
-    <span><kbd>Z</kbd>正解 <kbd>X</kbd>不正解 <kbd>C</kbd>部分点 <kbd>T</kbd>文字 <kbd>←→</kbd>切替</span>
+  <div style="margin-top:20px; display:flex; justify-content:center; gap:16px;">
+    <a href="https://astro-root.github.io/quiz.pointshow/Q-Mark-how-to-use.html" target="_blank" style="color:var(--text-muted); font-size:0.78rem; text-decoration:none;">📖 使い方ガイド</a>
+    <span style="color:var(--border);">|</span>
+    <span style="color:var(--text-muted); font-size:0.78rem;">ショートカット: Z/1=正解　X/2=不正解　C/3=部分点　T=文字　←→=生徒切替</span>
   </div>
 </div>
 </div>
 
 <header>
-  <div class="logo" onclick="backToTop()" title="トップに戻る">
-    <span>Q</span>-Mark
-  </div>
+  <div class="logo" onclick="backToTop()" title="トップに戻る"><span>Q</span>-Mark</div>
   <div class="toolbar">
-    <button class="tool-btn tool-btn-o active" id="toolO" onclick="setTool('o')">
-      <span class="tool-icon">○</span> 正解
-    </button>
-    <button class="tool-btn tool-btn-x" id="toolX" onclick="setTool('x')">
-      <span class="tool-icon">✕</span> 不正解
-    </button>
-    <button class="tool-btn tool-btn-tri" id="toolTri" onclick="setTool('tri')">
-      <span class="tool-icon">△</span> 部分点
-    </button>
-    <button class="tool-btn tool-btn-text" id="toolText" onclick="setTool('text')">
-      <span class="tool-icon" style="font-family:'JetBrains Mono'">T</span> 文字
-    </button>
+    <button class="btn active" id="toolO" onclick="setTool('o')"><span style="color:var(--success)">○</span> 正解</button>
+    <button class="btn" id="toolX" onclick="setTool('x')"><span style="color:var(--danger)">×</span> 不正解</button>
+    <button class="btn" id="toolTri" onclick="setTool('tri')"><span style="color:var(--warning)">△</span> 部分点</button>
+    <button class="btn" id="toolText" onclick="setTool('text')">T 文字</button>
     <div class="divider"></div>
     <div class="control-group">
       <span class="control-label">Size</span>
@@ -957,36 +436,35 @@ select.form-input { padding: 0 12px; cursor: pointer; }
     <button class="btn" onclick="toggleLayoutMode()" title="問題番号グリッド設定">📐 Grid</button>
   </div>
   <div class="toolbar">
-    <div class="score-display">
-      <span class="score-label">Score</span>
-      <span class="score-value" id="scoreDisplay">0</span>
+    <div style="font-family:'JetBrains Mono'; font-weight:700; display:flex; align-items:baseline; gap:4px; margin-right:8px;">
+      <span style="font-size:0.72rem; color:var(--text-muted);">SCORE</span>
+      <span id="scoreDisplay" style="font-size:1.5rem; color:var(--primary-hover);">0</span>
     </div>
-    <div class="divider"></div>
     <button id="folderBtn" class="btn btn-success" onclick="openFolderModal()">📁 フォルダ</button>
-    <button id="saveFolderHeaderBtn" class="btn" onclick="openSaveFolderModal()" title="フォルダに保存">💾 保存</button>
+    <button id="saveFolderHeaderBtn" class="btn" onclick="openSaveFolderModal()" title="現在の採点セッションをフォルダに保存">💾 保存</button>
     <button id="statBtn" class="btn" onclick="openStatsModal()" title="統計を表示">📊 統計</button>
     <button class="btn" onclick="undo()" title="Ctrl+Z">↩ 戻る</button>
     <div class="divider"></div>
-    <button class="btn btn-primary" onclick="downloadPDF()">↓ PDF</button>
-    <button class="btn" onclick="downloadCSV()">↓ CSV</button>
+    <button class="btn btn-primary" onclick="downloadPDF()">PDF</button>
+    <button class="btn" onclick="downloadCSV()">CSV</button>
+    <div class="divider"></div>
   </div>
 </header>
 
 <div id="sessionBar">
   <div id="folderIndicator" style="display:none; align-items:center; gap:8px; flex:1; min-width:0; color:var(--success);">
-    <div class="sync-dot"></div>
     <span>📁</span>
-    <span id="folderIndicatorName" style="font-weight:700; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:200px; color:var(--text-main);">フォルダ名</span>
-    <span style="color:var(--text-muted); flex-shrink:0; font-size:0.7rem;">に同期中</span>
-    <button class="btn btn-success" style="height:20px; padding:0 8px; font-size:0.68rem; flex-shrink:0;" onclick="quickSaveFolder()">💾 上書き</button>
-    <button class="btn" style="height:20px; padding:0 8px; font-size:0.68rem; flex-shrink:0;" onclick="openSaveFolderModal()">別名</button>
+    <span id="folderIndicatorName" style="font-weight:700; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:200px;">フォルダ名</span>
+    <span style="color:var(--text-muted); flex-shrink:0; font-size:0.72rem;">に保存済み</span>
+    <button class="btn btn-success" style="height:22px; padding:0 8px; font-size:0.7rem; flex-shrink:0;" onclick="quickSaveFolder()">💾 上書き保存</button>
+    <button class="btn" style="height:22px; padding:0 8px; font-size:0.7rem; flex-shrink:0;" onclick="openSaveFolderModal()">別名で保存</button>
   </div>
   <div id="noFolderRow" style="display:flex; align-items:center; gap:6px; flex:1; color:var(--text-muted); font-size:0.72rem;">
     <span id="sessionFileInfo"></span>
   </div>
-  <div style="color:var(--text-muted); font-size:0.7rem; font-family:'JetBrains Mono'; flex-shrink:0; display:flex; align-items:center; gap:6px;">
-    <span id="urlHashDisplay" style="color:var(--primary); opacity:0.7;"></span>
-    <button class="btn" style="height:20px; padding:0 8px; font-size:0.68rem;" onclick="copyCurrentUrl()" title="URLをコピー">🔗</button>
+  <div style="color:var(--text-muted); font-size:0.72rem; font-family:'JetBrains Mono'; flex-shrink:0; display:flex; align-items:center; gap:6px;">
+    <span id="urlHashDisplay" style="color:var(--primary); opacity:0.8;"></span>
+    <button class="btn" style="height:22px; padding:0 8px; font-size:0.7rem;" onclick="copyCurrentUrl()" title="URLをコピー">🔗 URLコピー</button>
   </div>
 </div>
 
@@ -1011,14 +489,11 @@ select.form-input { padding: 0 12px; cursor: pointer; }
 <div class="workspace" id="workspace">
   <div class="pane" id="paneLeft" style="width: 40%;">
     <div class="pane-header">
-      <span style="display:flex;align-items:center;gap:6px;">
-        <span style="opacity:0.6;">🔑</span>
-        <span style="color:var(--text-sub);">模範解答</span>
-      </span>
+      <span>🔑 模範解答</span>
       <div class="zoom-group">
-        <button class="zoom-btn" onclick="addZoom('left', -10)">−</button>
+        <button class="zoom-btn" onclick="addZoom('left', -10)">-</button>
         <div class="zoom-val" id="zoomValLeft">100%</div>
-        <button class="zoom-btn" onclick="addZoom('left', 10)">＋</button>
+        <button class="zoom-btn" onclick="addZoom('left', 10)">+</button>
       </div>
     </div>
     <div class="canvas-container" id="scrollLeft">
@@ -1032,25 +507,24 @@ select.form-input { padding: 0 12px; cursor: pointer; }
 
   <div class="pane" id="paneRight" style="width: 60%;">
     <div class="pane-header">
-      <div class="student-nav">
-        <button class="nav-btn" onclick="navStudent(-1)" title="前の生徒 (←)">◀</button>
-        <div class="student-info">
-          <div class="student-name" id="stuName">生徒名</div>
-          <div class="student-count" id="stuCount">0 / 0</div>
+      <div class="toolbar">
+        <button class="btn" onclick="navStudent(-1)" style="padding:0 10px;">◀</button>
+        <div style="text-align:center; padding:0 10px;">
+          <div id="stuName" style="font-weight:700; font-size:0.85rem; max-width:180px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">Student</div>
+          <div id="stuCount" style="font-size:0.7rem; color:var(--text-muted);">0 / 0</div>
         </div>
-        <button class="nav-btn" onclick="navStudent(1)" title="次の生徒 (→)">▶</button>
+        <button class="btn" onclick="navStudent(1)" style="padding:0 10px;">▶</button>
       </div>
-      <div class="toolbar" style="gap:6px;">
-        <div class="next-q-badge">
-          <span style="font-size:0.68rem;">Next</span>
-          <span class="next-q-num" id="nextQ">1</span>
-        </div>
-        <button class="btn btn-danger" onclick="clearMarks()" style="padding:0 9px; height:28px; font-size:0.75rem;">全消去</button>
+      <div class="toolbar">
+        <span style="margin-right:12px; font-size:0.85rem; color:var(--text-sub);">
+          Next: <span id="nextQ" style="color:var(--primary); font-weight:800; background:rgba(99,102,241,0.1); padding:2px 8px; border-radius:4px;">1</span>
+        </span>
+        <button class="btn" onclick="clearMarks()" style="color:var(--danger); padding:0 10px;">全消去</button>
         <div class="divider"></div>
         <div class="zoom-group">
-          <button class="zoom-btn" onclick="addZoom('right', -10)">−</button>
+          <button class="zoom-btn" onclick="addZoom('right', -10)">-</button>
           <div class="zoom-val" id="zoomValRight">100%</div>
-          <button class="zoom-btn" onclick="addZoom('right', 10)">＋</button>
+          <button class="zoom-btn" onclick="addZoom('right', 10)">+</button>
         </div>
       </div>
     </div>
@@ -1074,6 +548,7 @@ select.form-input { padding: 0 12px; cursor: pointer; }
 
 <div id="toast">Message</div>
 
+
 <div class="modal-overlay" id="folderModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -1081,9 +556,9 @@ select.form-input { padding: 0 12px; cursor: pointer; }
       <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="folder-sync-info">
-        🔗 <strong>フォルダURLを共有するだけで採点データをどのデバイスでも編集できます。</strong><br>
-        <span style="color:var(--text-muted);">採点マーク・ゾーンはFirebaseでリアルタイム同期。PDF/画像は各デバイスで個別にアップロードしてください。</span>
+      <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:0.78rem;color:var(--info);line-height:1.6;">
+        ☁️ <strong>採点マーク・ゾーンはFirebaseでリアルタイム同期。</strong>
+        <span style="color:var(--text-muted);">🔗 URLを共有するだけで別デバイスからも編集可。PDF/画像は各デバイスで個別アップロード。</span>
       </div>
       <div class="folder-create-bar">
         <input type="text" id="newFolderName" class="form-input" placeholder="新しいフォルダ名（例: 2024年度 中間テスト）">
@@ -1140,102 +615,6 @@ select.form-input { padding: 0 12px; cursor: pointer; }
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const { jsPDF } = window.jspdf;
 const STORAGE_KEY = 'QG_PRO_DATA_V2';
-
-// =============================================
-// FIREBASE REALTIME DATABASE SYNC
-// =============================================
-// folders/{folderId}/meta  — name, createdAt, stuCount, updatedAt
-// folders/{folderId}/marks — marks object
-// folders/{folderId}/zones — zones array
-
-let fbSyncListeners = {}; // active onValue listeners per folderId
-
-function waitForFirebase() {
-  return new Promise(resolve => {
-    if (window.firebaseReady) { resolve(); return; }
-    window.addEventListener('firebaseReady', () => resolve(), { once: true });
-  });
-}
-
-async function fbSaveFolderMeta(folderId, metaObj) {
-  await waitForFirebase();
-  try {
-    await fbSet(fbRef(fbDb, `folders/${folderId}/meta`), metaObj);
-  } catch(e) { console.warn('Firebase meta save failed:', e); }
-}
-
-async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
-  await waitForFirebase();
-  try {
-    await fbSet(fbRef(fbDb, `folders/${folderId}/data`), {
-      marks: marks || {},
-      zones: zones || [],
-      markSize: markSize || 44,
-      updatedAt: Date.now()
-    });
-  } catch(e) { console.warn('Firebase data save failed:', e); }
-}
-
-async function fbGetFolderData(folderId) {
-  await waitForFirebase();
-  try {
-    const snap = await fbGet(fbRef(fbDb, `folders/${folderId}`));
-    return snap.exists() ? snap.val() : null;
-  } catch(e) { console.warn('Firebase get failed:', e); return null; }
-}
-
-async function fbGetAllFoldersMeta() {
-  await waitForFirebase();
-  try {
-    const snap = await fbGet(fbRef(fbDb, 'folders'));
-    if (!snap.exists()) return {};
-    const all = snap.val();
-    const result = {};
-    Object.entries(all).forEach(([id, val]) => {
-      if (val && val.meta) result[id] = val.meta;
-    });
-    return result;
-  } catch(e) { console.warn('Firebase list failed:', e); return {}; }
-}
-
-async function fbDeleteFolder(folderId) {
-  await waitForFirebase();
-  try {
-    await fbRemove(fbRef(fbDb, `folders/${folderId}`));
-  } catch(e) { console.warn('Firebase delete failed:', e); }
-}
-
-function fbSubscribeFolder(folderId) {
-  fbUnsubscribeAll();
-  if (!folderId) return;
-  waitForFirebase().then(() => {
-    const dataRef = fbRef(fbDb, `folders/${folderId}/data`);
-    const unsub = fbOnValue(dataRef, (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.val();
-      const remoteUpdatedAt = data.updatedAt || 0;
-      if (remoteUpdatedAt > (window._lastLocalSave || 0) + 500) {
-        state.marks = data.marks || {};
-        state.zones = data.zones || [];
-        if (data.markSize) {
-          state.globalMarkSize = data.markSize;
-          markSizeRange.value = data.markSize;
-        }
-        renderMarks();
-        showToast('🔄 他のデバイスの変更を反映しました');
-      }
-    });
-    fbSyncListeners[folderId] = unsub;
-  });
-}
-
-function fbUnsubscribeAll() {
-  Object.values(fbSyncListeners).forEach(unsub => { try { unsub(); } catch(e) {} });
-  fbSyncListeners = {};
-}
-
-
-// End of Firebase sync layer
 
 const state = {
   keyFile: null,
@@ -1316,114 +695,107 @@ function readFileAsBuffer(file) {
 }
 
 // =============================================
-// NO-AUTH FOLDER SYSTEM
-// フォルダはURLで共有可能。アカウント不要。
+// FOLDER SYSTEM (No auth, Firebase sync)
 // =============================================
 const FOLDER_META_KEY = 'QM_FOLDERS_V3';
-const VISITED_KEY = 'QM_VISITED_FOLDERS';
+const VISITED_KEY = 'QM_VISITED_V3';
+let fbSyncOff = null; // Firebase listener unsubscribe
+let _lastLocalSave = 0;
 
-function getFolderMeta() {
-  return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]');
-}
-function saveFolderMeta(folders) {
-  localStorage.setItem(FOLDER_META_KEY, JSON.stringify(folders));
-}
-function getVisitedFolderIds() {
-  return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]');
-}
-function addVisitedFolder(id) {
-  const visited = getVisitedFolderIds();
-  if (!visited.includes(id)) {
-    visited.unshift(id);
-    localStorage.setItem(VISITED_KEY, JSON.stringify(visited.slice(0, 50)));
-  }
+function getFolderMeta() { return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]'); }
+function saveFolderMeta(f) { localStorage.setItem(FOLDER_META_KEY, JSON.stringify(f)); }
+function getVisited() { return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'); }
+function addVisited(id) {
+  const v = getVisited(); if (!v.includes(id)) { v.unshift(id); localStorage.setItem(VISITED_KEY, JSON.stringify(v.slice(0,50))); }
 }
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
 
+// Firebase helpers
+function fbPath(folderId) { return fbDB.ref('folders/' + folderId); }
+async function fbSaveMeta(id, meta) { try { await fbDB.ref('folders/' + id + '/meta').set(meta); } catch(e) { console.warn('fb meta fail', e); } }
+async function fbSaveData(id, marks, zones, markSize) {
+  try { await fbDB.ref('folders/' + id + '/data').set({ marks: marks||{}, zones: zones||[], markSize: markSize||44, ts: Date.now() }); }
+  catch(e) { console.warn('fb data fail', e); }
+}
+async function fbGetFolder(id) {
+  try { const s = await fbDB.ref('folders/' + id).get(); return s.exists() ? s.val() : null; }
+  catch(e) { console.warn('fb get fail', e); return null; }
+}
+async function fbGetAllMeta() {
+  try {
+    const s = await fbDB.ref('folders').get();
+    if (!s.exists()) return {};
+    const out = {}; s.forEach(c => { if (c.val().meta) out[c.key] = c.val().meta; }); return out;
+  } catch(e) { return {}; }
+}
+function fbSubscribe(id) {
+  if (fbSyncOff) { fbSyncOff(); fbSyncOff = null; }
+  const ref = fbDB.ref('folders/' + id + '/data');
+  ref.on('value', snap => {
+    if (!snap.exists()) return;
+    const d = snap.val();
+    if ((d.ts||0) > _lastLocalSave + 1000) {
+      state.marks = d.marks || {};
+      state.zones = d.zones || [];
+      if (d.markSize) { state.globalMarkSize = d.markSize; markSizeRange.value = d.markSize; }
+      renderMarks();
+      showToast('🔄 他のデバイスの変更を反映しました');
+    }
+  });
+  fbSyncOff = () => ref.off('value');
+}
+
 async function createFolder() {
   const name = document.getElementById('newFolderName').value.trim() || `採点 ${new Date().toLocaleDateString('ja-JP')}`;
-  const meta = getFolderMeta();
   const id = genId();
-  const metaObj = { id, name, createdAt: Date.now(), stuCount: 0 };
-  meta.unshift(metaObj);
-  saveFolderMeta(meta);
+  const meta = { id, name, createdAt: Date.now(), stuCount: 0 };
+  const folders = getFolderMeta(); folders.unshift(meta); saveFolderMeta(folders);
   await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
-  addVisitedFolder(id);
-  // Sync to Firebase
-  fbSaveFolderMeta(id, metaObj);
+  addVisited(id);
+  fbSaveMeta(id, meta);
   document.getElementById('newFolderName').value = '';
   renderFolderList();
   showToast(`フォルダ「${name}」を作成しました`);
 }
 
 async function openFolder(id) {
-  showToast('フォルダを読み込んでいます...');
-
-  // Try to get local IDB data (for files)
-  let localData = await idbGet('folders', id).catch(() => null);
-
-  // Always fetch latest marks/zones from Firebase
-  const fbData = await fbGetFolderData(id);
-
-  if (!localData && !fbData) {
-    showToast('フォルダが見つかりません');
-    return;
-  }
-
-  // If folder exists in Firebase but not locally, create a local shell
-  if (!localData) {
-    localData = { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 };
-    await idbPut('folders', localData);
-  }
+  showToast('読み込み中...');
+  let local = await idbGet('folders', id).catch(() => null);
+  const remote = await fbGetFolder(id);
+  if (!local && !remote) { showToast('フォルダが見つかりません'); return; }
+  if (!local) { local = { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 }; await idbPut('folders', local); }
 
   // Files from local IDB
-  if (localData.keyFile) {
-    state.keyFile = new File([localData.keyFile.buffer], localData.keyFile.name, { type: localData.keyFile.type });
-  } else {
-    state.keyFile = null;
-  }
-  if (localData.stuFiles && localData.stuFiles.length > 0) {
-    state.stuFiles = localData.stuFiles.map(f => new File([f.buffer], f.name, { type: f.type }));
-  } else {
-    state.stuFiles = [];
-  }
+  state.keyFile = local.keyFile ? new File([local.keyFile.buffer], local.keyFile.name, { type: local.keyFile.type }) : null;
+  state.stuFiles = (local.stuFiles||[]).map(f => new File([f.buffer], f.name, { type: f.type }));
 
-  // Marks/zones: prefer Firebase (latest) over local
-  if (fbData && fbData.data) {
-    state.marks = fbData.data.marks || {};
-    state.zones = fbData.data.zones || [];
-    state.globalMarkSize = fbData.data.markSize || 44;
+  // Marks/zones: Firebase is the source of truth
+  if (remote && remote.data) {
+    state.marks = remote.data.marks || {};
+    state.zones = remote.data.zones || [];
+    state.globalMarkSize = remote.data.markSize || 44;
   } else {
-    state.marks = localData.marks || {};
-    state.zones = localData.zones || [];
-    state.globalMarkSize = localData.markSize || 44;
+    state.marks = local.marks || {};
+    state.zones = local.zones || [];
+    state.globalMarkSize = local.markSize || 44;
   }
   markSizeRange.value = state.globalMarkSize;
   state.currentFolderId = id;
-  addVisitedFolder(id);
+  addVisited(id);
 
-  // Register folder meta locally if we got it from Firebase
-  if (fbData && fbData.meta) {
-    const meta = getFolderMeta();
-    if (!meta.find(f => f.id === id)) {
-      meta.unshift(fbData.meta);
-      saveFolderMeta(meta);
-    }
+  // Register locally if only known from Firebase
+  if (remote && remote.meta) {
+    const folders = getFolderMeta();
+    if (!folders.find(f => f.id === id)) { folders.unshift(remote.meta); saveFolderMeta(folders); }
   }
 
-  // Subscribe to real-time updates
-  fbSubscribeFolder(id);
-
-  // Update URL
+  fbSubscribe(id);
   history.replaceState(null, '', '#folder-' + id);
   document.getElementById('urlHashDisplay').textContent = '#folder-' + id;
-
   closeModal('folderModal');
 
-  const meta = getFolderMeta();
-  const folder = meta.find(f => f.id === id);
-  const folderName = folder ? folder.name : (fbData?.meta?.name || id);
-  document.getElementById('folderIndicatorName').textContent = folderName;
+  const folders = getFolderMeta(); const folder = folders.find(f => f.id === id);
+  document.getElementById('folderIndicatorName').textContent = folder ? folder.name : (remote?.meta?.name || id);
   document.getElementById('folderIndicator').style.display = 'flex';
   document.getElementById('noFolderRow').style.display = 'none';
   document.getElementById('sessionBar').classList.add('visible');
@@ -1431,8 +803,7 @@ async function openFolder(id) {
   if (state.keyFile) {
     document.getElementById('overlay').style.display = 'none';
     await drawImage(state.keyFile, 'cvLeft', 'wrapLeft', 'scrollLeft', 'left');
-    if (state.stuFiles.length > 0) await loadStudent(0);
-    else renderMarks();
+    if (state.stuFiles.length > 0) await loadStudent(0); else renderMarks();
   } else {
     document.getElementById('overlay').style.display = 'flex';
     document.getElementById('statKey').textContent = '選択してください';
@@ -1440,19 +811,17 @@ async function openFolder(id) {
     document.getElementById('statStu').textContent = '選択してください (複数可)';
     document.getElementById('statStu').className = 'upload-status';
     btnStart.disabled = true;
-    showToast('採点データを同期しました。PDFをアップロードしてください。');
+    showToast('採点データ同期済。PDFをアップロードしてください。');
   }
 }
 
 async function deleteFolder(id) {
-  if (!confirm('このフォルダを完全に削除しますか？\n（Firebaseのデータも削除されます）')) return;
-  await idbDelete('folders', id);
-  const meta = getFolderMeta().filter(f => f.id !== id);
-  saveFolderMeta(meta);
-  const visited = getVisitedFolderIds().filter(v => v !== id);
-  localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
-  fbUnsubscribeAll();
-  await fbDeleteFolder(id);
+  if (!confirm('このフォルダを完全に削除しますか？')) return;
+  await idbDelete('folders', id).catch(()=>{});
+  saveFolderMeta(getFolderMeta().filter(f => f.id !== id));
+  localStorage.setItem(VISITED_KEY, JSON.stringify(getVisited().filter(v => v !== id)));
+  if (fbSyncOff) { fbSyncOff(); fbSyncOff = null; }
+  try { await fbDB.ref('folders/' + id).remove(); } catch(e) {}
   renderFolderList();
   showToast('フォルダを削除しました');
 }
@@ -1463,26 +832,13 @@ function shareFolderUrl(id) {
 }
 
 function openSaveFolderModal() {
-  if (!state.keyFile || state.stuFiles.length === 0) {
-    showToast('先にファイルをアップロードしてください');
-    return;
-  }
-  const meta = getFolderMeta();
-  const sel = document.getElementById('saveFolderSelect');
-  sel.innerHTML = '';
-  if (meta.length === 0) {
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = '（フォルダがありません）';
-    sel.appendChild(opt);
+  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
+  const folders = getFolderMeta();
+  const sel = document.getElementById('saveFolderSelect'); sel.innerHTML = '';
+  if (folders.length === 0) {
+    const opt = document.createElement('option'); opt.value = ''; opt.textContent = '（フォルダがありません）'; sel.appendChild(opt);
   } else {
-    meta.forEach(f => {
-      const opt = document.createElement('option');
-      opt.value = f.id;
-      opt.textContent = f.name;
-      if (f.id === state.currentFolderId) opt.selected = true;
-      sel.appendChild(opt);
-    });
+    folders.forEach(f => { const opt = document.createElement('option'); opt.value = f.id; opt.textContent = f.name; if (f.id === state.currentFolderId) opt.selected = true; sel.appendChild(opt); });
   }
   document.getElementById('saveFolderNewName').value = '';
   document.getElementById('saveError').textContent = '';
@@ -1490,127 +846,313 @@ function openSaveFolderModal() {
 }
 
 async function executeSaveToFolder() {
-  const errEl = document.getElementById('saveError');
-  errEl.textContent = '';
+  const errEl = document.getElementById('saveError'); errEl.textContent = '';
   try {
     showToast('保存中...');
     const keyBuffer = await readFileAsBuffer(state.keyFile);
     const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-
     const newName = document.getElementById('saveFolderNewName').value.trim();
     const selectedId = document.getElementById('saveFolderSelect').value;
     let targetId = selectedId;
-
-    const meta = getFolderMeta();
+    const folders = getFolderMeta();
     let metaObj;
     if (newName) {
-      const id = genId();
-      metaObj = { id, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
-      meta.unshift(metaObj);
-      targetId = id;
-      addVisitedFolder(id);
+      const id = genId(); metaObj = { id, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
+      folders.unshift(metaObj); targetId = id; addVisited(id);
     } else if (targetId) {
-      const idx = meta.findIndex(f => f.id === targetId);
-      if (idx >= 0) {
-        meta[idx].stuCount = state.stuFiles.length;
-        meta[idx].updatedAt = Date.now();
-        metaObj = meta[idx];
-      }
-    } else {
-      throw new Error('保存先を選択するか、新しいフォルダ名を入力してください');
-    }
-
-    const folderData = {
-      id: targetId,
-      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-      stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-      marks: state.marks,
-      zones: state.zones,
-      markSize: state.globalMarkSize
-    };
-
-    await idbPut('folders', folderData);
-    saveFolderMeta(meta);
-
-    // Sync to Firebase
-    window._lastLocalSave = Date.now();
-    if (metaObj) fbSaveFolderMeta(targetId, metaObj);
-    fbSaveMarksAndZones(targetId, state.marks, state.zones, state.globalMarkSize);
-
-    state.currentFolderId = targetId;
-    fbSubscribeFolder(targetId);
-
-    const folderName = newName || meta.find(f => f.id === targetId)?.name || 'フォルダ';
+      const idx = folders.findIndex(f => f.id === targetId);
+      if (idx >= 0) { folders[idx].stuCount = state.stuFiles.length; folders[idx].updatedAt = Date.now(); metaObj = folders[idx]; }
+    } else { throw new Error('保存先を選択するか、新しいフォルダ名を入力してください'); }
+    const folderData = { id: targetId, keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
+      stuFiles: state.stuFiles.map((f,i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
+      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize };
+    await idbPut('folders', folderData); saveFolderMeta(folders);
+    _lastLocalSave = Date.now();
+    if (metaObj) fbSaveMeta(targetId, metaObj);
+    fbSaveData(targetId, state.marks, state.zones, state.globalMarkSize);
+    state.currentFolderId = targetId; fbSubscribe(targetId);
+    const folderName = newName || folders.find(f => f.id === targetId)?.name || 'フォルダ';
     document.getElementById('folderIndicatorName').textContent = folderName;
     document.getElementById('folderIndicator').style.display = 'flex';
     document.getElementById('noFolderRow').style.display = 'none';
     document.getElementById('sessionBar').classList.add('visible');
-
-    // Update URL
     history.replaceState(null, '', '#folder-' + targetId);
     document.getElementById('urlHashDisplay').textContent = '#folder-' + targetId;
-
-    closeModal('saveFolderModal');
-    showToast('フォルダに保存しました！');
+    closeModal('saveFolderModal'); showToast('フォルダに保存しました！');
   } catch(e) { errEl.textContent = e.message; showToast('保存に失敗しました'); }
 }
 
 async function renderFolderList() {
   const list = document.getElementById('folderList');
-  list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">🔄 読み込み中...</div>`;
-
-  // Fetch Firebase folders
-  const fbMeta = await fbGetAllFoldersMeta();
-
-  // Merge local meta with Firebase meta
-  const localMeta = getFolderMeta();
-  const merged = { ...Object.fromEntries(localMeta.map(f => [f.id, f])) };
-  Object.entries(fbMeta).forEach(([id, meta]) => {
-    if (!merged[id]) merged[id] = { ...meta, fromCloud: true };
-    else merged[id] = { ...merged[id], ...meta }; // Firebase wins on name/stuCount
-  });
-
-  // Also include visited IDs
-  const visitedIds = getVisitedFolderIds();
-  visitedIds.forEach(id => {
-    if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', fromUrl: true };
-  });
-
-  // Update local meta from Firebase
-  const mergedList = Object.values(merged).sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
-  saveFolderMeta(mergedList.filter(f => !f.fromUrl));
-
-  if (mergedList.length === 0) {
-    list.innerHTML = `<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上のフィールドで新しいフォルダを作成しましょう。<br><small style="color:var(--text-muted)">フォルダURLを受け取った場合はそのURLを開いてください。</small></div></div>`;
-    return;
-  }
-
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">🔄 読み込み中...</div>';
+  const fbMeta = await fbGetAllMeta();
+  const local = getFolderMeta();
+  const merged = {}; local.forEach(f => merged[f.id] = f);
+  Object.entries(fbMeta).forEach(([id, m]) => { merged[id] = { ...(merged[id]||{}), ...m }; });
+  getVisited().forEach(id => { if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', visitedOnly: true }; });
+  const all = Object.values(merged).sort((a,b) => (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  saveFolderMeta(all.filter(f => !f.visitedOnly));
   list.innerHTML = '';
-  mergedList.forEach(folder => {
-    const card = document.createElement('div');
-    card.className = 'folder-card';
-    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' }) : '不明';
+  if (all.length === 0) {
+    list.innerHTML = '<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上のフィールドから新しいフォルダを作成しましょう。</div></div>'; return;
+  }
+  all.forEach(folder => {
+    const card = document.createElement('div'); card.className = 'folder-card';
+    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP',{year:'numeric',month:'short',day:'numeric'}) : '不明';
     const isActive = folder.id === state.currentFolderId;
     card.innerHTML = `
-      <div class="folder-icon">${isActive ? '📂' : (folder.fromCloud ? '☁️' : folder.fromUrl ? '🔗' : '📁')}</div>
+      <div class="folder-icon">${isActive?'📂':folder.visitedOnly?'🔗':'📁'}</div>
       <div class="folder-info">
-        <div class="folder-name">${folder.name}${isActive ? ' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
+        <div class="folder-name">${folder.name}${isActive?' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
         <div class="folder-meta">
-          <span>${date}</span>
-          <span class="folder-stat">${folder.stuCount || 0} 名の答案</span>
-          ${folder.updatedAt ? `<span>最終更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>` : ''}
-          ${folder.fromCloud ? '<span style="color:var(--info);">☁️ クラウド同期</span>' : ''}
+          <span>${date}</span><span class="folder-stat">${folder.stuCount||0} 名の答案</span>
+          ${folder.updatedAt?`<span>更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>`:''}
         </div>
       </div>
       <div class="folder-actions">
-        <button class="btn" style="height:32px; font-size:0.75rem; padding:0 8px;" onclick="event.stopPropagation(); shareFolderUrl('${folder.id}')" title="URLをコピー">🔗 共有</button>
-        <button class="btn btn-primary" style="height:32px; font-size:0.8rem;" onclick="event.stopPropagation(); openFolder('${folder.id}')">開く</button>
-        <button class="btn btn-danger" style="height:32px; font-size:0.8rem; padding:0 10px;" onclick="event.stopPropagation(); deleteFolder('${folder.id}')">削除</button>
-      </div>
-    `;
+        <button class="btn" style="height:32px;font-size:0.75rem;padding:0 8px;" onclick="event.stopPropagation();shareFolderUrl('${folder.id}')">🔗 共有</button>
+        <button class="btn btn-primary" style="height:32px;font-size:0.8rem;" onclick="event.stopPropagation();openFolder('${folder.id}')">開く</button>
+        <button class="btn btn-danger" style="height:32px;font-size:0.8rem;padding:0 10px;" onclick="event.stopPropagation();deleteFolder('${folder.id}')">削除</button>
+      </div>`;
     list.appendChild(card);
   });
 }
+
+
+// =============================================
+// FOLDER SYSTEM (no auth, Firebase sync)
+// =============================================
+const FOLDER_META_KEY = 'QM_FOLDERS_V3';
+const VISITED_KEY     = 'QM_VISITED_V3';
+
+function getFolderMeta()     { return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]'); }
+function saveFolderMeta(arr) { localStorage.setItem(FOLDER_META_KEY, JSON.stringify(arr)); }
+function getVisited()        { return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'); }
+function addVisited(id) {
+  const v = getVisited(); if (!v.includes(id)) { v.unshift(id); localStorage.setItem(VISITED_KEY, JSON.stringify(v.slice(0,50))); }
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
+
+// Firebase helpers using compat SDK (window._fdb)
+let _fbListenerRef = null;
+let _lastLocalSave = 0;
+
+function fbSaveMeta(id, meta) {
+  return window._fdb.ref(`folders/${id}/meta`).set(meta).catch(e => console.warn('fb meta:', e));
+}
+function fbSaveData(id, marks, zones, markSize) {
+  _lastLocalSave = Date.now();
+  return window._fdb.ref(`folders/${id}/data`).set({ marks: marks||{}, zones: zones||[], markSize: markSize||44, updatedAt: _lastLocalSave }).catch(e => console.warn('fb data:', e));
+}
+async function fbGetFolder(id) {
+  try { const s = await window._fdb.ref(`folders/${id}`).get(); return s.exists() ? s.val() : null; }
+  catch(e) { console.warn('fb get:', e); return null; }
+}
+async function fbListMeta() {
+  try {
+    const s = await window._fdb.ref('folders').get();
+    if (!s.exists()) return {};
+    const out = {};
+    s.forEach(c => { if (c.val() && c.val().meta) out[c.key] = c.val().meta; });
+    return out;
+  } catch(e) { return {}; }
+}
+function fbDeleteRemote(id) { return window._fdb.ref(`folders/${id}`).remove().catch(e => console.warn('fb del:', e)); }
+function fbSubscribe(id) {
+  fbUnsubscribe();
+  _fbListenerRef = window._fdb.ref(`folders/${id}/data`);
+  _fbListenerRef.on('value', snap => {
+    if (!snap.exists()) return;
+    const d = snap.val();
+    if ((d.updatedAt || 0) > _lastLocalSave + 1000) {
+      state.marks = d.marks || {};
+      state.zones = d.zones || [];
+      if (d.markSize) { state.globalMarkSize = d.markSize; markSizeRange.value = d.markSize; }
+      renderMarks();
+      showToast('🔄 他のデバイスの変更を反映しました');
+    }
+  });
+}
+function fbUnsubscribe() {
+  if (_fbListenerRef) { _fbListenerRef.off('value'); _fbListenerRef = null; }
+}
+
+async function createFolder() {
+  const name = document.getElementById('newFolderName').value.trim() || `採点 ${new Date().toLocaleDateString('ja-JP')}`;
+  const id   = genId();
+  const meta = { id, name, createdAt: Date.now(), stuCount: 0 };
+  const arr  = getFolderMeta(); arr.unshift(meta); saveFolderMeta(arr);
+  await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
+  addVisited(id);
+  fbSaveMeta(id, meta);
+  document.getElementById('newFolderName').value = '';
+  renderFolderList();
+  showToast(`フォルダ「${name}」を作成しました`);
+}
+
+async function openFolder(id) {
+  showToast('読み込み中...');
+  const [local, remote] = await Promise.all([idbGet('folders', id).catch(() => null), fbGetFolder(id)]);
+  if (!local && !remote) { showToast('フォルダが見つかりません'); return; }
+  if (!local) await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
+
+  const src = local || {};
+  state.keyFile  = src.keyFile  ? new File([src.keyFile.buffer],  src.keyFile.name,  { type: src.keyFile.type  }) : null;
+  state.stuFiles = src.stuFiles ? src.stuFiles.map(f => new File([f.buffer], f.name, { type: f.type })) : [];
+
+  const d = remote?.data || {};
+  state.marks          = d.marks    || src.marks    || {};
+  state.zones          = d.zones    || src.zones    || [];
+  state.globalMarkSize = d.markSize || src.markSize || 44;
+  markSizeRange.value  = state.globalMarkSize;
+  state.currentFolderId = id;
+  addVisited(id);
+
+  if (remote?.meta) {
+    const arr = getFolderMeta();
+    if (!arr.find(f => f.id === id)) { arr.unshift(remote.meta); saveFolderMeta(arr); }
+  }
+
+  fbSubscribe(id);
+  history.replaceState(null, '', '#folder-' + id);
+  document.getElementById('urlHashDisplay').textContent = '#folder-' + id;
+  closeModal('folderModal');
+
+  const folderName = getFolderMeta().find(f => f.id === id)?.name || remote?.meta?.name || id;
+  document.getElementById('folderIndicatorName').textContent = folderName;
+  document.getElementById('folderIndicator').style.display = 'flex';
+  document.getElementById('noFolderRow').style.display = 'none';
+  document.getElementById('sessionBar').classList.add('visible');
+
+  if (state.keyFile) {
+    document.getElementById('overlay').style.display = 'none';
+    await drawImage(state.keyFile, 'cvLeft', 'wrapLeft', 'scrollLeft', 'left');
+    if (state.stuFiles.length > 0) await loadStudent(0); else renderMarks();
+  } else {
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('statKey').textContent = '選択してください';
+    document.getElementById('statKey').className = 'upload-status';
+    document.getElementById('statStu').textContent = '選択してください (複数可)';
+    document.getElementById('statStu').className = 'upload-status';
+    btnStart.disabled = true;
+    showToast('採点データを同期済み。PDFをアップロードしてください。');
+  }
+}
+
+async function deleteFolder(id) {
+  if (!confirm('このフォルダを削除しますか？（Firebaseのデータも削除されます）')) return;
+  await idbDelete('folders', id);
+  saveFolderMeta(getFolderMeta().filter(f => f.id !== id));
+  localStorage.setItem(VISITED_KEY, JSON.stringify(getVisited().filter(v => v !== id)));
+  fbUnsubscribe();
+  fbDeleteRemote(id);
+  renderFolderList();
+  showToast('フォルダを削除しました');
+}
+
+function shareFolderUrl(id) {
+  const url = location.origin + location.pathname + '#folder-' + id;
+  navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました！'));
+}
+
+function openSaveFolderModal() {
+  if (!state.keyFile || !state.stuFiles.length) { showToast('先にファイルをアップロードしてください'); return; }
+  const meta = getFolderMeta(), sel = document.getElementById('saveFolderSelect');
+  sel.innerHTML = '';
+  if (!meta.length) { sel.innerHTML = '<option value="">（フォルダがありません）</option>'; }
+  else meta.forEach(f => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.name; if (f.id === state.currentFolderId) o.selected = true; sel.appendChild(o); });
+  document.getElementById('saveFolderNewName').value = '';
+  document.getElementById('saveError').textContent   = '';
+  openModal('saveFolderModal');
+}
+
+async function executeSaveToFolder() {
+  const errEl = document.getElementById('saveError'); errEl.textContent = '';
+  try {
+    showToast('保存中...');
+    const keyBuffer  = await readFileAsBuffer(state.keyFile);
+    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+    const newName    = document.getElementById('saveFolderNewName').value.trim();
+    const selectedId = document.getElementById('saveFolderSelect').value;
+    const meta = getFolderMeta();
+    let targetId = selectedId, metaObj;
+    if (newName) {
+      targetId = genId(); metaObj = { id: targetId, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
+      meta.unshift(metaObj); addVisited(targetId);
+    } else if (targetId) {
+      const idx = meta.findIndex(f => f.id === targetId);
+      if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); metaObj = meta[idx]; }
+    } else { throw new Error('保存先を選択するか、新しいフォルダ名を入力してください'); }
+
+    await idbPut('folders', { id: targetId, keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer }, stuFiles: state.stuFiles.map((f,i)=>({name:f.name,type:f.type,buffer:stuBuffers[i]})), marks: state.marks, zones: state.zones, markSize: state.globalMarkSize });
+    saveFolderMeta(meta);
+    if (metaObj) fbSaveMeta(targetId, metaObj);
+    fbSaveData(targetId, state.marks, state.zones, state.globalMarkSize);
+    state.currentFolderId = targetId;
+    fbSubscribe(targetId);
+
+    document.getElementById('folderIndicatorName').textContent = newName || meta.find(f=>f.id===targetId)?.name || 'フォルダ';
+    document.getElementById('folderIndicator').style.display = 'flex';
+    document.getElementById('noFolderRow').style.display = 'none';
+    document.getElementById('sessionBar').classList.add('visible');
+    history.replaceState(null, '', '#folder-' + targetId);
+    document.getElementById('urlHashDisplay').textContent = '#folder-' + targetId;
+    closeModal('saveFolderModal'); showToast('フォルダに保存しました！');
+  } catch(e) { errEl.textContent = e.message; showToast('保存に失敗しました'); }
+}
+
+async function quickSaveFolder() {
+  if (!state.currentFolderId) { openSaveFolderModal(); return; }
+  if (!state.keyFile || !state.stuFiles.length) { showToast('先にファイルをアップロードしてください'); return; }
+  try {
+    const keyBuffer  = await readFileAsBuffer(state.keyFile);
+    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+    const meta = getFolderMeta(), idx = meta.findIndex(f => f.id === state.currentFolderId);
+    if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); }
+    await idbPut('folders', { id: state.currentFolderId, keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer }, stuFiles: state.stuFiles.map((f,i)=>({name:f.name,type:f.type,buffer:stuBuffers[i]})), marks: state.marks, zones: state.zones, markSize: state.globalMarkSize });
+    saveFolderMeta(meta);
+    if (idx >= 0) fbSaveMeta(state.currentFolderId, meta[idx]);
+    await fbSaveData(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
+    showToast('💾 上書き保存しました！');
+  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
+}
+
+async function renderFolderList() {
+  const list = document.getElementById('folderList');
+  list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">🔄 読み込み中...</div>`;
+  const fbMeta  = await fbListMeta();
+  const merged  = Object.fromEntries(getFolderMeta().map(f => [f.id, f]));
+  Object.entries(fbMeta).forEach(([id, m]) => { merged[id] = merged[id] ? { ...merged[id], ...m } : { ...m, fromCloud: true }; });
+  getVisited().forEach(id => { if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', fromUrl: true }; });
+  const all = Object.values(merged).sort((a,b) => (b.updatedAt||b.createdAt||0) - (a.updatedAt||a.createdAt||0));
+  saveFolderMeta(all.filter(f => !f.fromUrl));
+  if (!all.length) { list.innerHTML = `<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上から新しいフォルダを作成しましょう。</div></div>`; return; }
+  list.innerHTML = '';
+  all.forEach(folder => {
+    const card = document.createElement('div'); card.className = 'folder-card';
+    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP',{year:'numeric',month:'short',day:'numeric'}) : '不明';
+    const isActive = folder.id === state.currentFolderId;
+    const icon = isActive ? '📂' : folder.fromCloud ? '☁️' : folder.fromUrl ? '🔗' : '📁';
+    card.innerHTML = `
+      <div class="folder-icon">${icon}</div>
+      <div class="folder-info">
+        <div class="folder-name">${folder.name}${isActive?' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
+        <div class="folder-meta">
+          <span>${date}</span><span class="folder-stat">${folder.stuCount||0} 名の答案</span>
+          ${folder.updatedAt?`<span>更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>`:''}
+          ${folder.fromCloud?'<span style="color:var(--info);">☁️ クラウド</span>':''}
+        </div>
+      </div>
+      <div class="folder-actions">
+        <button class="btn" style="height:32px;font-size:0.75rem;padding:0 8px;" onclick="event.stopPropagation();shareFolderUrl('${folder.id}')">🔗 共有</button>
+        <button class="btn btn-primary" style="height:32px;font-size:0.8rem;" onclick="event.stopPropagation();openFolder('${folder.id}')">開く</button>
+        <button class="btn btn-danger" style="height:32px;font-size:0.8rem;padding:0 10px;" onclick="event.stopPropagation();deleteFolder('${folder.id}')">削除</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function openFolderModal() { renderFolderList(); openModal('folderModal'); }
 
 // =============================================
 // STATISTICS
@@ -1781,9 +1323,30 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
 
-function openFolderModal() {
-  renderFolderList();
-  openModal('folderModal');
+function openFolderModal() { renderFolderList(); openModal('folderModal'); }
+
+async function quickSaveFolder() {
+  if (!state.currentFolderId) { openSaveFolderModal(); return; }
+  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
+  try {
+    showToast('上書き保存中...');
+    const keyBuffer = await readFileAsBuffer(state.keyFile);
+    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+    const folders = getFolderMeta();
+    const idx = folders.findIndex(f => f.id === state.currentFolderId);
+    if (idx >= 0) { folders[idx].stuCount = state.stuFiles.length; folders[idx].updatedAt = Date.now(); }
+    await idbPut('folders', {
+      id: state.currentFolderId,
+      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
+      stuFiles: state.stuFiles.map((f,i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
+      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
+    });
+    saveFolderMeta(folders);
+    _lastLocalSave = Date.now();
+    if (idx >= 0) fbSaveMeta(state.currentFolderId, folders[idx]);
+    await fbSaveData(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
+    showToast('💾 上書き保存しました！');
+  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
 }
 
 // =============================================
@@ -1802,8 +1365,8 @@ function loadFromStorage() {
 function saveToStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ marks: state.marks, zones: state.zones, markSize: state.globalMarkSize }));
   if (state.currentFolderId) {
-    window._lastLocalSave = Date.now();
-    fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
+    _lastLocalSave = Date.now();
+    fbSaveData(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
   }
 }
 
@@ -1843,7 +1406,7 @@ btnStart.onclick = async () => {
     const info = document.getElementById('noFolderRow');
     info.style.display = 'flex';
     document.getElementById('sessionFileInfo').textContent =
-      `📄 ${state.keyFile.name}  |  👥 ${state.stuFiles.length}名の答案  ·  💾 保存ボタンでフォルダに保存できます`;
+      `📄 ${state.keyFile.name}  |  👥 ${state.stuFiles.length}名の答案  ·  💾保存でフォルダに保存できます`;
   } else {
     quickSaveFolder();
   }
@@ -1894,47 +1457,16 @@ async function loadStudent(idx) {
 }
 function navStudent(d) { loadStudent(state.currIdx + d); }
 
-async function addStudents(files) {
-  if (!files || files.length === 0) return;
-  const newFiles = Array.from(files);
-  // Skip duplicates by name
-  const existingNames = new Set(state.stuFiles.map(f => f.name));
-  const toAdd = newFiles.filter(f => {
-    if (existingNames.has(f.name)) {
-      showToast(`スキップ: ${f.name}（同名ファイルが存在します）`);
-      return false;
-    }
-    return true;
-  });
-  if (toAdd.length === 0) return;
-
-  state.stuFiles = [...state.stuFiles, ...toAdd];
-  document.getElementById('stuCount').textContent = `${state.currIdx + 1} / ${state.stuFiles.length}`;
-  showToast(`${toAdd.length}件の答案を追加しました`);
-
-  // Auto-save to folder if one is open
-  if (state.currentFolderId) {
-    await quickSaveFolder();
-  }
-}
-
-// Wire up the add button
-document.getElementById('inpAddStu').addEventListener('change', (e) => {
-  addStudents(e.target.files);
-  e.target.value = ''; // reset so same file can be re-added if needed
-});
-
 // =============================================
 // URL HASH ROUTING
 // =============================================
 function updateUrlHash(idx) {
   if (state.stuFiles.length === 0) return;
   const name = encodeURIComponent(state.stuFiles[idx].name.replace(/\.[^.]+$/, ''));
-  // Preserve folder ID in hash if present
   const folderPart = state.currentFolderId ? `folder-${state.currentFolderId}|` : '';
   const hash = `#${folderPart}student-${idx + 1}-${name}`;
   history.replaceState(null, '', hash);
-  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? `#folder-${state.currentFolderId}` : hash;
+  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? '#folder-' + state.currentFolderId : hash;
 }
 
 function getIdxFromHash() {
@@ -1945,13 +1477,6 @@ function getIdxFromHash() {
     if (!isNaN(idx) && idx >= 0 && idx < state.stuFiles.length) return idx;
   }
   return null;
-}
-
-function getFolderIdFromHash() {
-  const hash = location.hash;
-  // Support #folder-ID or #folder-ID|...
-  const m = hash.match(/^#folder-([a-z0-9]+)/i);
-  return m ? m[1] : null;
 }
 
 window.addEventListener('hashchange', () => {
@@ -1965,34 +1490,6 @@ function copyCurrentUrl() {
   navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
 }
 
-// =============================================
-// QUICK SAVE (overwrite current folder)
-// =============================================
-async function quickSaveFolder() {
-  if (!state.currentFolderId) { openSaveFolderModal(); return; }
-  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
-  try {
-    showToast('上書き保存中...');
-    const keyBuffer = await readFileAsBuffer(state.keyFile);
-    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-    const meta = getFolderMeta();
-    const idx = meta.findIndex(f => f.id === state.currentFolderId);
-    if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); }
-    const folderData = {
-      id: state.currentFolderId,
-      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-      stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
-    };
-    await idbPut('folders', folderData);
-    saveFolderMeta(meta);
-    // Sync to Firebase
-    window._lastLocalSave = Date.now();
-    if (idx >= 0) fbSaveFolderMeta(state.currentFolderId, meta[idx]);
-    await fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
-    showToast('💾 上書き保存しました！');
-  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
-}
 
 function addZoom(side, d) {
   let newVal = Math.max(10, Math.min(500, state.zoom[side] + d));
@@ -2152,7 +1649,7 @@ function renderMarks() {
 
 function setTool(t) {
   state.tool = t;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.toolbar .btn').forEach(b => b.classList.remove('active'));
   const map = { 'o': 'toolO', 'x': 'toolX', 'tri': 'toolTri', 'text': 'toolText' };
   if (map[t]) document.getElementById(map[t]).classList.add('active');
 }
@@ -2354,15 +1851,8 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 function backToTop() {
   if (!confirm('トップに戻りますか？\n（現在の採点データはブラウザに保存されています）')) return;
   document.getElementById('overlay').style.display = 'flex';
-  // Clear URL hash (keep folder ID if exists)
-  if (state.currentFolderId) {
-    history.replaceState(null, '', '#folder-' + state.currentFolderId);
-    document.getElementById('urlHashDisplay').textContent = '#folder-' + state.currentFolderId;
-  } else {
-    history.replaceState(null, '', location.pathname);
-    document.getElementById('urlHashDisplay').textContent = '';
-  }
-  // Re-init file status
+  history.replaceState(null, '', state.currentFolderId ? '#folder-' + state.currentFolderId : location.pathname);
+  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? '#folder-' + state.currentFolderId : '';
   document.getElementById('statKey').textContent = state.keyFile ? `OK: ${state.keyFile.name}` : '選択してください';
   document.getElementById('statKey').className = 'upload-status' + (state.keyFile ? ' ok' : '');
   document.getElementById('statStu').textContent = state.stuFiles.length > 0 ? `OK: ${state.stuFiles.length}枚` : '選択してください (複数可)';
@@ -2370,13 +1860,16 @@ function backToTop() {
   btnStart.disabled = !(state.keyFile && state.stuFiles.length > 0);
 }
 
+function getFolderIdFromHash() {
+  const m = location.hash.match(/^#folder-([a-z0-9]+)/i);
+  return m ? m[1] : null;
+}
+
 (async () => {
   await initDB();
-  // Wait for Firebase then check URL hash
-  await waitForFirebase();
   const folderId = getFolderIdFromHash();
   if (folderId) {
-    addVisitedFolder(folderId);
+    addVisited(folderId);
     await openFolder(folderId);
   }
 })();
