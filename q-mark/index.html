@@ -7,19 +7,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-firebase.initializeApp({
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
   apiKey: "AIzaSyDXI7ciwEFiCo3yPQmFjg0DxZSNptWKkIc",
   authDomain: "q-mark-d19c7.firebaseapp.com",
   databaseURL: "https://q-mark-d19c7-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "q-mark-d19c7",
   storageBucket: "q-mark-d19c7.firebasestorage.app",
   messagingSenderId: "522566486976",
-  appId: "1:522566486976:web:82860744ebd31f6d141625"
-});
-const fbDB = firebase.database();
+  appId: "1:522566486976:web:82860744ebd31f6d141625",
+  measurementId: "G-M38NFWTSP2"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
+// Expose to global scope for use in non-module scripts
+window.fbDb = db;
+window.fbRef = ref;
+window.fbSet = set;
+window.fbGet = get;
+window.fbOnValue = onValue;
+window.fbUpdate = update;
+window.fbRemove = remove;
+window.firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
 </script>
 <style>
 :root {
@@ -203,20 +219,11 @@ canvas { display: block; width: 100%; height: auto; }
 .upload-box:hover, .upload-box.dragover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
 .upload-status.ok { color: var(--success); background: rgba(52, 211, 153, 0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
 
-/* Overlay auth section */
+/* Overlay folder section */
 .overlay-divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 24px; }
 .overlay-divider::before, .overlay-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .overlay-divider span { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-.auth-promo {
-    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08));
-    border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius);
-    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
-}
-.auth-promo-text { text-align: left; }
-.auth-promo-text strong { display: block; font-size: 0.9rem; color: var(--text-main); margin-bottom: 4px; }
-.auth-promo-text span { font-size: 0.78rem; color: var(--text-muted); }
-.auth-promo-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.folder-open-section { margin-top: 16px; }
+.folder-open-section { margin-top: 4px; }
 
 /* ===== TOAST ===== */
 #toast {
@@ -275,11 +282,7 @@ canvas { display: block; width: 100%; height: auto; }
 .modal-close:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
 .modal-body { padding: 20px 28px 28px; }
 
-/* ===== AUTH MODAL ===== */
-
-.auth-tabs { display: flex; gap: 4px; background: var(--bg-base); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 24px; }
-.auth-tab { flex: 1; height: 34px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
-.auth-tab.active { background: var(--bg-surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
+/* ===== FORM INPUTS ===== */
 .form-group { margin-bottom: 16px; text-align: left; }
 .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
 .form-input {
@@ -290,7 +293,6 @@ canvas { display: block; width: 100%; height: auto; }
 .form-input:focus { border-color: var(--primary); }
 .form-input::placeholder { color: var(--text-muted); }
 .form-error { color: var(--danger); font-size: 0.78rem; margin-top: 8px; min-height: 18px; }
-.form-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 12px; line-height: 1.5; }
 
 /* ===== FOLDER MODAL ===== */
 #folderModal .modal-box { width: 640px; max-height: 80vh; display: flex; flex-direction: column; }
@@ -403,14 +405,13 @@ canvas { display: block; width: 100%; height: auto; }
     採点スタート
   </button>
 
-  <div>
+  <div id="overlayFolderSection">
     <div class="overlay-divider"><span>フォルダ</span></div>
-    <button class="btn btn-success" style="width:100%; height:44px; justify-content:center;" onclick="openFolderModal()">
-      📁 フォルダを開く / 作成
-    </button>
-    <p style="text-align:center; color:var(--text-muted); font-size:0.75rem; margin-top:10px;">
-      ☁️ 採点マークはFirebaseでデバイス間同期。フォルダURLを共有するだけで誰でも編集可能。
-    </p>
+    <div class="folder-open-section">
+      <button class="btn btn-success" style="width:100%; height:44px; justify-content:center;" onclick="openFolderModal()">
+        📁 フォルダを開く / 作成
+      </button>
+    </div>
   </div>
 
   <div style="margin-top:20px; display:flex; justify-content:center; gap:16px;">
@@ -514,6 +515,9 @@ canvas { display: block; width: 100%; height: auto; }
           <div id="stuCount" style="font-size:0.7rem; color:var(--text-muted);">0 / 0</div>
         </div>
         <button class="btn" onclick="navStudent(1)" style="padding:0 10px;">▶</button>
+        <div class="divider"></div>
+        <button class="btn btn-success" onclick="document.getElementById('inpAddStu').click()" title="生徒答案を追加" style="padding:0 10px;">＋ 追加</button>
+        <input type="file" id="inpAddStu" multiple style="display:none" accept="image/*,application/pdf">
       </div>
       <div class="toolbar">
         <span style="margin-right:12px; font-size:0.85rem; color:var(--text-sub);">
@@ -548,7 +552,6 @@ canvas { display: block; width: 100%; height: auto; }
 
 <div id="toast">Message</div>
 
-
 <div class="modal-overlay" id="folderModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -556,9 +559,9 @@ canvas { display: block; width: 100%; height: auto; }
       <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:0.78rem;color:var(--info);line-height:1.6;">
-        ☁️ <strong>採点マーク・ゾーンはFirebaseでリアルタイム同期。</strong>
-        <span style="color:var(--text-muted);">🔗 URLを共有するだけで別デバイスからも編集可。PDF/画像は各デバイスで個別アップロード。</span>
+      <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.2); border-radius:var(--radius); padding:12px 16px; margin-bottom:16px; font-size:0.8rem; color:var(--info); line-height:1.6;">
+        🔗 <strong>フォルダURLを共有するだけで採点データをどのデバイスでも編集できます。</strong><br>
+        <span style="color:var(--text-muted);">採点マーク・ゾーンはFirebaseでリアルタイム同期。PDF/画像は各デバイスで個別にアップロードしてください。</span>
       </div>
       <div class="folder-create-bar">
         <input type="text" id="newFolderName" class="form-input" placeholder="新しいフォルダ名（例: 2024年度 中間テスト）">
@@ -615,6 +618,104 @@ canvas { display: block; width: 100%; height: auto; }
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const { jsPDF } = window.jspdf;
 const STORAGE_KEY = 'QG_PRO_DATA_V2';
+
+// =============================================
+// FIREBASE REALTIME DATABASE SYNC
+// =============================================
+// folders/{folderId}/meta  — name, createdAt, stuCount, updatedAt
+// folders/{folderId}/marks — marks object
+// folders/{folderId}/zones — zones array
+
+let fbSyncListeners = {}; // active onValue listeners per folderId
+
+function waitForFirebase() {
+  return new Promise(resolve => {
+    if (window.firebaseReady) { resolve(); return; }
+    window.addEventListener('firebaseReady', () => resolve(), { once: true });
+  });
+}
+
+async function fbSaveFolderMeta(folderId, metaObj) {
+  await waitForFirebase();
+  try {
+    await fbSet(fbRef(fbDb, `folders/${folderId}/meta`), metaObj);
+  } catch(e) { console.warn('Firebase meta save failed:', e); }
+}
+
+async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
+  await waitForFirebase();
+  try {
+    await fbSet(fbRef(fbDb, `folders/${folderId}/data`), {
+      marks: marks || {},
+      zones: zones || [],
+      markSize: markSize || 44,
+      updatedAt: Date.now()
+    });
+  } catch(e) { console.warn('Firebase data save failed:', e); }
+}
+
+async function fbGetFolderData(folderId) {
+  await waitForFirebase();
+  try {
+    const snap = await fbGet(fbRef(fbDb, `folders/${folderId}`));
+    return snap.exists() ? snap.val() : null;
+  } catch(e) { console.warn('Firebase get failed:', e); return null; }
+}
+
+async function fbGetAllFoldersMeta() {
+  await waitForFirebase();
+  try {
+    const snap = await fbGet(fbRef(fbDb, 'folders'));
+    if (!snap.exists()) return {};
+    const all = snap.val();
+    const result = {};
+    Object.entries(all).forEach(([id, val]) => {
+      if (val.meta) result[id] = val.meta;
+    });
+    return result;
+  } catch(e) { console.warn('Firebase list failed:', e); return {}; }
+}
+
+async function fbDeleteFolder(folderId) {
+  await waitForFirebase();
+  try {
+    await fbRemove(fbRef(fbDb, `folders/${folderId}`));
+  } catch(e) { console.warn('Firebase delete failed:', e); }
+}
+
+// Subscribe to real-time mark updates for the open folder
+function fbSubscribeFolder(folderId) {
+  fbUnsubscribeAll();
+  if (!folderId) return;
+  waitForFirebase().then(() => {
+    const dataRef = fbRef(fbDb, `folders/${folderId}/data`);
+    const unsub = fbOnValue(dataRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.val();
+      // Only update if the change came from another session
+      const remoteUpdatedAt = data.updatedAt || 0;
+      if (remoteUpdatedAt > (window._lastLocalSave || 0) + 500) {
+        state.marks = data.marks || {};
+        state.zones = data.zones || [];
+        if (data.markSize) {
+          state.globalMarkSize = data.markSize;
+          markSizeRange.value = data.markSize;
+        }
+        renderMarks();
+        showToast('🔄 他のデバイスの変更を反映しました');
+      }
+    });
+    fbSyncListeners[folderId] = unsub;
+  });
+}
+
+function fbUnsubscribeAll() {
+  Object.values(fbSyncListeners).forEach(unsub => { try { unsub(); } catch(e) {} });
+  fbSyncListeners = {};
+}
+
+
+// End of Firebase sync layer
 
 const state = {
   keyFile: null,
@@ -695,107 +796,114 @@ function readFileAsBuffer(file) {
 }
 
 // =============================================
-// FOLDER SYSTEM (No auth, Firebase sync)
+// NO-AUTH FOLDER SYSTEM
+// フォルダはURLで共有可能。アカウント不要。
 // =============================================
 const FOLDER_META_KEY = 'QM_FOLDERS_V3';
-const VISITED_KEY = 'QM_VISITED_V3';
-let fbSyncOff = null; // Firebase listener unsubscribe
-let _lastLocalSave = 0;
+const VISITED_KEY = 'QM_VISITED_FOLDERS';
 
-function getFolderMeta() { return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]'); }
-function saveFolderMeta(f) { localStorage.setItem(FOLDER_META_KEY, JSON.stringify(f)); }
-function getVisited() { return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'); }
-function addVisited(id) {
-  const v = getVisited(); if (!v.includes(id)) { v.unshift(id); localStorage.setItem(VISITED_KEY, JSON.stringify(v.slice(0,50))); }
+function getFolderMeta() {
+  return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]');
+}
+function saveFolderMeta(folders) {
+  localStorage.setItem(FOLDER_META_KEY, JSON.stringify(folders));
+}
+function getVisitedFolderIds() {
+  return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]');
+}
+function addVisitedFolder(id) {
+  const visited = getVisitedFolderIds();
+  if (!visited.includes(id)) {
+    visited.unshift(id);
+    localStorage.setItem(VISITED_KEY, JSON.stringify(visited.slice(0, 50)));
+  }
 }
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
 
-// Firebase helpers
-function fbPath(folderId) { return fbDB.ref('folders/' + folderId); }
-async function fbSaveMeta(id, meta) { try { await fbDB.ref('folders/' + id + '/meta').set(meta); } catch(e) { console.warn('fb meta fail', e); } }
-async function fbSaveData(id, marks, zones, markSize) {
-  try { await fbDB.ref('folders/' + id + '/data').set({ marks: marks||{}, zones: zones||[], markSize: markSize||44, ts: Date.now() }); }
-  catch(e) { console.warn('fb data fail', e); }
-}
-async function fbGetFolder(id) {
-  try { const s = await fbDB.ref('folders/' + id).get(); return s.exists() ? s.val() : null; }
-  catch(e) { console.warn('fb get fail', e); return null; }
-}
-async function fbGetAllMeta() {
-  try {
-    const s = await fbDB.ref('folders').get();
-    if (!s.exists()) return {};
-    const out = {}; s.forEach(c => { if (c.val().meta) out[c.key] = c.val().meta; }); return out;
-  } catch(e) { return {}; }
-}
-function fbSubscribe(id) {
-  if (fbSyncOff) { fbSyncOff(); fbSyncOff = null; }
-  const ref = fbDB.ref('folders/' + id + '/data');
-  ref.on('value', snap => {
-    if (!snap.exists()) return;
-    const d = snap.val();
-    if ((d.ts||0) > _lastLocalSave + 1000) {
-      state.marks = d.marks || {};
-      state.zones = d.zones || [];
-      if (d.markSize) { state.globalMarkSize = d.markSize; markSizeRange.value = d.markSize; }
-      renderMarks();
-      showToast('🔄 他のデバイスの変更を反映しました');
-    }
-  });
-  fbSyncOff = () => ref.off('value');
-}
-
 async function createFolder() {
   const name = document.getElementById('newFolderName').value.trim() || `採点 ${new Date().toLocaleDateString('ja-JP')}`;
+  const meta = getFolderMeta();
   const id = genId();
-  const meta = { id, name, createdAt: Date.now(), stuCount: 0 };
-  const folders = getFolderMeta(); folders.unshift(meta); saveFolderMeta(folders);
+  const metaObj = { id, name, createdAt: Date.now(), stuCount: 0 };
+  meta.unshift(metaObj);
+  saveFolderMeta(meta);
   await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
-  addVisited(id);
-  fbSaveMeta(id, meta);
+  addVisitedFolder(id);
+  // Sync to Firebase
+  fbSaveFolderMeta(id, metaObj);
   document.getElementById('newFolderName').value = '';
   renderFolderList();
   showToast(`フォルダ「${name}」を作成しました`);
 }
 
 async function openFolder(id) {
-  showToast('読み込み中...');
-  let local = await idbGet('folders', id).catch(() => null);
-  const remote = await fbGetFolder(id);
-  if (!local && !remote) { showToast('フォルダが見つかりません'); return; }
-  if (!local) { local = { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 }; await idbPut('folders', local); }
+  showToast('フォルダを読み込んでいます...');
+
+  // Try to get local IDB data (for files)
+  let localData = await idbGet('folders', id).catch(() => null);
+
+  // Always fetch latest marks/zones from Firebase
+  const fbData = await fbGetFolderData(id);
+
+  if (!localData && !fbData) {
+    showToast('フォルダが見つかりません');
+    return;
+  }
+
+  // If folder exists in Firebase but not locally, create a local shell
+  if (!localData) {
+    localData = { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 };
+    await idbPut('folders', localData);
+  }
 
   // Files from local IDB
-  state.keyFile = local.keyFile ? new File([local.keyFile.buffer], local.keyFile.name, { type: local.keyFile.type }) : null;
-  state.stuFiles = (local.stuFiles||[]).map(f => new File([f.buffer], f.name, { type: f.type }));
-
-  // Marks/zones: Firebase is the source of truth
-  if (remote && remote.data) {
-    state.marks = remote.data.marks || {};
-    state.zones = remote.data.zones || [];
-    state.globalMarkSize = remote.data.markSize || 44;
+  if (localData.keyFile) {
+    state.keyFile = new File([localData.keyFile.buffer], localData.keyFile.name, { type: localData.keyFile.type });
   } else {
-    state.marks = local.marks || {};
-    state.zones = local.zones || [];
-    state.globalMarkSize = local.markSize || 44;
+    state.keyFile = null;
+  }
+  if (localData.stuFiles && localData.stuFiles.length > 0) {
+    state.stuFiles = localData.stuFiles.map(f => new File([f.buffer], f.name, { type: f.type }));
+  } else {
+    state.stuFiles = [];
+  }
+
+  // Marks/zones: prefer Firebase (latest) over local
+  if (fbData && fbData.data) {
+    state.marks = fbData.data.marks || {};
+    state.zones = fbData.data.zones || [];
+    state.globalMarkSize = fbData.data.markSize || 44;
+  } else {
+    state.marks = localData.marks || {};
+    state.zones = localData.zones || [];
+    state.globalMarkSize = localData.markSize || 44;
   }
   markSizeRange.value = state.globalMarkSize;
   state.currentFolderId = id;
-  addVisited(id);
+  addVisitedFolder(id);
 
-  // Register locally if only known from Firebase
-  if (remote && remote.meta) {
-    const folders = getFolderMeta();
-    if (!folders.find(f => f.id === id)) { folders.unshift(remote.meta); saveFolderMeta(folders); }
+  // Register folder meta locally if we got it from Firebase
+  if (fbData && fbData.meta) {
+    const meta = getFolderMeta();
+    if (!meta.find(f => f.id === id)) {
+      meta.unshift(fbData.meta);
+      saveFolderMeta(meta);
+    }
   }
 
-  fbSubscribe(id);
+  // Subscribe to real-time updates
+  fbSubscribeFolder(id);
+
+  // Update URL
   history.replaceState(null, '', '#folder-' + id);
   document.getElementById('urlHashDisplay').textContent = '#folder-' + id;
+
   closeModal('folderModal');
 
-  const folders = getFolderMeta(); const folder = folders.find(f => f.id === id);
-  document.getElementById('folderIndicatorName').textContent = folder ? folder.name : (remote?.meta?.name || id);
+  const meta = getFolderMeta();
+  const folder = meta.find(f => f.id === id);
+  const folderName = folder ? folder.name : (fbData?.meta?.name || id);
+  document.getElementById('folderIndicatorName').textContent = folderName;
   document.getElementById('folderIndicator').style.display = 'flex';
   document.getElementById('noFolderRow').style.display = 'none';
   document.getElementById('sessionBar').classList.add('visible');
@@ -803,7 +911,8 @@ async function openFolder(id) {
   if (state.keyFile) {
     document.getElementById('overlay').style.display = 'none';
     await drawImage(state.keyFile, 'cvLeft', 'wrapLeft', 'scrollLeft', 'left');
-    if (state.stuFiles.length > 0) await loadStudent(0); else renderMarks();
+    if (state.stuFiles.length > 0) await loadStudent(0);
+    else renderMarks();
   } else {
     document.getElementById('overlay').style.display = 'flex';
     document.getElementById('statKey').textContent = '選択してください';
@@ -811,17 +920,19 @@ async function openFolder(id) {
     document.getElementById('statStu').textContent = '選択してください (複数可)';
     document.getElementById('statStu').className = 'upload-status';
     btnStart.disabled = true;
-    showToast('採点データ同期済。PDFをアップロードしてください。');
+    showToast('採点データを同期しました。PDFをアップロードしてください。');
   }
 }
 
 async function deleteFolder(id) {
-  if (!confirm('このフォルダを完全に削除しますか？')) return;
-  await idbDelete('folders', id).catch(()=>{});
-  saveFolderMeta(getFolderMeta().filter(f => f.id !== id));
-  localStorage.setItem(VISITED_KEY, JSON.stringify(getVisited().filter(v => v !== id)));
-  if (fbSyncOff) { fbSyncOff(); fbSyncOff = null; }
-  try { await fbDB.ref('folders/' + id).remove(); } catch(e) {}
+  if (!confirm('このフォルダを完全に削除しますか？\n（Firebaseのデータも削除されます）')) return;
+  await idbDelete('folders', id);
+  const meta = getFolderMeta().filter(f => f.id !== id);
+  saveFolderMeta(meta);
+  const visited = getVisitedFolderIds().filter(v => v !== id);
+  localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
+  fbUnsubscribeAll();
+  await fbDeleteFolder(id);
   renderFolderList();
   showToast('フォルダを削除しました');
 }
@@ -832,13 +943,26 @@ function shareFolderUrl(id) {
 }
 
 function openSaveFolderModal() {
-  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
-  const folders = getFolderMeta();
-  const sel = document.getElementById('saveFolderSelect'); sel.innerHTML = '';
-  if (folders.length === 0) {
-    const opt = document.createElement('option'); opt.value = ''; opt.textContent = '（フォルダがありません）'; sel.appendChild(opt);
+  if (!state.keyFile || state.stuFiles.length === 0) {
+    showToast('先にファイルをアップロードしてください');
+    return;
+  }
+  const meta = getFolderMeta();
+  const sel = document.getElementById('saveFolderSelect');
+  sel.innerHTML = '';
+  if (meta.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = '（フォルダがありません）';
+    sel.appendChild(opt);
   } else {
-    folders.forEach(f => { const opt = document.createElement('option'); opt.value = f.id; opt.textContent = f.name; if (f.id === state.currentFolderId) opt.selected = true; sel.appendChild(opt); });
+    meta.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = f.name;
+      if (f.id === state.currentFolderId) opt.selected = true;
+      sel.appendChild(opt);
+    });
   }
   document.getElementById('saveFolderNewName').value = '';
   document.getElementById('saveError').textContent = '';
@@ -846,313 +970,127 @@ function openSaveFolderModal() {
 }
 
 async function executeSaveToFolder() {
-  const errEl = document.getElementById('saveError'); errEl.textContent = '';
+  const errEl = document.getElementById('saveError');
+  errEl.textContent = '';
   try {
     showToast('保存中...');
     const keyBuffer = await readFileAsBuffer(state.keyFile);
     const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+
     const newName = document.getElementById('saveFolderNewName').value.trim();
     const selectedId = document.getElementById('saveFolderSelect').value;
     let targetId = selectedId;
-    const folders = getFolderMeta();
+
+    const meta = getFolderMeta();
     let metaObj;
     if (newName) {
-      const id = genId(); metaObj = { id, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
-      folders.unshift(metaObj); targetId = id; addVisited(id);
+      const id = genId();
+      metaObj = { id, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
+      meta.unshift(metaObj);
+      targetId = id;
+      addVisitedFolder(id);
     } else if (targetId) {
-      const idx = folders.findIndex(f => f.id === targetId);
-      if (idx >= 0) { folders[idx].stuCount = state.stuFiles.length; folders[idx].updatedAt = Date.now(); metaObj = folders[idx]; }
-    } else { throw new Error('保存先を選択するか、新しいフォルダ名を入力してください'); }
-    const folderData = { id: targetId, keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-      stuFiles: state.stuFiles.map((f,i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize };
-    await idbPut('folders', folderData); saveFolderMeta(folders);
-    _lastLocalSave = Date.now();
-    if (metaObj) fbSaveMeta(targetId, metaObj);
-    fbSaveData(targetId, state.marks, state.zones, state.globalMarkSize);
-    state.currentFolderId = targetId; fbSubscribe(targetId);
-    const folderName = newName || folders.find(f => f.id === targetId)?.name || 'フォルダ';
+      const idx = meta.findIndex(f => f.id === targetId);
+      if (idx >= 0) {
+        meta[idx].stuCount = state.stuFiles.length;
+        meta[idx].updatedAt = Date.now();
+        metaObj = meta[idx];
+      }
+    } else {
+      throw new Error('保存先を選択するか、新しいフォルダ名を入力してください');
+    }
+
+    const folderData = {
+      id: targetId,
+      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
+      stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
+      marks: state.marks,
+      zones: state.zones,
+      markSize: state.globalMarkSize
+    };
+
+    await idbPut('folders', folderData);
+    saveFolderMeta(meta);
+
+    // Sync to Firebase
+    window._lastLocalSave = Date.now();
+    if (metaObj) fbSaveFolderMeta(targetId, metaObj);
+    fbSaveMarksAndZones(targetId, state.marks, state.zones, state.globalMarkSize);
+
+    state.currentFolderId = targetId;
+    fbSubscribeFolder(targetId);
+
+    const folderName = newName || meta.find(f => f.id === targetId)?.name || 'フォルダ';
     document.getElementById('folderIndicatorName').textContent = folderName;
     document.getElementById('folderIndicator').style.display = 'flex';
     document.getElementById('noFolderRow').style.display = 'none';
     document.getElementById('sessionBar').classList.add('visible');
+
+    // Update URL
     history.replaceState(null, '', '#folder-' + targetId);
     document.getElementById('urlHashDisplay').textContent = '#folder-' + targetId;
-    closeModal('saveFolderModal'); showToast('フォルダに保存しました！');
+
+    closeModal('saveFolderModal');
+    showToast('フォルダに保存しました！');
   } catch(e) { errEl.textContent = e.message; showToast('保存に失敗しました'); }
 }
 
 async function renderFolderList() {
   const list = document.getElementById('folderList');
-  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">🔄 読み込み中...</div>';
-  const fbMeta = await fbGetAllMeta();
-  const local = getFolderMeta();
-  const merged = {}; local.forEach(f => merged[f.id] = f);
-  Object.entries(fbMeta).forEach(([id, m]) => { merged[id] = { ...(merged[id]||{}), ...m }; });
-  getVisited().forEach(id => { if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', visitedOnly: true }; });
-  const all = Object.values(merged).sort((a,b) => (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
-  saveFolderMeta(all.filter(f => !f.visitedOnly));
-  list.innerHTML = '';
-  if (all.length === 0) {
-    list.innerHTML = '<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上のフィールドから新しいフォルダを作成しましょう。</div></div>'; return;
+  list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">🔄 読み込み中...</div>`;
+
+  // Fetch Firebase folders
+  const fbMeta = await fbGetAllFoldersMeta();
+
+  // Merge local meta with Firebase meta
+  const localMeta = getFolderMeta();
+  const merged = { ...Object.fromEntries(localMeta.map(f => [f.id, f])) };
+  Object.entries(fbMeta).forEach(([id, meta]) => {
+    if (!merged[id]) merged[id] = { ...meta, fromCloud: true };
+    else merged[id] = { ...merged[id], ...meta }; // Firebase wins on name/stuCount
+  });
+
+  // Also include visited IDs
+  const visitedIds = getVisitedFolderIds();
+  visitedIds.forEach(id => {
+    if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', fromUrl: true };
+  });
+
+  // Update local meta from Firebase
+  const mergedList = Object.values(merged).sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+  saveFolderMeta(mergedList.filter(f => !f.fromUrl));
+
+  if (mergedList.length === 0) {
+    list.innerHTML = `<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上のフィールドで新しいフォルダを作成しましょう。<br><small style="color:var(--text-muted)">フォルダURLを受け取った場合はそのURLを開いてください。</small></div></div>`;
+    return;
   }
-  all.forEach(folder => {
-    const card = document.createElement('div'); card.className = 'folder-card';
-    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP',{year:'numeric',month:'short',day:'numeric'}) : '不明';
+
+  list.innerHTML = '';
+  mergedList.forEach(folder => {
+    const card = document.createElement('div');
+    card.className = 'folder-card';
+    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' }) : '不明';
     const isActive = folder.id === state.currentFolderId;
     card.innerHTML = `
-      <div class="folder-icon">${isActive?'📂':folder.visitedOnly?'🔗':'📁'}</div>
+      <div class="folder-icon">${isActive ? '📂' : (folder.fromCloud ? '☁️' : folder.fromUrl ? '🔗' : '📁')}</div>
       <div class="folder-info">
-        <div class="folder-name">${folder.name}${isActive?' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
+        <div class="folder-name">${folder.name}${isActive ? ' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
         <div class="folder-meta">
-          <span>${date}</span><span class="folder-stat">${folder.stuCount||0} 名の答案</span>
-          ${folder.updatedAt?`<span>更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>`:''}
+          <span>${date}</span>
+          <span class="folder-stat">${folder.stuCount || 0} 名の答案</span>
+          ${folder.updatedAt ? `<span>最終更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>` : ''}
+          ${folder.fromCloud ? '<span style="color:var(--info);">☁️ クラウド同期</span>' : ''}
         </div>
       </div>
       <div class="folder-actions">
-        <button class="btn" style="height:32px;font-size:0.75rem;padding:0 8px;" onclick="event.stopPropagation();shareFolderUrl('${folder.id}')">🔗 共有</button>
-        <button class="btn btn-primary" style="height:32px;font-size:0.8rem;" onclick="event.stopPropagation();openFolder('${folder.id}')">開く</button>
-        <button class="btn btn-danger" style="height:32px;font-size:0.8rem;padding:0 10px;" onclick="event.stopPropagation();deleteFolder('${folder.id}')">削除</button>
-      </div>`;
-    list.appendChild(card);
-  });
-}
-
-
-// =============================================
-// FOLDER SYSTEM (no auth, Firebase sync)
-// =============================================
-const FOLDER_META_KEY = 'QM_FOLDERS_V3';
-const VISITED_KEY     = 'QM_VISITED_V3';
-
-function getFolderMeta()     { return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]'); }
-function saveFolderMeta(arr) { localStorage.setItem(FOLDER_META_KEY, JSON.stringify(arr)); }
-function getVisited()        { return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'); }
-function addVisited(id) {
-  const v = getVisited(); if (!v.includes(id)) { v.unshift(id); localStorage.setItem(VISITED_KEY, JSON.stringify(v.slice(0,50))); }
-}
-function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
-
-// Firebase helpers using compat SDK (window._fdb)
-let _fbListenerRef = null;
-let _lastLocalSave = 0;
-
-function fbSaveMeta(id, meta) {
-  return window._fdb.ref(`folders/${id}/meta`).set(meta).catch(e => console.warn('fb meta:', e));
-}
-function fbSaveData(id, marks, zones, markSize) {
-  _lastLocalSave = Date.now();
-  return window._fdb.ref(`folders/${id}/data`).set({ marks: marks||{}, zones: zones||[], markSize: markSize||44, updatedAt: _lastLocalSave }).catch(e => console.warn('fb data:', e));
-}
-async function fbGetFolder(id) {
-  try { const s = await window._fdb.ref(`folders/${id}`).get(); return s.exists() ? s.val() : null; }
-  catch(e) { console.warn('fb get:', e); return null; }
-}
-async function fbListMeta() {
-  try {
-    const s = await window._fdb.ref('folders').get();
-    if (!s.exists()) return {};
-    const out = {};
-    s.forEach(c => { if (c.val() && c.val().meta) out[c.key] = c.val().meta; });
-    return out;
-  } catch(e) { return {}; }
-}
-function fbDeleteRemote(id) { return window._fdb.ref(`folders/${id}`).remove().catch(e => console.warn('fb del:', e)); }
-function fbSubscribe(id) {
-  fbUnsubscribe();
-  _fbListenerRef = window._fdb.ref(`folders/${id}/data`);
-  _fbListenerRef.on('value', snap => {
-    if (!snap.exists()) return;
-    const d = snap.val();
-    if ((d.updatedAt || 0) > _lastLocalSave + 1000) {
-      state.marks = d.marks || {};
-      state.zones = d.zones || [];
-      if (d.markSize) { state.globalMarkSize = d.markSize; markSizeRange.value = d.markSize; }
-      renderMarks();
-      showToast('🔄 他のデバイスの変更を反映しました');
-    }
-  });
-}
-function fbUnsubscribe() {
-  if (_fbListenerRef) { _fbListenerRef.off('value'); _fbListenerRef = null; }
-}
-
-async function createFolder() {
-  const name = document.getElementById('newFolderName').value.trim() || `採点 ${new Date().toLocaleDateString('ja-JP')}`;
-  const id   = genId();
-  const meta = { id, name, createdAt: Date.now(), stuCount: 0 };
-  const arr  = getFolderMeta(); arr.unshift(meta); saveFolderMeta(arr);
-  await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
-  addVisited(id);
-  fbSaveMeta(id, meta);
-  document.getElementById('newFolderName').value = '';
-  renderFolderList();
-  showToast(`フォルダ「${name}」を作成しました`);
-}
-
-async function openFolder(id) {
-  showToast('読み込み中...');
-  const [local, remote] = await Promise.all([idbGet('folders', id).catch(() => null), fbGetFolder(id)]);
-  if (!local && !remote) { showToast('フォルダが見つかりません'); return; }
-  if (!local) await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
-
-  const src = local || {};
-  state.keyFile  = src.keyFile  ? new File([src.keyFile.buffer],  src.keyFile.name,  { type: src.keyFile.type  }) : null;
-  state.stuFiles = src.stuFiles ? src.stuFiles.map(f => new File([f.buffer], f.name, { type: f.type })) : [];
-
-  const d = remote?.data || {};
-  state.marks          = d.marks    || src.marks    || {};
-  state.zones          = d.zones    || src.zones    || [];
-  state.globalMarkSize = d.markSize || src.markSize || 44;
-  markSizeRange.value  = state.globalMarkSize;
-  state.currentFolderId = id;
-  addVisited(id);
-
-  if (remote?.meta) {
-    const arr = getFolderMeta();
-    if (!arr.find(f => f.id === id)) { arr.unshift(remote.meta); saveFolderMeta(arr); }
-  }
-
-  fbSubscribe(id);
-  history.replaceState(null, '', '#folder-' + id);
-  document.getElementById('urlHashDisplay').textContent = '#folder-' + id;
-  closeModal('folderModal');
-
-  const folderName = getFolderMeta().find(f => f.id === id)?.name || remote?.meta?.name || id;
-  document.getElementById('folderIndicatorName').textContent = folderName;
-  document.getElementById('folderIndicator').style.display = 'flex';
-  document.getElementById('noFolderRow').style.display = 'none';
-  document.getElementById('sessionBar').classList.add('visible');
-
-  if (state.keyFile) {
-    document.getElementById('overlay').style.display = 'none';
-    await drawImage(state.keyFile, 'cvLeft', 'wrapLeft', 'scrollLeft', 'left');
-    if (state.stuFiles.length > 0) await loadStudent(0); else renderMarks();
-  } else {
-    document.getElementById('overlay').style.display = 'flex';
-    document.getElementById('statKey').textContent = '選択してください';
-    document.getElementById('statKey').className = 'upload-status';
-    document.getElementById('statStu').textContent = '選択してください (複数可)';
-    document.getElementById('statStu').className = 'upload-status';
-    btnStart.disabled = true;
-    showToast('採点データを同期済み。PDFをアップロードしてください。');
-  }
-}
-
-async function deleteFolder(id) {
-  if (!confirm('このフォルダを削除しますか？（Firebaseのデータも削除されます）')) return;
-  await idbDelete('folders', id);
-  saveFolderMeta(getFolderMeta().filter(f => f.id !== id));
-  localStorage.setItem(VISITED_KEY, JSON.stringify(getVisited().filter(v => v !== id)));
-  fbUnsubscribe();
-  fbDeleteRemote(id);
-  renderFolderList();
-  showToast('フォルダを削除しました');
-}
-
-function shareFolderUrl(id) {
-  const url = location.origin + location.pathname + '#folder-' + id;
-  navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました！'));
-}
-
-function openSaveFolderModal() {
-  if (!state.keyFile || !state.stuFiles.length) { showToast('先にファイルをアップロードしてください'); return; }
-  const meta = getFolderMeta(), sel = document.getElementById('saveFolderSelect');
-  sel.innerHTML = '';
-  if (!meta.length) { sel.innerHTML = '<option value="">（フォルダがありません）</option>'; }
-  else meta.forEach(f => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.name; if (f.id === state.currentFolderId) o.selected = true; sel.appendChild(o); });
-  document.getElementById('saveFolderNewName').value = '';
-  document.getElementById('saveError').textContent   = '';
-  openModal('saveFolderModal');
-}
-
-async function executeSaveToFolder() {
-  const errEl = document.getElementById('saveError'); errEl.textContent = '';
-  try {
-    showToast('保存中...');
-    const keyBuffer  = await readFileAsBuffer(state.keyFile);
-    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-    const newName    = document.getElementById('saveFolderNewName').value.trim();
-    const selectedId = document.getElementById('saveFolderSelect').value;
-    const meta = getFolderMeta();
-    let targetId = selectedId, metaObj;
-    if (newName) {
-      targetId = genId(); metaObj = { id: targetId, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
-      meta.unshift(metaObj); addVisited(targetId);
-    } else if (targetId) {
-      const idx = meta.findIndex(f => f.id === targetId);
-      if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); metaObj = meta[idx]; }
-    } else { throw new Error('保存先を選択するか、新しいフォルダ名を入力してください'); }
-
-    await idbPut('folders', { id: targetId, keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer }, stuFiles: state.stuFiles.map((f,i)=>({name:f.name,type:f.type,buffer:stuBuffers[i]})), marks: state.marks, zones: state.zones, markSize: state.globalMarkSize });
-    saveFolderMeta(meta);
-    if (metaObj) fbSaveMeta(targetId, metaObj);
-    fbSaveData(targetId, state.marks, state.zones, state.globalMarkSize);
-    state.currentFolderId = targetId;
-    fbSubscribe(targetId);
-
-    document.getElementById('folderIndicatorName').textContent = newName || meta.find(f=>f.id===targetId)?.name || 'フォルダ';
-    document.getElementById('folderIndicator').style.display = 'flex';
-    document.getElementById('noFolderRow').style.display = 'none';
-    document.getElementById('sessionBar').classList.add('visible');
-    history.replaceState(null, '', '#folder-' + targetId);
-    document.getElementById('urlHashDisplay').textContent = '#folder-' + targetId;
-    closeModal('saveFolderModal'); showToast('フォルダに保存しました！');
-  } catch(e) { errEl.textContent = e.message; showToast('保存に失敗しました'); }
-}
-
-async function quickSaveFolder() {
-  if (!state.currentFolderId) { openSaveFolderModal(); return; }
-  if (!state.keyFile || !state.stuFiles.length) { showToast('先にファイルをアップロードしてください'); return; }
-  try {
-    const keyBuffer  = await readFileAsBuffer(state.keyFile);
-    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-    const meta = getFolderMeta(), idx = meta.findIndex(f => f.id === state.currentFolderId);
-    if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); }
-    await idbPut('folders', { id: state.currentFolderId, keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer }, stuFiles: state.stuFiles.map((f,i)=>({name:f.name,type:f.type,buffer:stuBuffers[i]})), marks: state.marks, zones: state.zones, markSize: state.globalMarkSize });
-    saveFolderMeta(meta);
-    if (idx >= 0) fbSaveMeta(state.currentFolderId, meta[idx]);
-    await fbSaveData(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
-    showToast('💾 上書き保存しました！');
-  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
-}
-
-async function renderFolderList() {
-  const list = document.getElementById('folderList');
-  list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">🔄 読み込み中...</div>`;
-  const fbMeta  = await fbListMeta();
-  const merged  = Object.fromEntries(getFolderMeta().map(f => [f.id, f]));
-  Object.entries(fbMeta).forEach(([id, m]) => { merged[id] = merged[id] ? { ...merged[id], ...m } : { ...m, fromCloud: true }; });
-  getVisited().forEach(id => { if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', fromUrl: true }; });
-  const all = Object.values(merged).sort((a,b) => (b.updatedAt||b.createdAt||0) - (a.updatedAt||a.createdAt||0));
-  saveFolderMeta(all.filter(f => !f.fromUrl));
-  if (!all.length) { list.innerHTML = `<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上から新しいフォルダを作成しましょう。</div></div>`; return; }
-  list.innerHTML = '';
-  all.forEach(folder => {
-    const card = document.createElement('div'); card.className = 'folder-card';
-    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP',{year:'numeric',month:'short',day:'numeric'}) : '不明';
-    const isActive = folder.id === state.currentFolderId;
-    const icon = isActive ? '📂' : folder.fromCloud ? '☁️' : folder.fromUrl ? '🔗' : '📁';
-    card.innerHTML = `
-      <div class="folder-icon">${icon}</div>
-      <div class="folder-info">
-        <div class="folder-name">${folder.name}${isActive?' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
-        <div class="folder-meta">
-          <span>${date}</span><span class="folder-stat">${folder.stuCount||0} 名の答案</span>
-          ${folder.updatedAt?`<span>更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>`:''}
-          ${folder.fromCloud?'<span style="color:var(--info);">☁️ クラウド</span>':''}
-        </div>
+        <button class="btn" style="height:32px; font-size:0.75rem; padding:0 8px;" onclick="event.stopPropagation(); shareFolderUrl('${folder.id}')" title="URLをコピー">🔗 共有</button>
+        <button class="btn btn-primary" style="height:32px; font-size:0.8rem;" onclick="event.stopPropagation(); openFolder('${folder.id}')">開く</button>
+        <button class="btn btn-danger" style="height:32px; font-size:0.8rem; padding:0 10px;" onclick="event.stopPropagation(); deleteFolder('${folder.id}')">削除</button>
       </div>
-      <div class="folder-actions">
-        <button class="btn" style="height:32px;font-size:0.75rem;padding:0 8px;" onclick="event.stopPropagation();shareFolderUrl('${folder.id}')">🔗 共有</button>
-        <button class="btn btn-primary" style="height:32px;font-size:0.8rem;" onclick="event.stopPropagation();openFolder('${folder.id}')">開く</button>
-        <button class="btn btn-danger" style="height:32px;font-size:0.8rem;padding:0 10px;" onclick="event.stopPropagation();deleteFolder('${folder.id}')">削除</button>
-      </div>`;
+    `;
     list.appendChild(card);
   });
 }
-
-function openFolderModal() { renderFolderList(); openModal('folderModal'); }
 
 // =============================================
 // STATISTICS
@@ -1323,30 +1261,9 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
 
-function openFolderModal() { renderFolderList(); openModal('folderModal'); }
-
-async function quickSaveFolder() {
-  if (!state.currentFolderId) { openSaveFolderModal(); return; }
-  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
-  try {
-    showToast('上書き保存中...');
-    const keyBuffer = await readFileAsBuffer(state.keyFile);
-    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-    const folders = getFolderMeta();
-    const idx = folders.findIndex(f => f.id === state.currentFolderId);
-    if (idx >= 0) { folders[idx].stuCount = state.stuFiles.length; folders[idx].updatedAt = Date.now(); }
-    await idbPut('folders', {
-      id: state.currentFolderId,
-      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-      stuFiles: state.stuFiles.map((f,i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
-    });
-    saveFolderMeta(folders);
-    _lastLocalSave = Date.now();
-    if (idx >= 0) fbSaveMeta(state.currentFolderId, folders[idx]);
-    await fbSaveData(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
-    showToast('💾 上書き保存しました！');
-  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
+function openFolderModal() {
+  renderFolderList();
+  openModal('folderModal');
 }
 
 // =============================================
@@ -1365,8 +1282,8 @@ function loadFromStorage() {
 function saveToStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ marks: state.marks, zones: state.zones, markSize: state.globalMarkSize }));
   if (state.currentFolderId) {
-    _lastLocalSave = Date.now();
-    fbSaveData(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
+    window._lastLocalSave = Date.now();
+    fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
   }
 }
 
@@ -1406,7 +1323,7 @@ btnStart.onclick = async () => {
     const info = document.getElementById('noFolderRow');
     info.style.display = 'flex';
     document.getElementById('sessionFileInfo').textContent =
-      `📄 ${state.keyFile.name}  |  👥 ${state.stuFiles.length}名の答案  ·  💾保存でフォルダに保存できます`;
+      `📄 ${state.keyFile.name}  |  👥 ${state.stuFiles.length}名の答案  ·  💾 保存ボタンでフォルダに保存できます`;
   } else {
     quickSaveFolder();
   }
@@ -1457,16 +1374,47 @@ async function loadStudent(idx) {
 }
 function navStudent(d) { loadStudent(state.currIdx + d); }
 
+async function addStudents(files) {
+  if (!files || files.length === 0) return;
+  const newFiles = Array.from(files);
+  // Skip duplicates by name
+  const existingNames = new Set(state.stuFiles.map(f => f.name));
+  const toAdd = newFiles.filter(f => {
+    if (existingNames.has(f.name)) {
+      showToast(`スキップ: ${f.name}（同名ファイルが存在します）`);
+      return false;
+    }
+    return true;
+  });
+  if (toAdd.length === 0) return;
+
+  state.stuFiles = [...state.stuFiles, ...toAdd];
+  document.getElementById('stuCount').textContent = `${state.currIdx + 1} / ${state.stuFiles.length}`;
+  showToast(`${toAdd.length}件の答案を追加しました`);
+
+  // Auto-save to folder if one is open
+  if (state.currentFolderId) {
+    await quickSaveFolder();
+  }
+}
+
+// Wire up the add button
+document.getElementById('inpAddStu').addEventListener('change', (e) => {
+  addStudents(e.target.files);
+  e.target.value = ''; // reset so same file can be re-added if needed
+});
+
 // =============================================
 // URL HASH ROUTING
 // =============================================
 function updateUrlHash(idx) {
   if (state.stuFiles.length === 0) return;
   const name = encodeURIComponent(state.stuFiles[idx].name.replace(/\.[^.]+$/, ''));
+  // Preserve folder ID in hash if present
   const folderPart = state.currentFolderId ? `folder-${state.currentFolderId}|` : '';
   const hash = `#${folderPart}student-${idx + 1}-${name}`;
   history.replaceState(null, '', hash);
-  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? '#folder-' + state.currentFolderId : hash;
+  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? `#folder-${state.currentFolderId}` : hash;
 }
 
 function getIdxFromHash() {
@@ -1477,6 +1425,13 @@ function getIdxFromHash() {
     if (!isNaN(idx) && idx >= 0 && idx < state.stuFiles.length) return idx;
   }
   return null;
+}
+
+function getFolderIdFromHash() {
+  const hash = location.hash;
+  // Support #folder-ID or #folder-ID|...
+  const m = hash.match(/^#folder-([a-z0-9]+)/i);
+  return m ? m[1] : null;
 }
 
 window.addEventListener('hashchange', () => {
@@ -1490,6 +1445,34 @@ function copyCurrentUrl() {
   navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
 }
 
+// =============================================
+// QUICK SAVE (overwrite current folder)
+// =============================================
+async function quickSaveFolder() {
+  if (!state.currentFolderId) { openSaveFolderModal(); return; }
+  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
+  try {
+    showToast('上書き保存中...');
+    const keyBuffer = await readFileAsBuffer(state.keyFile);
+    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+    const meta = getFolderMeta();
+    const idx = meta.findIndex(f => f.id === state.currentFolderId);
+    if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); }
+    const folderData = {
+      id: state.currentFolderId,
+      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
+      stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
+      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
+    };
+    await idbPut('folders', folderData);
+    saveFolderMeta(meta);
+    // Sync to Firebase
+    window._lastLocalSave = Date.now();
+    if (idx >= 0) fbSaveFolderMeta(state.currentFolderId, meta[idx]);
+    await fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
+    showToast('💾 上書き保存しました！');
+  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
+}
 
 function addZoom(side, d) {
   let newVal = Math.max(10, Math.min(500, state.zoom[side] + d));
@@ -1851,8 +1834,15 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 function backToTop() {
   if (!confirm('トップに戻りますか？\n（現在の採点データはブラウザに保存されています）')) return;
   document.getElementById('overlay').style.display = 'flex';
-  history.replaceState(null, '', state.currentFolderId ? '#folder-' + state.currentFolderId : location.pathname);
-  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? '#folder-' + state.currentFolderId : '';
+  // Clear URL hash (keep folder ID if exists)
+  if (state.currentFolderId) {
+    history.replaceState(null, '', '#folder-' + state.currentFolderId);
+    document.getElementById('urlHashDisplay').textContent = '#folder-' + state.currentFolderId;
+  } else {
+    history.replaceState(null, '', location.pathname);
+    document.getElementById('urlHashDisplay').textContent = '';
+  }
+  // Re-init file status
   document.getElementById('statKey').textContent = state.keyFile ? `OK: ${state.keyFile.name}` : '選択してください';
   document.getElementById('statKey').className = 'upload-status' + (state.keyFile ? ' ok' : '');
   document.getElementById('statStu').textContent = state.stuFiles.length > 0 ? `OK: ${state.stuFiles.length}枚` : '選択してください (複数可)';
@@ -1860,16 +1850,13 @@ function backToTop() {
   btnStart.disabled = !(state.keyFile && state.stuFiles.length > 0);
 }
 
-function getFolderIdFromHash() {
-  const m = location.hash.match(/^#folder-([a-z0-9]+)/i);
-  return m ? m[1] : null;
-}
-
 (async () => {
   await initDB();
+  // Wait for Firebase then check URL hash
+  await waitForFirebase();
   const folderId = getFolderIdFromHash();
   if (folderId) {
-    addVisited(folderId);
+    addVisitedFolder(folderId);
     await openFolder(folderId);
   }
 })();
