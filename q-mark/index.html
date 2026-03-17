@@ -1083,8 +1083,13 @@ async function openFolder(id) {
   const fbData = await fbGetFolderData(id);
 
   if (!localData && !fbData) {
-    showToast('フォルダが見つかりません');
-    return;
+    // meta/data がなくても files だけ存在するケースがあるので確認する
+    const keyExistsSnap = await fbGet(fbRef(fbDb, `folders/${id}/files/key`)).catch(() => null);
+    if (!keyExistsSnap || !keyExistsSnap.exists()) {
+      showToast('フォルダが見つかりません');
+      return;
+    }
+    // files は存在する → fbData が null でも続行
   }
 
   if (!localData) {
