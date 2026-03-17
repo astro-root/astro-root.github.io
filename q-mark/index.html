@@ -758,7 +758,7 @@ function fbSubscribeFolder(folderId) {
     });
     fbSyncListeners[folderId + '_data'] = unsubData;
 
-    // ② 他デバイスの答案追加を検知して自動ダウンロード
+    // ② 他デバイスの答案追加を検知して自動ダウンロード＋IDBキャッシュ
     const stuCountRef = fbRef(fbDb, `folders/${folderId}/files/stuCount`);
     let isFirstCountFire = true;
     const unsubCount = fbOnValue(stuCountRef, async (snap) => {
@@ -775,7 +775,6 @@ function fbSubscribeFolder(folderId) {
           if (stuSnap.exists()) {
             const entry = stuSnap.val();
             const file = base64ToFile(entry.data, entry.name, entry.type);
-            // 重複チェック
             if (!state.stuFiles.find(f => f.name === file.name)) {
               state.stuFiles.push(file);
             }
@@ -784,6 +783,18 @@ function fbSubscribeFolder(folderId) {
       }
       document.getElementById('stuCount').textContent = `${state.currIdx + 1} / ${state.stuFiles.length}`;
       showToast(`✅ ${state.stuFiles.length} 件の答案を同期しました`);
+
+      // IDB にキャッシュ（次回ページ読み込み時に再ダウンロード不要にする）
+      try {
+        const keyBuffer = await readFileAsBuffer(state.keyFile);
+        const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+        await idbPut('folders', {
+          id: folderId,
+          keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
+          stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
+          marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
+        });
+      } catch(e) { console.warn('IDB auto-cache failed:', e); }
     });
     fbSyncListeners[folderId + '_stuCount'] = unsubCount;
   });
@@ -844,15 +855,22 @@ async function fbSaveFilesToRTDB(folderId) {
     });
     done++;
 
+    let successCount = 0;
     for (let i = 0; i < state.stuFiles.length; i++) {
       const f = state.stuFiles[i];
       setSyncProgress(((done + i) / total) * 100, `📄 ${f.name} (${i+1}/${state.stuFiles.length})`);
-      const b64 = await fileToBase64(f);
-      await fbSet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`), {
-        name: f.name, type: f.type, data: b64, index: i
-      });
+      try {
+        const b64 = await fileToBase64(f);
+        await fbSet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`), {
+          name: f.name, type: f.type, data: b64, index: i
+        });
+        successCount++;
+        await fbSet(fbRef(fbDb, `folders/${folderId}/files/stuCount`), successCount);
+      } catch(fileErr) {
+        console.warn(`stu_${i} (${f.name}) のアップロード失敗:`, fileErr);
+        showToast(`⚠️ ${f.name} のアップロード失敗（スキップ）`);
+      }
     }
-    await fbSet(fbRef(fbDb, `folders/${folderId}/files/stuCount`), state.stuFiles.length);
     setSyncProgress(100, '完了');
     setTimeout(hideSyncUI, 600);
   } catch(e) {
@@ -865,32 +883,37 @@ async function fbSaveFilesToRTDB(folderId) {
 async function fbLoadFilesFromRTDB(folderId) {
   await waitForFirebase();
   try {
-    const snap = await fbGet(fbRef(fbDb, `folders/${folderId}/files`));
-    if (!snap.exists()) {
-      console.log('RTDB: files node not found for', folderId);
-      return false;
-    }
-    const files = snap.val();
-    if (!files.key) {
-      console.log('RTDB: key file not found');
+    const countSnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/stuCount`));
+    const stuCount = countSnap.exists() ? countSnap.val() : 0;
+
+    const keySnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/key`));
+    if (!keySnap.exists()) {
+      console.log('RTDB: key file not found for', folderId);
       return false;
     }
 
     showSyncUI('ファイルをダウンロード中...', 'クラウドからファイルを取得しています');
-    const stuCount = files.stuCount || 0;
     const total = 1 + stuCount;
     let done = 0;
 
-    setSyncProgress((done / total) * 100, `📄 ${files.key.name}`);
-    state.keyFile = base64ToFile(files.key.data, files.key.name, files.key.type);
+    const keyData = keySnap.val();
+    setSyncProgress((done / total) * 100, `📄 ${keyData.name}`);
+    state.keyFile = base64ToFile(keyData.data, keyData.name, keyData.type);
     done++;
 
     state.stuFiles = [];
     for (let i = 0; i < stuCount; i++) {
-      const entry = files[`stu_${i}`];
-      if (entry) {
-        setSyncProgress(((done + i) / total) * 100, `📄 ${entry.name} (${i+1}/${stuCount})`);
-        state.stuFiles.push(base64ToFile(entry.data, entry.name, entry.type));
+      try {
+        const stuSnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`));
+        if (stuSnap.exists()) {
+          const entry = stuSnap.val();
+          setSyncProgress(((done + i) / total) * 100, `📄 ${entry.name} (${i+1}/${stuCount})`);
+          state.stuFiles.push(base64ToFile(entry.data, entry.name, entry.type));
+        } else {
+          console.warn(`RTDB: stu_${i} not found, skipping`);
+        }
+      } catch(fileErr) {
+        console.warn(`RTDB: stu_${i} download failed:`, fileErr);
       }
     }
 
