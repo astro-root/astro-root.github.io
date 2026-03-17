@@ -11,6 +11,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getStorage, ref as sref, uploadBytesResumable, getDownloadURL, deleteObject, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDXI7ciwEFiCo3yPQmFjg0DxZSNptWKkIc",
@@ -25,6 +26,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
+const storage = getStorage(firebaseApp);
 
 // Expose to global scope for use in non-module scripts
 window.fbDb = db;
@@ -34,6 +36,12 @@ window.fbGet = get;
 window.fbOnValue = onValue;
 window.fbUpdate = update;
 window.fbRemove = remove;
+window.fbStorage = storage;
+window.fbSref = sref;
+window.fbUploadBytesResumable = uploadBytesResumable;
+window.fbGetDownloadURL = getDownloadURL;
+window.fbDeleteObject = deleteObject;
+window.fbListAll = listAll;
 window.firebaseReady = true;
 window.dispatchEvent(new Event('firebaseReady'));
 </script>
@@ -355,7 +363,24 @@ canvas { display: block; width: 100%; height: auto; }
 .bar-fill { width: 100%; background: var(--primary-gradient); border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.3s; }
 .bar-label { font-size: 0.62rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40px; text-align: center; }
 
-/* ===== SESSION BAR ===== */
+/* ===== FILE SYNC PROGRESS ===== */
+#fileSyncOverlay {
+  display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.92);
+  z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px);
+}
+#fileSyncOverlay.open { display: flex; }
+.sync-box {
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 40px 48px; min-width: 400px; text-align: center; box-shadow: var(--shadow-xl);
+  position: relative; overflow: hidden;
+}
+.sync-box::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--primary-gradient); }
+.sync-title { font-size:1.1rem; font-weight:800; margin-bottom:6px; }
+.sync-sub { font-size:0.82rem; color:var(--text-muted); margin-bottom:24px; }
+.sync-progress-wrap { background: var(--bg-base); border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 10px; }
+.sync-progress-bar { height: 100%; background: var(--primary-gradient); border-radius: 8px; transition: width 0.2s; width: 0%; }
+.sync-file-label { font-size: 0.78rem; color: var(--text-sub); min-height: 18px; }
+
 #sessionBar {
     display: none;
     background: var(--bg-surface);
@@ -550,6 +575,16 @@ canvas { display: block; width: 100%; height: auto; }
   </div>
 </div>
 
+<div id="fileSyncOverlay">
+  <div class="sync-box">
+    <div id="syncIcon" style="font-size:2.5rem; margin-bottom:12px;">☁️</div>
+    <div class="sync-title" id="syncTitle">ファイルをアップロード中...</div>
+    <div class="sync-sub" id="syncSub">他のデバイスでも開けるようにしています</div>
+    <div class="sync-progress-wrap"><div class="sync-progress-bar" id="syncProgressBar"></div></div>
+    <div class="sync-file-label" id="syncFileLabel"></div>
+  </div>
+</div>
+
 <div id="toast">Message</div>
 
 <div class="modal-overlay" id="folderModal">
@@ -654,6 +689,16 @@ async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
   } catch(e) { console.warn('Firebase data save failed:', e); }
 }
 
+async function fbSaveFileMeta(folderId, keyMeta, stuMetas) {
+  await waitForFirebase();
+  try {
+    await fbSet(fbRef(fbDb, `folders/${folderId}/files`), {
+      keyFile: keyMeta,
+      stuFiles: stuMetas
+    });
+  } catch(e) { console.warn('Firebase file meta save failed:', e); }
+}
+
 async function fbGetFolderData(folderId) {
   await waitForFirebase();
   try {
@@ -716,6 +761,127 @@ function fbSubscribeFolder(folderId) {
 function fbUnsubscribeAll() {
   Object.values(fbSyncListeners).forEach(unsub => { try { unsub(); } catch(e) {} });
   fbSyncListeners = {};
+}
+
+// =============================================
+// FIREBASE STORAGE — FILE SYNC
+// =============================================
+function showSyncUI(title, sub) {
+  document.getElementById('syncTitle').textContent = title;
+  document.getElementById('syncSub').textContent = sub || '';
+  document.getElementById('syncIcon').textContent = '☁️';
+  document.getElementById('syncProgressBar').style.width = '0%';
+  document.getElementById('syncFileLabel').textContent = '';
+  document.getElementById('fileSyncOverlay').classList.add('open');
+}
+function hideSyncUI() {
+  document.getElementById('fileSyncOverlay').classList.remove('open');
+}
+function setSyncProgress(pct, label) {
+  document.getElementById('syncProgressBar').style.width = pct + '%';
+  if (label !== undefined) document.getElementById('syncFileLabel').textContent = label;
+}
+
+function uploadFileToStorage(folderId, role, file) {
+  return new Promise((resolve, reject) => {
+    const path = `folders/${folderId}/${role}/${file.name}`;
+    const ref = fbSref(fbStorage, path);
+    const task = fbUploadBytesResumable(ref, file, { contentType: file.type });
+    task.on('state_changed',
+      null,
+      reject,
+      async () => {
+        const url = await fbGetDownloadURL(ref);
+        resolve({ name: file.name, type: file.type, url, path });
+      }
+    );
+  });
+}
+
+async function uploadFileWithProgress(folderId, role, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const path = `folders/${folderId}/${role}/${file.name}`;
+    const ref = fbSref(fbStorage, path);
+    const task = fbUploadBytesResumable(ref, file, { contentType: file.type });
+    task.on('state_changed',
+      snap => { if (onProgress) onProgress(snap.bytesTransferred / snap.totalBytes); },
+      reject,
+      async () => {
+        const url = await fbGetDownloadURL(ref);
+        resolve({ name: file.name, type: file.type, url, path });
+      }
+    );
+  });
+}
+
+async function uploadAllFilesToStorage(folderId) {
+  await waitForFirebase();
+  const results = { keyFile: null, stuFiles: [] };
+  const totalFiles = 1 + state.stuFiles.length;
+  let doneFiles = 0;
+
+  showSyncUI('ファイルをアップロード中...', '他のデバイスでも開けるようにしています');
+
+  const keyMeta = await uploadFileWithProgress(folderId, 'key', state.keyFile, (p) => {
+    const overall = (doneFiles + p) / totalFiles * 100;
+    setSyncProgress(overall, `📄 ${state.keyFile.name} (${Math.round(p*100)}%)`);
+  });
+  results.keyFile = keyMeta;
+  doneFiles++;
+
+  for (let i = 0; i < state.stuFiles.length; i++) {
+    const f = state.stuFiles[i];
+    const meta = await uploadFileWithProgress(folderId, 'stu', f, (p) => {
+      const overall = (doneFiles + p) / totalFiles * 100;
+      setSyncProgress(overall, `📄 ${f.name} (${i+1}/${state.stuFiles.length})`);
+    });
+    results.stuFiles.push(meta);
+    doneFiles++;
+  }
+
+  setSyncProgress(100, '完了');
+  setTimeout(hideSyncUI, 600);
+  return results;
+}
+
+async function downloadFileFromUrl(meta) {
+  const resp = await fetch(meta.url);
+  const buf = await resp.arrayBuffer();
+  return new File([buf], meta.name, { type: meta.type });
+}
+
+async function downloadFilesFromStorage(fbData) {
+  const fileMeta = fbData.files;
+  if (!fileMeta) return false;
+
+  showSyncUI('ファイルをダウンロード中...', 'クラウドからファイルを取得しています');
+  const total = 1 + (fileMeta.stuFiles ? fileMeta.stuFiles.length : 0);
+  let done = 0;
+
+  if (fileMeta.keyFile) {
+    setSyncProgress((done / total) * 100, `📄 ${fileMeta.keyFile.name}`);
+    try {
+      state.keyFile = await downloadFileFromUrl(fileMeta.keyFile);
+    } catch(e) { console.warn('key download failed', e); }
+    done++;
+  }
+
+  state.stuFiles = [];
+  if (fileMeta.stuFiles && fileMeta.stuFiles.length > 0) {
+    for (let i = 0; i < fileMeta.stuFiles.length; i++) {
+      const m = fileMeta.stuFiles[i];
+      setSyncProgress(((done + i) / total) * 100, `📄 ${m.name} (${i+1}/${fileMeta.stuFiles.length})`);
+      try {
+        const f = await downloadFileFromUrl(m);
+        state.stuFiles.push(f);
+      } catch(e) { console.warn('stu download failed', m.name, e); }
+    }
+    done += fileMeta.stuFiles.length;
+  }
+
+  setSyncProgress(100, '完了');
+  setTimeout(hideSyncUI, 600);
+  return state.keyFile !== null;
 }
 
 
@@ -843,10 +1009,7 @@ async function createFolder() {
 async function openFolder(id) {
   showToast('フォルダを読み込んでいます...');
 
-  // Try to get local IDB data (for files)
   let localData = await idbGet('folders', id).catch(() => null);
-
-  // Always fetch latest marks/zones from Firebase
   const fbData = await fbGetFolderData(id);
 
   if (!localData && !fbData) {
@@ -854,13 +1017,12 @@ async function openFolder(id) {
     return;
   }
 
-  // If folder exists in Firebase but not locally, create a local shell
   if (!localData) {
     localData = { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 };
     await idbPut('folders', localData);
   }
 
-  // Files from local IDB
+  // Try to restore files from local IDB first
   if (localData.keyFile) {
     state.keyFile = new File([localData.keyFile.buffer], localData.keyFile.name, { type: localData.keyFile.type });
   } else {
@@ -870,6 +1032,27 @@ async function openFolder(id) {
     state.stuFiles = localData.stuFiles.map(f => new File([f.buffer], f.name, { type: f.type }));
   } else {
     state.stuFiles = [];
+  }
+
+  // If no local files but Firebase Storage has them, download
+  if (!state.keyFile && fbData) {
+    const downloaded = await downloadFilesFromStorage(fbData);
+    if (downloaded && state.keyFile) {
+      // Cache downloaded files to local IDB
+      try {
+        const keyBuffer = await readFileAsBuffer(state.keyFile);
+        const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
+        const cacheData = {
+          id,
+          keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
+          stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
+          marks: localData.marks || {},
+          zones: localData.zones || [],
+          markSize: localData.markSize || 44
+        };
+        await idbPut('folders', cacheData);
+      } catch(e) { console.warn('IDB cache failed:', e); }
+    }
   }
 
   // Marks/zones: prefer Firebase (latest) over local
@@ -886,7 +1069,6 @@ async function openFolder(id) {
   state.currentFolderId = id;
   addVisitedFolder(id);
 
-  // Register folder meta locally if we got it from Firebase
   if (fbData && fbData.meta) {
     const meta = getFolderMeta();
     if (!meta.find(f => f.id === id)) {
@@ -895,10 +1077,8 @@ async function openFolder(id) {
     }
   }
 
-  // Subscribe to real-time updates
   fbSubscribeFolder(id);
 
-  // Update URL
   history.replaceState(null, '', '#folder-' + id);
   document.getElementById('urlHashDisplay').textContent = '#folder-' + id;
 
@@ -1016,10 +1196,16 @@ async function executeSaveToFolder() {
     await idbPut('folders', folderData);
     saveFolderMeta(meta);
 
-    // Sync to Firebase
     window._lastLocalSave = Date.now();
     if (metaObj) fbSaveFolderMeta(targetId, metaObj);
     fbSaveMarksAndZones(targetId, state.marks, state.zones, state.globalMarkSize);
+
+    // Upload files to Firebase Storage
+    closeModal('saveFolderModal');
+    try {
+      const storageMeta = await uploadAllFilesToStorage(targetId);
+      await fbSaveFileMeta(targetId, storageMeta.keyFile, storageMeta.stuFiles);
+    } catch(e) { console.warn('Storage upload failed:', e); showToast('⚠️ ファイルのクラウド同期に失敗しました（採点データは保存済み）'); }
 
     state.currentFolderId = targetId;
     fbSubscribeFolder(targetId);
@@ -1030,11 +1216,9 @@ async function executeSaveToFolder() {
     document.getElementById('noFolderRow').style.display = 'none';
     document.getElementById('sessionBar').classList.add('visible');
 
-    // Update URL
     history.replaceState(null, '', '#folder-' + targetId);
     document.getElementById('urlHashDisplay').textContent = '#folder-' + targetId;
 
-    closeModal('saveFolderModal');
     showToast('フォルダに保存しました！');
   } catch(e) { errEl.textContent = e.message; showToast('保存に失敗しました'); }
 }
@@ -1396,9 +1580,22 @@ async function addStudents(files) {
   document.getElementById('stuCount').textContent = `${state.currIdx + 1} / ${state.stuFiles.length}`;
   showToast(`${toAdd.length}件の答案を追加しました`);
 
-  // Auto-save to folder if one is open
   if (state.currentFolderId) {
     await quickSaveFolder();
+    // Upload only newly added files to Storage
+    try {
+      const newMetas = [];
+      for (const f of toAdd) {
+        const m = await uploadFileToStorage(state.currentFolderId, 'stu', f);
+        newMetas.push(m);
+      }
+      const fbData = await fbGetFolderData(state.currentFolderId).catch(() => null);
+      const existingStus = (fbData && fbData.files && fbData.files.stuFiles) ? fbData.files.stuFiles : [];
+      const allStus = [...existingStus, ...newMetas];
+      await fbSaveFileMeta(state.currentFolderId,
+        (fbData && fbData.files && fbData.files.keyFile) ? fbData.files.keyFile : null,
+        allStus);
+    } catch(e) { console.warn('Storage update failed:', e); }
   }
 }
 
@@ -1470,10 +1667,20 @@ async function quickSaveFolder() {
     };
     await idbPut('folders', folderData);
     saveFolderMeta(meta);
-    // Sync to Firebase
     window._lastLocalSave = Date.now();
     if (idx >= 0) fbSaveFolderMeta(state.currentFolderId, meta[idx]);
     await fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
+
+    // Check if Storage already has the files (avoid re-uploading on every quick save)
+    const fbData = await fbGetFolderData(state.currentFolderId).catch(() => null);
+    const hasStorageFiles = fbData && fbData.files && fbData.files.keyFile;
+    if (!hasStorageFiles) {
+      try {
+        const storageMeta = await uploadAllFilesToStorage(state.currentFolderId);
+        await fbSaveFileMeta(state.currentFolderId, storageMeta.keyFile, storageMeta.stuFiles);
+      } catch(e) { console.warn('Storage upload failed:', e); }
+    }
+
     showToast('💾 上書き保存しました！');
   } catch(e) { showToast('保存に失敗しました'); console.error(e); }
 }
