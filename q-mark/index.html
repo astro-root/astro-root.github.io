@@ -703,14 +703,23 @@ async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
 async function fbGetFolderData(folderId) {
   await waitForFirebase();
   try {
-    const snap = await fbGet(fbRef(fbDb, `folders/${folderId}`));
-    return snap.exists() ? snap.val() : null;
+    // files ノード（base64）は別途取得するため、meta と data のみ読み込む
+    const [metaSnap, dataSnap] = await Promise.all([
+      fbGet(fbRef(fbDb, `folders/${folderId}/meta`)),
+      fbGet(fbRef(fbDb, `folders/${folderId}/data`)),
+    ]);
+    if (!metaSnap.exists() && !dataSnap.exists()) return null;
+    return {
+      meta: metaSnap.exists() ? metaSnap.val() : null,
+      data: dataSnap.exists() ? dataSnap.val() : null,
+    };
   } catch(e) { console.warn('Firebase get failed:', e); return null; }
 }
 
 async function fbGetAllFoldersMeta() {
   await waitForFirebase();
   try {
+    // folders 全体を読むと files（base64）も含まれてサイズ超過するため meta のみ読む
     const snap = await fbGet(fbRef(fbDb, 'folders'));
     if (!snap.exists()) return {};
     const all = snap.val();
@@ -719,7 +728,10 @@ async function fbGetAllFoldersMeta() {
       if (val.meta) result[id] = val.meta;
     });
     return result;
-  } catch(e) { console.warn('Firebase list failed:', e); return {}; }
+  } catch(e) {
+    console.warn('Firebase list failed (full read):', e);
+    return {};
+  }
 }
 
 async function fbDeleteFolder(folderId) {
