@@ -734,7 +734,7 @@ function fbSubscribeFolder(folderId) {
   fbUnsubscribeAll();
   if (!folderId) return;
   waitForFirebase().then(() => {
-    // ① マーク・ゾーンの監視
+    // マーク・ゾーンの監視
     const dataRef = fbRef(fbDb, `folders/${folderId}/data`);
     let isFirstFire = true;
     const unsubData = fbOnValue(dataRef, (snap) => {
@@ -758,7 +758,7 @@ function fbSubscribeFolder(folderId) {
     });
     fbSyncListeners[folderId + '_data'] = unsubData;
 
-    // ② 他デバイスの答案追加を検知して自動ダウンロード＋IDBキャッシュ
+    // 他デバイスの答案追加を検知して自動ダウンロード＋IDBキャッシュ
     const stuCountRef = fbRef(fbDb, `folders/${folderId}/files/stuCount`);
     let isFirstCountFire = true;
     const unsubCount = fbOnValue(stuCountRef, async (snap) => {
@@ -766,7 +766,7 @@ function fbSubscribeFolder(folderId) {
       if (isFirstCountFire) { isFirstCountFire = false; return; }
       const remoteCount = snap.val();
       const localCount = state.stuFiles.length;
-      if (remoteCount <= localCount) return; // 変化なし or 自分の追加
+      if (remoteCount <= localCount) return;
 
       showToast(`📥 他のデバイスが ${remoteCount - localCount} 件の答案を追加しました。ダウンロード中...`);
       for (let i = localCount; i < remoteCount; i++) {
@@ -1092,13 +1092,34 @@ async function openFolder(id) {
     state.stuFiles = [];
   }
 
-  // ローカルにファイルがなければ RTDB からダウンロード
+  // RTDB の stuCount を取得して IDB との差分を確認
+  const rtdbCountSnap = await fbGet(fbRef(fbDb, `folders/${id}/files/stuCount`)).catch(() => null);
+  const rtdbStuCount = rtdbCountSnap && rtdbCountSnap.exists() ? rtdbCountSnap.val() : 0;
+
+  // ローカルにファイルがなければ全件 RTDB からダウンロード
   if (!state.keyFile) {
     const downloaded = await fbLoadFilesFromRTDB(id);
     if (downloaded && state.keyFile) {
-      // IDB にキャッシュ（marks/zones は後で state から取る）
       window._pendingIdbCache = true;
     }
+  } else if (state.stuFiles.length < rtdbStuCount) {
+    // IDB にファイルはあるが RTDB の方が多い → 差分のみ追加取得
+    const missing = rtdbStuCount - state.stuFiles.length;
+    showToast(`📥 他のデバイスの答案 ${missing} 件を取得中...`);
+    for (let i = state.stuFiles.length; i < rtdbStuCount; i++) {
+      try {
+        const stuSnap = await fbGet(fbRef(fbDb, `folders/${id}/files/stu_${i}`));
+        if (stuSnap.exists()) {
+          const entry = stuSnap.val();
+          const file = base64ToFile(entry.data, entry.name, entry.type);
+          if (!state.stuFiles.find(f => f.name === file.name)) {
+            state.stuFiles.push(file);
+          }
+        }
+      } catch(e) { console.warn(`stu_${i} の差分取得失敗:`, e); }
+    }
+    window._pendingIdbCache = true;
+    showToast(`✅ ${state.stuFiles.length} 件の答案を読み込みました`);
   }
 
   // マーク/ゾーンは Firebase 優先
