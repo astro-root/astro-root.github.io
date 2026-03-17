@@ -668,16 +668,35 @@ async function fbSaveFolderMeta(folderId, metaObj) {
   } catch(e) { console.warn('Firebase meta save failed:', e); }
 }
 
+// Firebase キーに使えない文字をエスケープ（. # $ [ ] / を %XX に変換）
+function fbEncodeKey(str) {
+  return str.replace(/[.#$[\]/]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+}
+function fbDecodeKey(str) {
+  return str.replace(/%([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+function encodeMarks(marks) {
+  const encoded = {};
+  Object.entries(marks).forEach(([k, v]) => { encoded[fbEncodeKey(k)] = v; });
+  return encoded;
+}
+function decodeMarks(marks) {
+  if (!marks) return {};
+  const decoded = {};
+  Object.entries(marks).forEach(([k, v]) => { decoded[fbDecodeKey(k)] = v; });
+  return decoded;
+}
+
 async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
   await waitForFirebase();
   try {
     await fbSet(fbRef(fbDb, `folders/${folderId}/data`), {
-      marks: marks || {},
-      zones: zones || [],
+      marks: encodeMarks(marks || {}),
+      zones: zones && zones.length > 0 ? zones : null,
       markSize: markSize || 44,
       updatedAt: Date.now()
     });
-  } catch(e) { console.warn('Firebase data save failed:', e); }
+  } catch(e) { console.warn('Firebase data save failed:', e); showToast('⚠️ クラウド保存失敗: ' + e.message); }
 }
 
 
@@ -723,7 +742,7 @@ function fbSubscribeFolder(folderId) {
       const data = snap.val();
       const remoteUpdatedAt = data.updatedAt || 0;
       if (remoteUpdatedAt > (window._lastLocalSave || 0) + 500) {
-        state.marks = data.marks || {};
+        state.marks = decodeMarks(data.marks);
         state.zones = data.zones || [];
         if (data.markSize) {
           state.globalMarkSize = data.markSize;
@@ -1027,7 +1046,7 @@ async function openFolder(id) {
 
   // マーク/ゾーンは Firebase 優先
   if (fbData && fbData.data) {
-    state.marks = fbData.data.marks || {};
+    state.marks = decodeMarks(fbData.data.marks);
     state.zones = fbData.data.zones || [];
     state.globalMarkSize = fbData.data.markSize || 44;
   } else {
