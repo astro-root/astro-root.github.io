@@ -11,7 +11,6 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getStorage, ref as sref, uploadBytesResumable, getDownloadURL, deleteObject, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDXI7ciwEFiCo3yPQmFjg0DxZSNptWKkIc",
@@ -26,9 +25,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
-const storage = getStorage(firebaseApp);
 
-// Expose to global scope for use in non-module scripts
 window.fbDb = db;
 window.fbRef = ref;
 window.fbSet = set;
@@ -36,12 +33,6 @@ window.fbGet = get;
 window.fbOnValue = onValue;
 window.fbUpdate = update;
 window.fbRemove = remove;
-window.fbStorage = storage;
-window.fbSref = sref;
-window.fbUploadBytesResumable = uploadBytesResumable;
-window.fbGetDownloadURL = getDownloadURL;
-window.fbDeleteObject = deleteObject;
-window.fbListAll = listAll;
 window.firebaseReady = true;
 window.dispatchEvent(new Event('firebaseReady'));
 </script>
@@ -689,15 +680,6 @@ async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
   } catch(e) { console.warn('Firebase data save failed:', e); }
 }
 
-async function fbSaveFileMeta(folderId, keyMeta, stuMetas) {
-  await waitForFirebase();
-  try {
-    await fbSet(fbRef(fbDb, `folders/${folderId}/files`), {
-      keyFile: keyMeta,
-      stuFiles: stuMetas
-    });
-  } catch(e) { console.warn('Firebase file meta save failed:', e); }
-}
 
 async function fbGetFolderData(folderId) {
   await waitForFirebase();
@@ -764,7 +746,8 @@ function fbUnsubscribeAll() {
 }
 
 // =============================================
-// FIREBASE STORAGE — FILE SYNC
+// FIREBASE RTDB — FILE SYNC (base64)
+// Spark プラン対応: Storage 不要、RTDB に直接保存
 // =============================================
 function showSyncUI(title, sub) {
   document.getElementById('syncTitle').textContent = title;
@@ -782,108 +765,95 @@ function setSyncProgress(pct, label) {
   if (label !== undefined) document.getElementById('syncFileLabel').textContent = label;
 }
 
-function uploadFileToStorage(folderId, role, file) {
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
-    const path = `folders/${folderId}/${role}/${file.name}`;
-    const ref = fbSref(fbStorage, path);
-    const task = fbUploadBytesResumable(ref, file, { contentType: file.type });
-    task.on('state_changed',
-      null,
-      reject,
-      async () => {
-        const url = await fbGetDownloadURL(ref);
-        resolve({ name: file.name, type: file.type, url, path });
-      }
-    );
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
 }
 
-async function uploadFileWithProgress(folderId, role, file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const path = `folders/${folderId}/${role}/${file.name}`;
-    const ref = fbSref(fbStorage, path);
-    const task = fbUploadBytesResumable(ref, file, { contentType: file.type });
-    task.on('state_changed',
-      snap => { if (onProgress) onProgress(snap.bytesTransferred / snap.totalBytes); },
-      reject,
-      async () => {
-        const url = await fbGetDownloadURL(ref);
-        resolve({ name: file.name, type: file.type, url, path });
-      }
-    );
-  });
+function base64ToFile(b64, name, type) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], name, { type });
 }
 
-async function uploadAllFilesToStorage(folderId) {
+// 各ファイルを個別ノードに分割して保存（RDBの書き込み上限対策）
+async function fbSaveFilesToRTDB(folderId) {
   await waitForFirebase();
-  const results = { keyFile: null, stuFiles: [] };
-  const totalFiles = 1 + state.stuFiles.length;
-  let doneFiles = 0;
-
   showSyncUI('ファイルをアップロード中...', '他のデバイスでも開けるようにしています');
-
-  const keyMeta = await uploadFileWithProgress(folderId, 'key', state.keyFile, (p) => {
-    const overall = (doneFiles + p) / totalFiles * 100;
-    setSyncProgress(overall, `📄 ${state.keyFile.name} (${Math.round(p*100)}%)`);
-  });
-  results.keyFile = keyMeta;
-  doneFiles++;
-
-  for (let i = 0; i < state.stuFiles.length; i++) {
-    const f = state.stuFiles[i];
-    const meta = await uploadFileWithProgress(folderId, 'stu', f, (p) => {
-      const overall = (doneFiles + p) / totalFiles * 100;
-      setSyncProgress(overall, `📄 ${f.name} (${i+1}/${state.stuFiles.length})`);
-    });
-    results.stuFiles.push(meta);
-    doneFiles++;
-  }
-
-  setSyncProgress(100, '完了');
-  setTimeout(hideSyncUI, 600);
-  return results;
-}
-
-async function downloadFileFromUrl(meta) {
-  const resp = await fetch(meta.url);
-  const buf = await resp.arrayBuffer();
-  return new File([buf], meta.name, { type: meta.type });
-}
-
-async function downloadFilesFromStorage(fbData) {
-  const fileMeta = fbData.files;
-  if (!fileMeta) return false;
-
-  showSyncUI('ファイルをダウンロード中...', 'クラウドからファイルを取得しています');
-  const total = 1 + (fileMeta.stuFiles ? fileMeta.stuFiles.length : 0);
+  const total = 1 + state.stuFiles.length;
   let done = 0;
 
-  if (fileMeta.keyFile) {
-    setSyncProgress((done / total) * 100, `📄 ${fileMeta.keyFile.name}`);
-    try {
-      state.keyFile = await downloadFileFromUrl(fileMeta.keyFile);
-    } catch(e) { console.warn('key download failed', e); }
-    done++;
+  // 模範解答
+  setSyncProgress((done / total) * 100, `📄 ${state.keyFile.name}`);
+  const keyB64 = await fileToBase64(state.keyFile);
+  await fbSet(fbRef(fbDb, `folders/${folderId}/files/key`), {
+    name: state.keyFile.name, type: state.keyFile.type, data: keyB64
+  });
+  done++;
+
+  // 生徒答案（インデックス付きで個別ノードに保存）
+  for (let i = 0; i < state.stuFiles.length; i++) {
+    const f = state.stuFiles[i];
+    setSyncProgress(((done + i) / total) * 100, `📄 ${f.name} (${i+1}/${state.stuFiles.length})`);
+    const b64 = await fileToBase64(f);
+    await fbSet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`), {
+      name: f.name, type: f.type, data: b64, index: i
+    });
   }
+  // 枚数を記録（余分なノードを後で検出するため）
+  await fbSet(fbRef(fbDb, `folders/${folderId}/files/stuCount`), state.stuFiles.length);
+
+  setSyncProgress(100, '完了');
+  setTimeout(hideSyncUI, 600);
+}
+
+async function fbLoadFilesFromRTDB(folderId) {
+  await waitForFirebase();
+  const snap = await fbGet(fbRef(fbDb, `folders/${folderId}/files`));
+  if (!snap.exists()) return false;
+  const files = snap.val();
+  if (!files.key) return false;
+
+  showSyncUI('ファイルをダウンロード中...', 'クラウドからファイルを取得しています');
+  const stuCount = files.stuCount || 0;
+  const total = 1 + stuCount;
+  let done = 0;
+
+  setSyncProgress((done / total) * 100, `📄 ${files.key.name}`);
+  state.keyFile = base64ToFile(files.key.data, files.key.name, files.key.type);
+  done++;
 
   state.stuFiles = [];
-  if (fileMeta.stuFiles && fileMeta.stuFiles.length > 0) {
-    for (let i = 0; i < fileMeta.stuFiles.length; i++) {
-      const m = fileMeta.stuFiles[i];
-      setSyncProgress(((done + i) / total) * 100, `📄 ${m.name} (${i+1}/${fileMeta.stuFiles.length})`);
-      try {
-        const f = await downloadFileFromUrl(m);
-        state.stuFiles.push(f);
-      } catch(e) { console.warn('stu download failed', m.name, e); }
+  for (let i = 0; i < stuCount; i++) {
+    const entry = files[`stu_${i}`];
+    if (entry) {
+      setSyncProgress(((done + i) / total) * 100, `📄 ${entry.name} (${i+1}/${stuCount})`);
+      state.stuFiles.push(base64ToFile(entry.data, entry.name, entry.type));
     }
-    done += fileMeta.stuFiles.length;
   }
 
   setSyncProgress(100, '完了');
   setTimeout(hideSyncUI, 600);
-  return state.keyFile !== null;
+  return true;
 }
 
+// 新規答案追加時: 差分のみ追加
+async function fbAppendStuFilesToRTDB(folderId, newFiles, startIndex) {
+  await waitForFirebase();
+  for (let i = 0; i < newFiles.length; i++) {
+    const f = newFiles[i];
+    const b64 = await fileToBase64(f);
+    await fbSet(fbRef(fbDb, `folders/${folderId}/files/stu_${startIndex + i}`), {
+      name: f.name, type: f.type, data: b64, index: startIndex + i
+    });
+  }
+  await fbSet(fbRef(fbDb, `folders/${folderId}/files/stuCount`), startIndex + newFiles.length);
+}
 
 // End of Firebase sync layer
 
@@ -1022,7 +992,7 @@ async function openFolder(id) {
     await idbPut('folders', localData);
   }
 
-  // Try to restore files from local IDB first
+  // ローカル IDB からファイルを復元
   if (localData.keyFile) {
     state.keyFile = new File([localData.keyFile.buffer], localData.keyFile.name, { type: localData.keyFile.type });
   } else {
@@ -1034,28 +1004,27 @@ async function openFolder(id) {
     state.stuFiles = [];
   }
 
-  // If no local files but Firebase Storage has them, download
-  if (!state.keyFile && fbData) {
-    const downloaded = await downloadFilesFromStorage(fbData);
+  // ローカルにファイルがなければ RTDB からダウンロード
+  if (!state.keyFile) {
+    const downloaded = await fbLoadFilesFromRTDB(id);
     if (downloaded && state.keyFile) {
-      // Cache downloaded files to local IDB
+      // IDB にキャッシュ
       try {
         const keyBuffer = await readFileAsBuffer(state.keyFile);
         const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-        const cacheData = {
+        await idbPut('folders', {
           id,
           keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
           stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
           marks: localData.marks || {},
           zones: localData.zones || [],
           markSize: localData.markSize || 44
-        };
-        await idbPut('folders', cacheData);
+        });
       } catch(e) { console.warn('IDB cache failed:', e); }
     }
   }
 
-  // Marks/zones: prefer Firebase (latest) over local
+  // マーク/ゾーンは Firebase 優先
   if (fbData && fbData.data) {
     state.marks = fbData.data.marks || {};
     state.zones = fbData.data.zones || [];
@@ -1200,12 +1169,11 @@ async function executeSaveToFolder() {
     if (metaObj) fbSaveFolderMeta(targetId, metaObj);
     fbSaveMarksAndZones(targetId, state.marks, state.zones, state.globalMarkSize);
 
-    // Upload files to Firebase Storage
+    // ファイルを RTDB に base64 でアップロード
     closeModal('saveFolderModal');
     try {
-      const storageMeta = await uploadAllFilesToStorage(targetId);
-      await fbSaveFileMeta(targetId, storageMeta.keyFile, storageMeta.stuFiles);
-    } catch(e) { console.warn('Storage upload failed:', e); showToast('⚠️ ファイルのクラウド同期に失敗しました（採点データは保存済み）'); }
+      await fbSaveFilesToRTDB(targetId);
+    } catch(e) { console.warn('RTDB file upload failed:', e); showToast('⚠️ ファイルのクラウド同期に失敗しました（採点データは保存済み）'); }
 
     state.currentFolderId = targetId;
     fbSubscribeFolder(targetId);
@@ -1582,20 +1550,11 @@ async function addStudents(files) {
 
   if (state.currentFolderId) {
     await quickSaveFolder();
-    // Upload only newly added files to Storage
+    // 差分のみ RTDB に追記
     try {
-      const newMetas = [];
-      for (const f of toAdd) {
-        const m = await uploadFileToStorage(state.currentFolderId, 'stu', f);
-        newMetas.push(m);
-      }
-      const fbData = await fbGetFolderData(state.currentFolderId).catch(() => null);
-      const existingStus = (fbData && fbData.files && fbData.files.stuFiles) ? fbData.files.stuFiles : [];
-      const allStus = [...existingStus, ...newMetas];
-      await fbSaveFileMeta(state.currentFolderId,
-        (fbData && fbData.files && fbData.files.keyFile) ? fbData.files.keyFile : null,
-        allStus);
-    } catch(e) { console.warn('Storage update failed:', e); }
+      const startIndex = state.stuFiles.length - toAdd.length;
+      await fbAppendStuFilesToRTDB(state.currentFolderId, toAdd, startIndex);
+    } catch(e) { console.warn('RTDB append failed:', e); }
   }
 }
 
@@ -1671,14 +1630,13 @@ async function quickSaveFolder() {
     if (idx >= 0) fbSaveFolderMeta(state.currentFolderId, meta[idx]);
     await fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
 
-    // Check if Storage already has the files (avoid re-uploading on every quick save)
+    // RTDB にファイルがまだなければアップロード（毎回は不要）
     const fbData = await fbGetFolderData(state.currentFolderId).catch(() => null);
-    const hasStorageFiles = fbData && fbData.files && fbData.files.keyFile;
-    if (!hasStorageFiles) {
+    const hasRTDBFiles = fbData && fbData.files && fbData.files.key;
+    if (!hasRTDBFiles) {
       try {
-        const storageMeta = await uploadAllFilesToStorage(state.currentFolderId);
-        await fbSaveFileMeta(state.currentFolderId, storageMeta.keyFile, storageMeta.stuFiles);
-      } catch(e) { console.warn('Storage upload failed:', e); }
+        await fbSaveFilesToRTDB(state.currentFolderId);
+      } catch(e) { console.warn('RTDB file upload failed:', e); }
     }
 
     showToast('💾 上書き保存しました！');
