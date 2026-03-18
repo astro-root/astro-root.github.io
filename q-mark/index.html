@@ -3,2236 +3,970 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Q-Mark | ペーパークイズデジタル採点ツール</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<title>Q-Mark | 採点ツール</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDXI7ciwEFiCo3yPQmFjg0DxZSNptWKkIc",
-  authDomain: "q-mark-d19c7.firebaseapp.com",
-  databaseURL: "https://q-mark-d19c7-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "q-mark-d19c7",
-  storageBucket: "q-mark-d19c7.firebasestorage.app",
-  messagingSenderId: "522566486976",
-  appId: "1:522566486976:web:82860744ebd31f6d141625",
-  measurementId: "G-M38NFWTSP2"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getDatabase(firebaseApp);
-
-window.fbDb = db;
-window.fbRef = ref;
-window.fbSet = set;
-window.fbGet = get;
-window.fbOnValue = onValue;
-window.fbUpdate = update;
-window.fbRemove = remove;
-window.firebaseReady = true;
+import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+  apiKey:"AIzaSyDXI7ciwEFiCo3yPQmFjg0DxZSNptWKkIc",
+  authDomain:"q-mark-d19c7.firebaseapp.com",
+  databaseURL:"https://q-mark-d19c7-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"q-mark-d19c7",
+  storageBucket:"q-mark-d19c7.firebasestorage.app",
+  messagingSenderId:"522566486976",
+  appId:"1:522566486976:web:82860744ebd31f6d141625"
+});
+window._fb = { db: getDatabase(app), ref, set, get, onValue, remove };
 window.dispatchEvent(new Event('firebaseReady'));
 </script>
 <style>
 :root {
-    --bg-base: #0f172a;
-    --bg-surface: #1e293b;
-    --bg-panel: #1e293b;
-    --border: #334155;
-    --primary: #818cf8;
-    --primary-hover: #a5b4fc;
-    --primary-active: #6366f1;
-    --primary-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
-    --text-main: #f1f5f9;
-    --text-sub: #94a3b8;
-    --text-muted: #64748b;
-    --success: #34d399;
-    --danger: #f87171;
-    --warning: #fbbf24;
-    --info: #38bdf8;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4);
-    --radius-sm: 6px;
-    --radius: 8px;
-    --radius-lg: 12px;
+  --base:#07090f; --surface:#0d1117; --panel:#111827; --raised:#161f2e;
+  --border:#1e2d3d; --border2:#253347;
+  --pri:#22d3ee; --pri-dim:rgba(34,211,238,.1); --pri-grad:linear-gradient(135deg,#06b6d4,#818cf8);
+  --ok:#34d399; --ng:#f87171; --warn:#fbbf24; --info:#38bdf8;
+  --tx:#e2e8f0; --sub:#94a3b8; --muted:#4b6280;
+  --r:10px; --r-sm:6px; --r-lg:14px; --r-xl:20px;
+  --sh:0 8px 32px rgba(0,0,0,.5); --sh-sm:0 2px 8px rgba(0,0,0,.3);
 }
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-base);
-    color: var(--text-main);
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    user-select: none;
-}
-header {
-    background-color: var(--bg-surface);
-    height: 56px;
-    padding: 0 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    z-index: 50;
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    flex-shrink: 0;
-    gap: 8px;
-}
-.logo {
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: -0.5px;
-    flex-shrink: 0;
-    cursor: pointer;
-}
-.logo:hover { opacity: 0.8; }
-.logo span {
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-.toolbar { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-.divider { width: 1px; height: 22px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
-.btn {
-    background: var(--bg-base);
-    border: 1px solid var(--border);
-    color: var(--text-sub);
-    padding: 0 11px;
-    height: 34px;
-    border-radius: var(--radius-sm);
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.2s;
-    white-space: nowrap;
-    flex-shrink: 0;
-    line-height: 1;
-}
-.btn:hover:not(:disabled) { background: #334155; color: var(--text-main); border-color: #475569; }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary {
-    background: var(--primary-gradient);
-    color: white;
-    border: none;
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-}
-.btn-primary:hover:not(:disabled) { box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4); opacity: 0.95; }
-.btn-danger { background: rgba(248,113,113,0.1); border-color: var(--danger); color: var(--danger); }
-.btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.2); }
-.btn-success { background: rgba(52,211,153,0.1); border-color: var(--success); color: var(--success); }
-.btn-success:hover:not(:disabled) { background: rgba(52,211,153,0.2); }
-.btn.active { background: rgba(99, 102, 241, 0.15); border-color: var(--primary); color: var(--primary-hover); }
-.control-group {
-    display: flex;
-    align-items: center;
-    background: var(--bg-base);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 0 4px;
-    height: 34px;
-    flex-shrink: 0;
-}
-.control-label { font-size: 0.72rem; color: var(--text-muted); padding: 0 5px; font-weight: 600; }
-input[type="range"] { width: 70px; margin: 0 4px; accent-color: var(--primary); cursor: pointer; }
-.zoom-group { display: flex; align-items: center; }
-.zoom-btn { width: 28px; height: 28px; border: none; background: transparent; color: var(--text-sub); cursor: pointer; font-size: 1rem; border-radius: 4px; }
-.zoom-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-.zoom-val { width: 48px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
-.workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
-.pane { display: flex; flex-direction: column; position: relative; background: var(--bg-panel); min-width: 200px; }
-.resizer {
-    width: 8px; background: var(--bg-base); border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-    cursor: col-resize; z-index: 100; transition: background 0.2s; display: flex; align-items: center; justify-content: center;
-}
-.resizer:hover, .resizer.resizing { background: var(--primary); border-color: var(--primary); }
-.resizer::after { content: ''; height: 20px; width: 2px; background: var(--text-muted); border-radius: 1px; }
-.resizer:hover::after { background: white; }
-.pane-header {
-    height: 46px; padding: 0 12px; background: rgba(30, 41, 59, 0.95); border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; font-weight: 600; color: var(--text-sub);
-    flex-shrink: 0;
-}
-.canvas-container {
-    flex: 1; overflow: auto; position: relative; background-color: #0b0f19;
-    background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;
-    display: flex; flex-direction: column; align-items: flex-start; padding: 40px; touch-action: none;
-}
-.canvas-container::-webkit-scrollbar { width: 10px; height: 10px; }
-.canvas-container::-webkit-scrollbar-track { background: var(--bg-base); }
-.canvas-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 5px; }
-.sheet-wrap { position: relative; box-shadow: var(--shadow-xl); background: white; transform-origin: top center; margin-bottom: 40px; margin-left: auto; margin-right: auto; border-radius: 2px; flex-shrink: 0; }
-canvas { display: block; width: 100%; height: auto; }
-#cursorGuide {
-    position: absolute; pointer-events: none; width: var(--mark-size, 40px); height: var(--mark-size, 40px);
-    border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; display: none; transition: width 0.1s, height 0.1s;
-}
-#cursorGuide.snapped { border-color: var(--info); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3); }
-.mark { position: absolute; transform: translate(-50%, -50%); width: var(--mark-size, 44px); height: var(--mark-size, 44px); display: flex; justify-content: center; align-items: center; font-weight: 800; pointer-events: none; z-index: 10; font-family: 'JetBrains Mono', monospace; }
-.mark-badge { position: absolute; bottom: -8px; right: -8px; background: var(--bg-surface); color: var(--text-main); font-size: 10px; padding: 2px 5px; border-radius: 4px; border: 1px solid var(--border); font-weight: 700; box-shadow: var(--shadow-sm); white-space: nowrap; }
-.mark-o { border-radius: 50%; border: 3px solid var(--success); color: var(--success); background: rgba(52, 211, 153, 0.15); }
-.mark-o::after { content: ""; }
-.mark-x { color: var(--danger); }
-.mark-x::before, .mark-x::after { content: ''; position: absolute; width: 3px; height: 100%; background: var(--danger); border-radius: 2px; }
-.mark-x::before { transform: rotate(45deg); }
-.mark-x::after { transform: rotate(-45deg); }
-.mark-tri { color: var(--warning); display: flex; justify-content: center; align-items: center; }
-.mark-tri-shape { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-left: 3px solid transparent; border-right: 3px solid transparent; border-bottom: 3px solid var(--warning); box-sizing: border-box; transform-origin: center bottom; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: rgba(251, 191, 36, 0.15); }
-.mark-tri-text { position: relative; z-index: 2; font-size: 0.9rem; padding-top: 15%; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-.mark-text { position: absolute; transform: translateY(-50%); white-space: nowrap; z-index: 11; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8); background: rgba(0, 0, 0, 0.6); padding: 4px 10px; border-radius: 4px; border: 2px solid transparent; cursor: grab; }
-.mark-text:hover { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.3); }
-.mark-text.selected { border-color: var(--primary); background: rgba(0,0,0,0.9); }
-.zone { position: absolute; border: 1px dashed var(--warning); background: rgba(245, 158, 11, 0.1); transform: translate(-50%, -50%); pointer-events: none; display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 0.7rem; font-weight: bold; border-radius: 4px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Sora',sans-serif;background:var(--base);color:var(--tx);display:flex;flex-direction:column;user-select:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--base)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-/* ===== OVERLAY / START MODAL ===== */
-#overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.9); z-index: 999;
-    display: flex; justify-content: center; align-items: center;
-    backdrop-filter: blur(8px);
-}
-.modal {
-    background: var(--bg-surface); border: 1px solid var(--border);
-    width: 700px; padding: 48px; border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl); text-align: center; position: relative; overflow: hidden;
-}
-.modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary-gradient); }
-.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 40px 0; }
-.upload-box { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px; background: rgba(255,255,255,0.01); cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.upload-box:hover, .upload-box.dragover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
-.upload-status.ok { color: var(--success); background: rgba(52, 211, 153, 0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
+/* HEADER */
+#hdr{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;z-index:50}
+.logo{font-weight:800;font-size:1.15rem;letter-spacing:-1px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:2px}
+.logo em{font-style:normal;background:var(--pri-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo:hover{opacity:.8}
+.sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.sp{flex:1}
+.btn{height:32px;padding:0 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:transparent;color:var(--sub);font-family:'Sora',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.btn:hover:not(:disabled){background:var(--raised);color:var(--tx);border-color:var(--border2)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.active{background:var(--pri-dim);border-color:var(--pri);color:var(--pri)}
+.btn-p{background:var(--pri-grad);color:#fff;border:none;font-weight:700}
+.btn-p:hover:not(:disabled){opacity:.9;box-shadow:0 0 10px rgba(34,211,238,.25)}
+.btn-d{color:var(--ng);border-color:var(--ng);background:rgba(248,113,113,.06)}
+.btn-d:hover:not(:disabled){background:rgba(248,113,113,.14)}
+.btn-ok{color:var(--ok);border-color:var(--ok);background:rgba(52,211,153,.06)}
+.btn-ok:hover:not(:disabled){background:rgba(52,211,153,.14)}
+.score-w{font-family:'JetBrains Mono',monospace;display:flex;align-items:baseline;gap:4px}
+.score-w .sl{font-size:.6rem;color:var(--muted);font-weight:700;letter-spacing:.5px}
+.score-w .sv{font-size:1.35rem;font-weight:700;color:var(--pri);line-height:1}
+.cg{display:flex;align-items:center;height:32px;background:var(--base);border:1px solid var(--border);border-radius:var(--r-sm);padding:0 6px;gap:4px;flex-shrink:0}
+.cl{font-size:.62rem;color:var(--muted);font-weight:700;letter-spacing:.5px}
+input[type=range]{width:66px;accent-color:var(--pri);cursor:pointer}
+.zg{display:flex;align-items:center;gap:2px}
+.zb{width:26px;height:26px;border:none;background:transparent;color:var(--sub);cursor:pointer;font-size:.95rem;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.zb:hover{background:var(--raised);color:var(--tx)}
+.zv{width:42px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:.74rem;font-weight:600;color:var(--tx)}
 
-/* Overlay folder section */
-.overlay-divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 24px; }
-.overlay-divider::before, .overlay-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.overlay-divider span { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-.folder-open-section { margin-top: 4px; }
+/* SESSION BAR */
+#sbar{display:none;height:30px;background:var(--surface);border-bottom:1px solid var(--border);padding:0 14px;align-items:center;justify-content:space-between;gap:12px;font-size:.7rem;flex-shrink:0}
+#sbar.on{display:flex}
+.fpill{display:flex;align-items:center;gap:6px;color:var(--ok);font-weight:600;min-width:0}
+.fpill .fn{max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 
-/* ===== TOAST ===== */
-#toast {
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(40px);
-    background: #0f172a; color: white; padding: 12px 24px; border-radius: 50px;
-    font-weight: 500; font-size: 0.95rem; border: 1px solid var(--border);
-    box-shadow: var(--shadow-lg); opacity: 0; transition: all 0.3s;
-    pointer-events: none; z-index: 2000;
-}
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* LAYOUT BAR */
+#lbar{display:none;height:40px;background:var(--raised);border-bottom:1px solid var(--border);padding:0 14px;align-items:center;gap:10px;font-size:.78rem;flex-shrink:0}
+.ni{width:52px;height:28px;padding:0 6px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--base);color:var(--tx);font-family:'Sora',sans-serif;font-size:.76rem;text-align:center}
+select.ni{width:auto;cursor:pointer}
 
-/* ===== LAYOUT BAR ===== */
-#layoutBar { background: var(--bg-surface); padding: 8px 20px; border-bottom: 1px solid var(--border); display: none; align-items: center; gap: 12px; font-size: 0.9rem; }
-.input-num { width: 60px; padding: 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-base); color: white; text-align: center; }
+/* WORKSPACE */
+#ws{display:flex;flex:1;overflow:hidden}
+.pane{display:flex;flex-direction:column;min-width:160px;background:var(--surface)}
+.ph{height:44px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pt{font-size:.76rem;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:6px}
+.rsz{width:5px;background:var(--base);border-left:1px solid var(--border);border-right:1px solid var(--border);cursor:col-resize;z-index:100;transition:background .15s;flex-shrink:0}
+.rsz:hover,.rsz.on{background:var(--pri)}
 
-/* ===== TEXT EDITOR ===== */
-#textEditor { position: absolute; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; display: none; gap: 8px; align-items: center; box-shadow: var(--shadow-lg); z-index: 200; }
+/* CANVAS AREA */
+.cvs{flex:1;overflow:auto;background:#040608;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:22px 22px;display:flex;align-items:flex-start;padding:28px;touch-action:none}
+.sw{position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.05),0 16px 48px rgba(0,0,0,.7);background:#fff;transform-origin:top center;margin:0 auto;flex-shrink:0}
+canvas{display:block;width:100%;height:auto}
 
-/* ===== AUTH BADGE (header) ===== */
-.user-badge {
-    display: none; align-items: center; gap: 6px;
-    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);
-    border-radius: 20px; padding: 3px 10px 3px 6px; height: 34px; flex-shrink: 0;
-}
-.user-avatar {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--primary-gradient); display: flex; align-items: center; justify-content: center;
-    font-size: 0.68rem; font-weight: 800; color: white; flex-shrink: 0;
-}
-.user-name { font-size: 0.8rem; font-weight: 700; color: var(--primary-hover); max-width: 80px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.folder-badge {
-    background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3);
-    color: var(--success); border-radius: 6px; padding: 2px 8px;
-    font-size: 0.72rem; font-weight: 700; white-space: nowrap; display: none;
-}
+/* MARKS */
+#cg{position:absolute;pointer-events:none;width:var(--ms,44px);height:var(--ms,44px);border:2px solid rgba(255,255,255,.7);border-radius:50%;transform:translate(-50%,-50%);z-index:100;display:none}
+#cg.sn{border-color:var(--info);box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+.mk{position:absolute;transform:translate(-50%,-50%);width:var(--ms,44px);height:var(--ms,44px);display:flex;justify-content:center;align-items:center;font-weight:800;pointer-events:none;z-index:10;font-family:'JetBrains Mono',monospace}
+.mb{position:absolute;bottom:-7px;right:-7px;background:var(--panel);color:var(--tx);font-size:9px;padding:1px 4px;border-radius:3px;border:1px solid var(--border);font-weight:700;white-space:nowrap}
+.mk-o{border-radius:50%;border:3px solid var(--ok);background:rgba(52,211,153,.1)}
+.mk-x{color:var(--ng)}
+.mk-x::before,.mk-x::after{content:'';position:absolute;width:3px;height:100%;background:var(--ng);border-radius:2px}
+.mk-x::before{transform:rotate(45deg)}.mk-x::after{transform:rotate(-45deg)}
+.mk-tri{display:flex;justify-content:center;align-items:center}
+.mk-tri-sh{position:absolute;top:0;left:0;width:100%;height:100%;clip-path:polygon(50% 0%,0% 100%,100% 100%);background:rgba(251,191,36,.12)}
+.mk-tri-tx{position:relative;z-index:2;font-size:.85rem;padding-top:18%;text-shadow:0 1px 2px rgba(0,0,0,.9);color:var(--warn)}
+.mk-txt{position:absolute;transform:translateY(-50%);white-space:nowrap;z-index:11;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.9);background:rgba(0,0,0,.55);padding:3px 8px;border-radius:4px;border:2px solid transparent;cursor:grab;backdrop-filter:blur(4px)}
+.mk-txt:hover{border-color:rgba(255,255,255,.2)}.mk-txt.sel{border-color:var(--pri)}
+.zone{position:absolute;border:1px dashed var(--warn);background:rgba(251,191,36,.06);transform:translate(-50%,-50%);pointer-events:none;display:flex;justify-content:center;align-items:center;color:var(--warn);font-size:.62rem;font-weight:700;border-radius:3px}
+#te{position:absolute;background:rgba(13,17,23,.96);backdrop-filter:blur(10px);border:1px solid var(--border2);border-radius:var(--r);padding:8px;display:none;gap:8px;align-items:center;box-shadow:var(--sh);z-index:200}
 
-/* ===== GENERIC MODAL OVERLAY ===== */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15,23,42,0.85); z-index: 1000;
-    display: none; justify-content: center; align-items: center;
-    backdrop-filter: blur(6px);
-}
-.modal-overlay.open { display: flex; }
-.modal-box {
-    background: var(--bg-surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
-    position: relative; overflow: hidden;
-    animation: modalIn 0.2s ease;
-}
-.modal-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--primary-gradient); }
-@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: none; } }
-.modal-header { padding: 24px 28px 0; display: flex; justify-content: space-between; align-items: center; }
-.modal-title { font-size: 1.15rem; font-weight: 800; }
-.modal-close { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-.modal-close:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
-.modal-body { padding: 20px 28px 28px; }
+/* OVERLAY */
+#ov{position:fixed;inset:0;background:rgba(7,9,15,.93);z-index:999;display:flex;justify-content:center;align-items:center;backdrop-filter:blur(12px)}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);width:min(660px,96vw);padding:44px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--pri-grad)}
+.st{font-size:1.9rem;font-weight:800;letter-spacing:-1px;text-align:center;margin-bottom:4px}
+.ss{color:var(--sub);text-align:center;font-size:.82rem;margin-bottom:32px}
+.ug{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.dz{border:2px dashed var(--border);border-radius:var(--r-lg);padding:28px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .2s}
+.dz:hover,.dz.ov{border-color:var(--pri);background:var(--pri-dim)}
+.di{font-size:2rem}.dl{font-weight:700;font-size:.88rem}
+.ds{font-size:.72rem;color:var(--muted);text-align:center}.ds.ok{color:var(--ok);font-weight:600}
+.dvr{display:flex;align-items:center;gap:10px;margin:20px 0}
+.dvr::before,.dvr::after{content:'';flex:1;height:1px;background:var(--border)}
+.dvr span{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.5px;white-space:nowrap}
 
-/* ===== FORM INPUTS ===== */
-.form-group { margin-bottom: 16px; text-align: left; }
-.form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
-.form-input {
-    width: 100%; height: 40px; background: var(--bg-base); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.9rem;
-    padding: 0 12px; box-sizing: border-box; outline: none; transition: border-color 0.15s;
-}
-.form-input:focus { border-color: var(--primary); }
-.form-input::placeholder { color: var(--text-muted); }
-.form-error { color: var(--danger); font-size: 0.78rem; margin-top: 8px; min-height: 18px; }
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(7,9,15,.88);z-index:1000;display:none;justify-content:center;align-items:center;backdrop-filter:blur(8px)}
+.mo.on{display:flex}
+.mb2{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh);position:relative;overflow:hidden;animation:mIn .18s ease}
+.mb2::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--pri-grad)}
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.mhdr{padding:22px 22px 0;display:flex;justify-content:space-between;align-items:center}
+.mtit{font-size:1rem;font-weight:800;letter-spacing:-.3px}
+.mcls{width:28px;height:28px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.mcls:hover{background:var(--raised);color:var(--tx)}
+.mbdy{padding:18px 22px 22px;overflow-y:auto}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:.72rem;font-weight:700;color:var(--sub);margin-bottom:5px;letter-spacing:.3px}
+.fi{width:100%;height:37px;background:var(--base);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--tx);font-family:'Sora',sans-serif;font-size:.83rem;padding:0 11px;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--pri)}.fi::placeholder{color:var(--muted)}
+.fer{color:var(--ng);font-size:.72rem;margin-top:5px;min-height:14px}
+.ibox{background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.2);border-radius:var(--r-sm);padding:10px 13px;font-size:.74rem;color:var(--info);line-height:1.6}
 
-/* ===== FOLDER MODAL ===== */
-#folderModal .modal-box { width: 640px; max-height: 80vh; display: flex; flex-direction: column; }
-#folderModal .modal-body { overflow-y: auto; flex: 1; }
-#folderModal .modal-body::-webkit-scrollbar { width: 6px; }
-#folderModal .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-.folder-create-bar { display: flex; gap: 8px; margin-bottom: 20px; }
-.folder-create-bar .form-input { flex: 1; }
-.folder-list { display: flex; flex-direction: column; gap: 10px; }
-.folder-card {
-    background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 14px 16px; display: flex; align-items: center; gap: 14px;
-    transition: all 0.15s; cursor: pointer;
-}
-.folder-card:hover { border-color: var(--primary); background: rgba(99,102,241,0.04); }
-.folder-icon { font-size: 1.6rem; flex-shrink: 0; }
-.folder-info { flex: 1; min-width: 0; }
-.folder-name { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; }
-.folder-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 12px; }
-.folder-stat { color: var(--info); font-weight: 600; }
-.folder-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.folder-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-.folder-empty-icon { font-size: 3rem; margin-bottom: 12px; }
-.folder-empty-text { font-size: 0.9rem; line-height: 1.6; }
+/* FOLDER */
+#fm .mb2{width:min(650px,96vw);max-height:82vh;display:flex;flex-direction:column}
+#fm .mbdy{flex:1;display:flex;flex-direction:column;gap:14px}
+.fcr{display:flex;gap:8px}
+.fcr .fi{flex:1}
+.fl2{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;min-height:80px}
+.fc{background:var(--base);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:13px;transition:all .15s}
+.fc:hover{border-color:var(--border2);background:var(--raised)}
+.fi2{font-size:1.4rem;flex-shrink:0}
+.fn2{flex:1;min-width:0}
+.fn3{font-weight:700;font-size:.86rem;margin-bottom:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fm2{font-size:.68rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.fm2 .ac{color:var(--info);font-weight:600}
+.fa{display:flex;gap:5px;flex-shrink:0}
+.fe{text-align:center;padding:36px 20px;color:var(--muted);font-size:.82rem;line-height:1.8}
 
-/* ===== SAVE TO FOLDER MODAL ===== */
-#saveFolderModal .modal-box { width: 380px; }
+/* FILE MANAGER */
+#mgr .mb2{width:min(560px,96vw);max-height:80vh;display:flex;flex-direction:column}
+#mgr .mbdy{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.fr{background:var(--base);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;display:flex;align-items:center;gap:11px;transition:border-color .15s}
+.fr:hover{border-color:var(--border2)}
+.fri{font-size:1rem;flex-shrink:0}
+.frn{flex:1;font-size:.8rem;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.frt{font-size:.66rem;color:var(--muted);flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.fkb{font-size:.62rem;padding:2px 7px;border-radius:20px;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.25);font-weight:700;flex-shrink:0}
 
-/* ===== STATS MODAL ===== */
-#statsModal .modal-box { width: 720px; max-height: 85vh; display: flex; flex-direction: column; }
-#statsModal .modal-body { overflow-y: auto; flex: 1; padding-bottom: 20px; }
-#statsModal .modal-body::-webkit-scrollbar { width: 6px; }
-#statsModal .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-.stats-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-.stat-card { background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
-.stat-card-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-card-value { font-size: 1.6rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-.stat-card-value.mean { color: var(--primary-hover); }
-.stat-card-value.sd { color: var(--info); }
-.stat-card-value.max { color: var(--success); }
-.stat-card-value.min { color: var(--danger); }
-.stats-table-wrap { overflow-x: auto; }
-.stats-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-.stats-table th { padding: 10px 12px; background: rgba(99,102,241,0.08); border-bottom: 1px solid var(--border); font-weight: 700; color: var(--text-sub); text-align: left; white-space: nowrap; }
-.stats-table td { padding: 9px 12px; border-bottom: 1px solid rgba(51,65,85,0.5); }
-.stats-table tr:hover td { background: rgba(255,255,255,0.02); }
-.stats-table tr.current-student td { background: rgba(99,102,241,0.08); }
-.rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 22px; border-radius: 4px; font-weight: 800; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; }
-.rank-1 { background: rgba(251,191,36,0.2); color: var(--warning); border: 1px solid rgba(251,191,36,0.4); }
-.rank-2 { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
-.rank-3 { background: rgba(180,83,9,0.15); color: #d97706; border: 1px solid rgba(180,83,9,0.3); }
-.rank-other { background: var(--bg-base); color: var(--text-muted); border: 1px solid var(--border); }
-.deviation-bar { display: flex; align-items: center; gap: 8px; }
-.deviation-fill { height: 6px; border-radius: 3px; background: var(--primary-gradient); min-width: 2px; }
-.stats-export-bar { display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); margin-top: 4px; }
-.bar-chart { margin-bottom: 24px; }
-.bar-chart-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-.bar-chart-container { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
-.bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.bar-fill { width: 100%; background: var(--primary-gradient); border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.3s; }
-.bar-label { font-size: 0.62rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40px; text-align: center; }
+/* STATS */
+#st .mb2{width:min(720px,96vw);max-height:88vh;display:flex;flex-direction:column}
+#st .mbdy{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.stl{background:var(--base);border:1px solid var(--border);border-radius:var(--r);padding:13px;text-align:center}
+.stll{font-size:.63rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.stlv{font-size:1.55rem;font-weight:800;font-family:'JetBrains Mono',monospace}
+.stlv.cy{color:var(--pri)}.stlv.bl{color:var(--info)}.stlv.gr{color:var(--ok)}.stlv.rd{color:var(--ng)}
+.bw{background:var(--base);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.bwt{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:76px}
+.bi{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.bf{width:100%;background:var(--pri-grad);border-radius:2px 2px 0 0;min-height:2px;opacity:.7}
+.bf.cur{opacity:1;box-shadow:0 0 8px rgba(34,211,238,.35)}
+.bbl{font-size:.53rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.stab{width:100%;border-collapse:collapse;font-size:.78rem}
+.stab th{padding:8px 11px;background:rgba(34,211,238,.05);border-bottom:1px solid var(--border);font-weight:700;color:var(--sub);text-align:left;white-space:nowrap}
+.stab td{padding:7px 11px;border-bottom:1px solid rgba(30,45,61,.5)}
+.stab tr:hover td{background:rgba(255,255,255,.02)}.stab tr.me td{background:rgba(34,211,238,.04)}
+.rb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:19px;border-radius:3px;font-weight:800;font-size:.7rem;font-family:'JetBrains Mono',monospace}
+.r1{background:rgba(251,191,36,.16);color:var(--warn);border:1px solid rgba(251,191,36,.3)}
+.r2{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.22)}
+.r3{background:rgba(180,83,9,.1);color:#d97706;border:1px solid rgba(180,83,9,.22)}
+.rn{background:var(--base);color:var(--muted);border:1px solid var(--border)}
+.db{display:flex;align-items:center;gap:5px}
+.df{height:5px;border-radius:3px;background:var(--pri-grad);min-width:2px}
+.seb{display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border);margin-top:4px}
 
-/* ===== FILE SYNC PROGRESS ===== */
-#fileSyncOverlay {
-  display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.92);
-  z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px);
-}
-#fileSyncOverlay.open { display: flex; }
-.sync-box {
-  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: 40px 48px; min-width: 400px; text-align: center; box-shadow: var(--shadow-xl);
-  position: relative; overflow: hidden;
-}
-.sync-box::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--primary-gradient); }
-.sync-title { font-size:1.1rem; font-weight:800; margin-bottom:6px; }
-.sync-sub { font-size:0.82rem; color:var(--text-muted); margin-bottom:24px; }
-.sync-progress-wrap { background: var(--bg-base); border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 10px; }
-.sync-progress-bar { height: 100%; background: var(--primary-gradient); border-radius: 8px; transition: width 0.2s; width: 0%; }
-.sync-file-label { font-size: 0.78rem; color: var(--text-sub); min-height: 18px; }
+/* SYNC */
+#sy{position:fixed;inset:0;background:rgba(7,9,15,.93);z-index:9999;display:none;justify-content:center;align-items:center;backdrop-filter:blur(10px)}
+#sy.on{display:flex}
+.syc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:38px 46px;min-width:360px;text-align:center;box-shadow:var(--sh);position:relative;overflow:hidden}
+.syc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--pri-grad)}
+.syi{font-size:2.2rem;margin-bottom:10px}
+.syt{font-size:.95rem;font-weight:800;margin-bottom:4px}
+.sys{font-size:.76rem;color:var(--muted);margin-bottom:18px}
+.syk{background:var(--base);border-radius:8px;height:8px;overflow:hidden;margin-bottom:7px}
+.syb{height:100%;background:var(--pri-grad);border-radius:8px;transition:width .2s;width:0%}
+.syf{font-size:.7rem;color:var(--sub);min-height:14px}
 
-#sessionBar {
-    display: none;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 16px;
-    font-size: 0.78rem;
-    color: var(--text-sub);
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-shrink: 0;
-    height: 32px;
-    box-sizing: border-box;
-}
-#sessionBar.visible { display: flex; }
-#sessionBar .folder-row { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; color: var(--success); }
-#sessionBar .folder-row.hidden { display: none; }
-/* Keep old ID working too */
-#folderIndicator { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+/* TOAST */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--panel);color:var(--tx);padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:600;border:1px solid var(--border2);box-shadow:var(--sh);opacity:0;transition:all .25s;pointer-events:none;z-index:2000;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.nqc{background:var(--pri-dim);border:1px solid rgba(34,211,238,.22);color:var(--pri);padding:2px 8px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:700}
 </style>
 </head>
 <body>
 
-<div id="overlay">
-<div class="modal">
-  <div class="logo" style="justify-content:center; font-size:2.5rem; margin-bottom:8px;">
-    <span>Q</span>-Mark
-  </div>
-  <p style="color: var(--text-sub); margin-bottom: 0; font-size:0.9rem;">模範解答と生徒答案（画像/PDF）をアップロードしてください</p>
-
-  <div class="upload-grid">
-    <div class="upload-box" id="dropKey">
-      <div style="font-size:2.5rem;">🔑</div>
-      <div style="font-weight:700;">模範解答</div>
-      <div class="upload-status" id="statKey">選択してください</div>
-      <input type="file" id="inpKey" style="display:none" accept="image/*,application/pdf">
+<!-- START OVERLAY -->
+<div id="ov">
+  <div class="sc">
+    <div class="st"><em style="font-style:normal;background:var(--pri-grad);-webkit-background-clip:text;background-clip:text;color:transparent">Q</em>-Mark</div>
+    <div class="ss">模範解答と生徒答案（PDF / 画像）をアップロードして採点を開始</div>
+    <div class="ug">
+      <div class="dz" id="dKey"><div class="di">🔑</div><div class="dl">模範解答</div><div class="ds" id="sKey">クリックまたはドラッグ</div><input type="file" id="iKey" style="display:none" accept="image/*,application/pdf"></div>
+      <div class="dz" id="dStu"><div class="di">📚</div><div class="dl">生徒答案</div><div class="ds" id="sStu">クリックまたはドラッグ（複数可）</div><input type="file" id="iStu" multiple style="display:none" accept="image/*,application/pdf"></div>
     </div>
-    <div class="upload-box" id="dropStu">
-      <div style="font-size:2.5rem;">📚</div>
-      <div style="font-weight:700;">生徒答案</div>
-      <div class="upload-status" id="statStu">選択してください (複数可)</div>
-      <input type="file" id="inpStu" multiple style="display:none" accept="image/*,application/pdf">
-    </div>
-  </div>
-
-  <button id="btnStart" class="btn btn-primary" style="width:100%; height:50px; justify-content:center; font-size:1.1rem;" disabled>
-    採点スタート
-  </button>
-
-  <div id="overlayFolderSection">
-    <div class="overlay-divider"><span>フォルダ</span></div>
-    <div class="folder-open-section">
-      <button class="btn btn-success" style="width:100%; height:44px; justify-content:center;" onclick="openFolderModal()">
-        📁 フォルダを開く / 作成
-      </button>
-    </div>
-  </div>
-
-  <div style="margin-top:20px; display:flex; justify-content:center; gap:16px;">
-    <a href="https://astro-root.github.io/quiz.pointshow/Q-Mark-how-to-use.html" target="_blank" style="color:var(--text-muted); font-size:0.78rem; text-decoration:none;">📖 使い方ガイド</a>
-    <span style="color:var(--border);">|</span>
-    <span style="color:var(--text-muted); font-size:0.78rem;">ショートカット: Z/1=正解　X/2=不正解　C/3=部分点　T=文字　←→=生徒切替</span>
-  </div>
-</div>
-</div>
-
-<header>
-  <div class="logo" onclick="backToTop()" title="トップに戻る"><span>Q</span>-Mark</div>
-  <div class="toolbar">
-    <button class="btn active" id="toolO" onclick="setTool('o')"><span style="color:var(--success)">○</span> 正解</button>
-    <button class="btn" id="toolX" onclick="setTool('x')"><span style="color:var(--danger)">×</span> 不正解</button>
-    <button class="btn" id="toolTri" onclick="setTool('tri')"><span style="color:var(--warning)">△</span> 部分点</button>
-    <button class="btn" id="toolText" onclick="setTool('text')">T 文字</button>
-    <div class="divider"></div>
-    <div class="control-group">
-      <span class="control-label">Size</span>
-      <input type="range" id="markSizeRange" min="20" max="100" value="44" title="マークサイズ">
-    </div>
-    <button class="btn" onclick="toggleLayoutMode()" title="問題番号グリッド設定">📐 Grid</button>
-  </div>
-  <div class="toolbar">
-    <div style="font-family:'JetBrains Mono'; font-weight:700; display:flex; align-items:baseline; gap:4px; margin-right:8px;">
-      <span style="font-size:0.72rem; color:var(--text-muted);">SCORE</span>
-      <span id="scoreDisplay" style="font-size:1.5rem; color:var(--primary-hover);">0</span>
-    </div>
-    <button id="folderBtn" class="btn btn-success" onclick="openFolderModal()">📁 フォルダ</button>
-    <button id="saveFolderHeaderBtn" class="btn" onclick="openSaveFolderModal()" title="現在の採点セッションをフォルダに保存">💾 保存</button>
-    <button id="statBtn" class="btn" onclick="openStatsModal()" title="統計を表示">📊 統計</button>
-    <button class="btn" onclick="undo()" title="Ctrl+Z">↩ 戻る</button>
-    <div class="divider"></div>
-    <button class="btn btn-primary" onclick="downloadPDF()">PDF</button>
-    <button class="btn" onclick="downloadCSV()">CSV</button>
-    <div class="divider"></div>
-  </div>
-</header>
-
-<div id="sessionBar">
-  <div id="folderIndicator" style="display:none; align-items:center; gap:8px; flex:1; min-width:0; color:var(--success);">
-    <span>📁</span>
-    <span id="folderIndicatorName" style="font-weight:700; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:200px;">フォルダ名</span>
-    <span style="color:var(--text-muted); flex-shrink:0; font-size:0.72rem;">に保存済み</span>
-    <button class="btn btn-success" style="height:22px; padding:0 8px; font-size:0.7rem; flex-shrink:0;" onclick="quickSaveFolder()">💾 上書き保存</button>
-    <button class="btn" style="height:22px; padding:0 8px; font-size:0.7rem; flex-shrink:0;" onclick="openSaveFolderModal()">別名で保存</button>
-  </div>
-  <div id="noFolderRow" style="display:flex; align-items:center; gap:6px; flex:1; color:var(--text-muted); font-size:0.72rem;">
-    <span id="sessionFileInfo"></span>
-  </div>
-  <div style="color:var(--text-muted); font-size:0.72rem; font-family:'JetBrains Mono'; flex-shrink:0; display:flex; align-items:center; gap:6px;">
-    <span id="urlHashDisplay" style="color:var(--primary); opacity:0.8;"></span>
-    <button class="btn" style="height:22px; padding:0 8px; font-size:0.7rem;" onclick="copyCurrentUrl()" title="URLをコピー">🔗 URLコピー</button>
+    <button id="bStart" class="btn btn-p" style="width:100%;height:44px;justify-content:center;font-size:.9rem;border-radius:var(--r)" disabled>採点スタート →</button>
+    <div class="dvr"><span>フォルダ</span></div>
+    <button class="btn btn-ok" style="width:100%;height:38px;justify-content:center;font-size:.8rem;border-radius:var(--r)" onclick="openFolderModal()">📁 フォルダを開く / 作成</button>
+    <div style="margin-top:14px;text-align:center;font-size:.67rem;color:var(--muted)">Z/1=正解　X/2=不正解　C/3=部分点　T=文字　←→=切替　Ctrl+Z=戻る</div>
   </div>
 </div>
 
-<div id="layoutBar">
-  <span style="color:var(--info); font-weight:700;">📐 レイアウトモード:</span>
-  <span style="color:var(--text-sub)">始点(左上) → 終点(右下) をクリック</span>
-  <div class="divider"></div>
-  <span>開始No:</span>
-  <input type="number" id="gridStart" class="input-num" value="1">
-  <select id="gridDir" class="input-num" style="width:auto; cursor:pointer;">
-    <option value="h" selected>→ 横 (Z字)</option>
-    <option value="v">↓ 縦 (N字)</option>
-  </select>
-  <div class="divider"></div>
-  <input type="number" id="gridRows" class="input-num" value="20"> 行 ×
-  <input type="number" id="gridCols" class="input-num" value="5"> 列
-  <button class="btn btn-primary" style="height:32px;" onclick="generateGrid()">生成</button>
-  <button class="btn" style="height:32px;" onclick="toggleLayoutMode()">完了</button>
-  <button class="btn" onclick="clearZones()" style="height:32px; color:var(--danger);">全クリア</button>
+<!-- HEADER -->
+<div id="hdr">
+  <div class="logo" onclick="backToTop()"><em>Q</em>-Mark</div>
+  <div class="sep"></div>
+  <button class="btn active" id="tO" onclick="setTool('o')"><span style="color:var(--ok)">○</span> 正解</button>
+  <button class="btn" id="tX" onclick="setTool('x')"><span style="color:var(--ng)">×</span> 不正解</button>
+  <button class="btn" id="tT" onclick="setTool('tri')"><span style="color:var(--warn)">△</span> 部分点</button>
+  <button class="btn" id="tTx" onclick="setTool('text')">T 文字</button>
+  <div class="sep"></div>
+  <div class="cg"><span class="cl">SIZE</span><input type="range" id="msz" min="20" max="100" value="44"></div>
+  <button class="btn" onclick="toggleLayout()">📐 Grid</button>
+  <div class="sp"></div>
+  <div class="score-w"><span class="sl">SCORE</span><span class="sv" id="sco">0</span></div>
+  <div class="sep"></div>
+  <button class="btn btn-ok" onclick="openFolderModal()">📁 フォルダ</button>
+  <button class="btn" onclick="openSaveModal()">💾 保存</button>
+  <button class="btn" onclick="openFileMgr()">🗂 管理</button>
+  <button class="btn" onclick="openStats()">📊 統計</button>
+  <button class="btn" onclick="undo()">↩ 戻る</button>
+  <div class="sep"></div>
+  <button class="btn btn-p" onclick="dlPDF()">PDF</button>
+  <button class="btn" onclick="dlCSV()">CSV</button>
 </div>
 
-<div class="workspace" id="workspace">
-  <div class="pane" id="paneLeft" style="width: 40%;">
-    <div class="pane-header">
-      <span>🔑 模範解答</span>
-      <div class="zoom-group">
-        <button class="zoom-btn" onclick="addZoom('left', -10)">-</button>
-        <div class="zoom-val" id="zoomValLeft">100%</div>
-        <button class="zoom-btn" onclick="addZoom('left', 10)">+</button>
-      </div>
-    </div>
-    <div class="canvas-container" id="scrollLeft">
-      <div class="sheet-wrap" id="wrapLeft">
-        <canvas id="cvLeft"></canvas>
-      </div>
-    </div>
+<!-- SESSION BAR -->
+<div id="sbar">
+  <div class="fpill" id="fpill" style="display:none">
+    <span>📁</span><span class="fn" id="fpn">—</span>
+    <span style="color:var(--muted);font-size:.63rem">に保存中</span>
+    <button class="btn btn-ok" style="height:20px;padding:0 7px;font-size:.63rem" onclick="quickSave()">上書き</button>
   </div>
+  <div id="nfi" style="color:var(--muted);font-size:.68rem"></div>
+  <div style="display:flex;align-items:center;gap:7px">
+    <span id="udis" style="font-family:'JetBrains Mono',monospace;font-size:.66rem;color:var(--pri);opacity:.7"></span>
+    <button class="btn" style="height:20px;padding:0 7px;font-size:.63rem" onclick="cpURL()">🔗 URLコピー</button>
+  </div>
+</div>
 
-  <div class="resizer" id="dragHandle"></div>
+<!-- LAYOUT BAR -->
+<div id="lbar">
+  <span style="color:var(--info);font-weight:700;font-size:.76rem">📐 始点→終点をクリック</span>
+  <div class="sep"></div>
+  <span style="font-size:.73rem;color:var(--sub)">開始No:</span>
+  <input type="number" id="gS" class="ni" value="1">
+  <select id="gD" class="ni"><option value="h">→ 横</option><option value="v">↓ 縦</option></select>
+  <input type="number" id="gR" class="ni" value="20" style="width:46px"> 行 ×
+  <input type="number" id="gC" class="ni" value="5" style="width:46px"> 列
+  <button class="btn btn-p" style="height:28px" onclick="genGrid()">生成</button>
+  <button class="btn" style="height:28px" onclick="toggleLayout()">完了</button>
+  <button class="btn btn-d" style="height:28px" onclick="clearZones()">ゾーン消去</button>
+</div>
 
-  <div class="pane" id="paneRight" style="width: 60%;">
-    <div class="pane-header">
-      <div class="toolbar">
-        <button class="btn" onclick="navStudent(-1)" style="padding:0 10px;">◀</button>
-        <div style="text-align:center; padding:0 10px;">
-          <div id="stuName" style="font-weight:700; font-size:0.85rem; max-width:180px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">Student</div>
-          <div id="stuCount" style="font-size:0.7rem; color:var(--text-muted);">0 / 0</div>
+<!-- WORKSPACE -->
+<div id="ws">
+  <div class="pane" id="pL" style="width:40%">
+    <div class="ph"><div class="pt">🔑 模範解答</div><div class="zg"><button class="zb" onclick="addZoom('l',-10)">−</button><div class="zv" id="zL">100%</div><button class="zb" onclick="addZoom('l',10)">+</button></div></div>
+    <div class="cvs" id="scL"><div class="sw" id="wL"><canvas id="cvL"></canvas></div></div>
+  </div>
+  <div class="rsz" id="rsz"></div>
+  <div class="pane" id="pR" style="width:60%">
+    <div class="ph">
+      <div style="display:flex;align-items:center;gap:7px">
+        <button class="btn" style="padding:0 9px" onclick="navS(-1)">◀</button>
+        <div style="text-align:center">
+          <div style="font-weight:700;font-size:.8rem;max-width:150px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" id="snm">—</div>
+          <div style="font-size:.63rem;color:var(--muted);font-family:'JetBrains Mono',monospace" id="scnt">0 / 0</div>
         </div>
-        <button class="btn" onclick="navStudent(1)" style="padding:0 10px;">▶</button>
-        <div class="divider"></div>
-        <button class="btn btn-success" onclick="document.getElementById('inpAddStu').click()" title="生徒答案を追加" style="padding:0 10px;">＋ 追加</button>
-        <input type="file" id="inpAddStu" multiple style="display:none" accept="image/*,application/pdf">
+        <button class="btn" style="padding:0 9px" onclick="navS(1)">▶</button>
+        <div class="sep"></div>
+        <button class="btn btn-ok" style="padding:0 9px" onclick="document.getElementById('iAddS').click()">＋ 追加</button>
+        <input type="file" id="iAddS" multiple style="display:none" accept="image/*,application/pdf">
       </div>
-      <div class="toolbar">
-        <span style="margin-right:12px; font-size:0.85rem; color:var(--text-sub);">
-          Next: <span id="nextQ" style="color:var(--primary); font-weight:800; background:rgba(99,102,241,0.1); padding:2px 8px; border-radius:4px;">1</span>
-        </span>
-        <button class="btn" onclick="clearMarks()" style="color:var(--danger); padding:0 10px;">全消去</button>
-        <div class="divider"></div>
-        <div class="zoom-group">
-          <button class="zoom-btn" onclick="addZoom('right', -10)">-</button>
-          <div class="zoom-val" id="zoomValRight">100%</div>
-          <button class="zoom-btn" onclick="addZoom('right', 10)">+</button>
-        </div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <span style="font-size:.73rem;color:var(--sub)">Next: <span class="nqc" id="nq">1</span></span>
+        <button class="btn btn-d" style="padding:0 9px;height:28px;font-size:.7rem" onclick="clearMks()">全消去</button>
+        <div class="sep"></div>
+        <div class="zg"><button class="zb" onclick="addZoom('r',-10)">−</button><div class="zv" id="zR">100%</div><button class="zb" onclick="addZoom('r',10)">+</button></div>
       </div>
     </div>
-    <div class="canvas-container" id="scrollRight">
-      <div class="sheet-wrap" id="wrapRight">
-        <canvas id="cvRight"></canvas>
-        <div id="layerMarks"></div>
-        <div id="layerZones"></div>
-        <div id="layerTemp"></div>
-        <div id="cursorGuide"></div>
-        <div id="textEditor">
-          <input type="number" id="txtSize" class="input-num" value="24" title="サイズ">
-          <input type="color" id="txtColor" value="#ef4444" style="border:none; background:transparent; cursor:pointer; height:28px;">
-          <button class="btn" style="color:var(--danger);" onclick="deleteSelectedText()">削除</button>
-          <button class="btn btn-primary" onclick="closeTextEditor()">OK</button>
+    <div class="cvs" id="scR">
+      <div class="sw" id="wR">
+        <canvas id="cvR"></canvas>
+        <div id="lMk"></div><div id="lZn"></div><div id="lTp"></div>
+        <div id="cg"></div>
+        <div id="te">
+          <input type="number" id="txSz" class="ni" value="24" style="width:50px">
+          <input type="color" id="txCl" value="#ef4444" style="border:none;background:transparent;cursor:pointer;height:26px">
+          <button class="btn btn-d" style="height:26px;padding:0 8px;font-size:.7rem" onclick="delSelTxt()">削除</button>
+          <button class="btn btn-p" style="height:26px;padding:0 9px;font-size:.7rem" onclick="closeTxtEd()">OK</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div id="fileSyncOverlay">
-  <div class="sync-box">
-    <div id="syncIcon" style="font-size:2.5rem; margin-bottom:12px;">☁️</div>
-    <div class="sync-title" id="syncTitle">ファイルをアップロード中...</div>
-    <div class="sync-sub" id="syncSub">他のデバイスでも開けるようにしています</div>
-    <div class="sync-progress-wrap"><div class="sync-progress-bar" id="syncProgressBar"></div></div>
-    <div class="sync-file-label" id="syncFileLabel"></div>
-  </div>
-</div>
+<!-- SYNC OVERLAY -->
+<div id="sy"><div class="syc"><div class="syi" id="syI">☁️</div><div class="syt" id="syT">アップロード中...</div><div class="sys" id="syS">他のデバイスでも開けるようにしています</div><div class="syk"><div class="syb" id="syB"></div></div><div class="syf" id="syF"></div></div></div>
 
-<div id="toast">Message</div>
+<!-- TOAST --><div id="toast"></div>
 
-<div class="modal-overlay" id="folderModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">📁 フォルダ一覧</div>
-      <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.2); border-radius:var(--radius); padding:12px 16px; margin-bottom:16px; font-size:0.8rem; color:var(--info); line-height:1.6;">
-        🔗 <strong>フォルダURLを共有するだけで採点データをどのデバイスでも開けます。</strong><br>
-        <span style="color:var(--text-muted);">採点マーク・ゾーン・PDF/画像はすべてFirebaseに自動保存されます。初回保存時のみアップロードに時間がかかります。</span>
-      </div>
-      <div class="folder-create-bar">
-        <input type="text" id="newFolderName" class="form-input" placeholder="新しいフォルダ名（例: 2024年度 中間テスト）">
-        <button class="btn btn-primary" onclick="createFolder()">＋ 作成</button>
-      </div>
-      <div id="folderList" class="folder-list"></div>
-    </div>
+<!-- FOLDER MODAL -->
+<div class="mo" id="fm"><div class="mb2">
+  <div class="mhdr"><div class="mtit">📁 フォルダ</div><button class="mcls" onclick="closeM('fm')">✕</button></div>
+  <div class="mbdy" style="max-height:calc(80vh - 64px)">
+    <div class="ibox">🔗 <strong>フォルダURLを共有するだけで、どのデバイスからでも採点データを閲覧・編集できます。</strong></div>
+    <div class="fcr"><input type="text" id="nfn" class="fi" placeholder="新しいフォルダ名（例: 2024 中間テスト）"><button class="btn btn-p" onclick="createFolder()" style="white-space:nowrap">＋ 作成</button></div>
+    <div class="fl2" id="flist"></div>
   </div>
-</div>
+</div></div>
 
-<div class="modal-overlay" id="saveFolderModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">フォルダに保存</div>
-      <button class="modal-close" onclick="closeModal('saveFolderModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="color:var(--text-sub); font-size:0.88rem; margin-bottom:16px;">現在の採点セッション（模範解答・生徒答案・採点マーク）をフォルダに保存します。</p>
-      <div class="form-group">
-        <label class="form-label">保存先フォルダを選択</label>
-        <select id="saveFolderSelect" class="form-input" style="height:auto; padding:8px 12px; cursor:pointer;"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">または新しいフォルダ名</label>
-        <input type="text" id="saveFolderNewName" class="form-input" placeholder="空欄の場合は選択したフォルダに上書き保存">
-      </div>
-      <div class="form-error" id="saveError"></div>
-      <button class="btn btn-primary" style="width:100%; height:44px; justify-content:center; margin-top:12px;" onclick="executeSaveToFolder()">💾 保存する</button>
-    </div>
+<!-- SAVE MODAL -->
+<div class="mo" id="sv"><div class="mb2" style="width:min(390px,96vw)">
+  <div class="mhdr"><div class="mtit">💾 フォルダに保存</div><button class="mcls" onclick="closeM('sv')">✕</button></div>
+  <div class="mbdy">
+    <p style="color:var(--sub);font-size:.8rem;margin-bottom:12px">模範解答・生徒答案・採点マークを保存します。</p>
+    <div class="fg"><label class="fl">保存先フォルダ</label><select id="svSel" class="fi" style="height:auto;padding:8px 11px;cursor:pointer"></select></div>
+    <div class="fg"><label class="fl">または新しいフォルダ名</label><input type="text" id="svNm" class="fi" placeholder="空欄の場合は選択フォルダに保存"></div>
+    <div class="fer" id="svErr"></div>
+    <button class="btn btn-p" style="width:100%;height:39px;justify-content:center;margin-top:7px" onclick="execSave()">保存する</button>
   </div>
-</div>
+</div></div>
 
-<div class="modal-overlay" id="statsModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">📊 統計データ</div>
-      <button class="modal-close" onclick="closeModal('statsModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="stats-summary" id="statsSummary"></div>
-      <div class="bar-chart" id="statsBarChart"></div>
-      <div class="stats-table-wrap">
-        <table class="stats-table" id="statsTable"></table>
-      </div>
-      <div class="stats-export-bar">
-        <button class="btn btn-primary" onclick="downloadStatsCSV()">📥 統計CSV エクスポート</button>
-        <button class="btn" onclick="downloadAllGradedPDF()">📄 全採点 合本PDF</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- FILE MANAGER MODAL -->
+<div class="mo" id="mgr"><div class="mb2">
+  <div class="mhdr"><div class="mtit">🗂 ファイル管理</div><button class="mcls" onclick="closeM('mgr')">✕</button></div>
+  <div class="mbdy" id="mgrB" style="max-height:calc(80vh - 64px)"></div>
+</div></div>
+
+<!-- STATS MODAL -->
+<div class="mo" id="st"><div class="mb2">
+  <div class="mhdr"><div class="mtit">📊 統計</div><button class="mcls" onclick="closeM('st')">✕</button></div>
+  <div class="mbdy" id="stB" style="max-height:calc(88vh - 64px)"></div>
+</div></div>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-const { jsPDF } = window.jspdf;
-const STORAGE_KEY = 'QG_PRO_DATA_V2';
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const {jsPDF}=window.jspdf;
 
-// =============================================
-// FIREBASE REALTIME DATABASE SYNC
-// =============================================
-// folders/{folderId}/meta  — name, createdAt, stuCount, updatedAt
-// folders/{folderId}/marks — marks object
-// folders/{folderId}/zones — zones array
+// ── FIREBASE (safe: never read parent nodes) ──────────────────────
+function waitFB(){return new Promise(r=>{if(window._fb){r();return;}window.addEventListener('firebaseReady',()=>r(),{once:true});})}
+function fbr(p){return window._fb.ref(window._fb.db,p)}
+async function fbGet(p){await waitFB();const s=await window._fb.get(fbr(p));return s.exists()?s.val():null}
+async function fbSet(p,v){await waitFB();await window._fb.set(fbr(p),v)}
+async function fbDel(p){await waitFB();await window._fb.remove(fbr(p))}
+function fbOn(p,cb){waitFB().then(()=>window._fb.onValue(fbr(p),s=>cb(s.exists()?s.val():null)))}
 
-let fbSyncListeners = {}; // active onValue listeners per folderId
+function ek(s){return s.replace(/[.#$[\]/]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase())}
+function dk(s){return s.replace(/%([0-9A-F]{2})/g,(_,h)=>String.fromCharCode(parseInt(h,16)))}
+function encM(m){const o={};for(const[k,v]of Object.entries(m))o[ek(k)]=v;return o}
+function decM(m){if(!m)return{};const o={};for(const[k,v]of Object.entries(m))o[dk(k)]=v;return o}
 
-function waitForFirebase() {
-  return new Promise(resolve => {
-    if (window.firebaseReady) { resolve(); return; }
-    window.addEventListener('firebaseReady', () => resolve(), { once: true });
+// ── INDEXEDDB ────────────────────────────────────────────────────
+const DBNM='QMv3',DBVR=1;let idb=null;
+function initDB(){return new Promise((res,rej)=>{const q=indexedDB.open(DBNM,DBVR);q.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('f'))d.createObjectStore('f',{keyPath:'id'});};q.onsuccess=e=>{idb=e.target.result;res();};q.onerror=()=>rej(q.error);});}
+function idbPut(d){return new Promise((res,rej)=>{const tx=idb.transaction('f','readwrite');tx.objectStore('f').put(d).onsuccess=()=>res();tx.onerror=()=>rej(tx.error);})}
+function idbGet(id){return new Promise((res,rej)=>{const tx=idb.transaction('f','readonly');const q=tx.objectStore('f').get(id);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error);})}
+function idbDel(id){return new Promise((res,rej)=>{const tx=idb.transaction('f','readwrite');tx.objectStore('f').delete(id).onsuccess=()=>res();tx.onerror=()=>rej(tx.error);})}
+
+// ── FILE UTILS ───────────────────────────────────────────────────
+function f2b(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);})}
+function b2f(b,n,t){const a=atob(b),u=new Uint8Array(a.length);for(let i=0;i<a.length;i++)u[i]=a.charCodeAt(i);return new File([u],n,{type:t})}
+function f2buf(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(f);})}
+
+// ── STATE ────────────────────────────────────────────────────────
+const S={keyFile:null,stuFiles:[],currIdx:0,marks:{},zones:[],tool:'o',zoom:{l:100,r:100},fitW:{l:0,r:0},nextQ:1,selTxt:null,drag:false,mSz:44,layout:false,gPts:[],folderId:null,pgMm:{w:210,h:297}};
+let _lastSave=0,_uns={};
+
+// ── FOLDER META ──────────────────────────────────────────────────
+const MK='QMF4',VK='QMVF4';
+const gMeta=()=>JSON.parse(localStorage.getItem(MK)||'[]');
+const sMeta=d=>localStorage.setItem(MK,JSON.stringify(d));
+const gVis=()=>JSON.parse(localStorage.getItem(VK)||'[]');
+const aVis=id=>{const v=gVis();if(!v.includes(id)){v.unshift(id);localStorage.setItem(VK,JSON.stringify(v.slice(0,50)));}};
+const genId=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,8);
+
+// ── SYNC UI ──────────────────────────────────────────────────────
+function showSy(t,s=''){document.getElementById('syT').textContent=t;document.getElementById('syS').textContent=s;document.getElementById('syB').style.width='0%';document.getElementById('syF').textContent='';document.getElementById('sy').classList.add('on');}
+function setSy(p,l=''){document.getElementById('syB').style.width=p+'%';document.getElementById('syF').textContent=l;}
+function hideSy(){document.getElementById('sy').classList.remove('on');}
+
+// ── FIREBASE UPLOAD (per-file stuCount update) ───────────────────
+async function fbUpAll(id){
+  showSy('アップロード中...','他のデバイスでも開けるようにしています');
+  try{
+    setSy(0,`📄 ${S.keyFile.name}`);
+    await fbSet(`folders/${id}/files/key`,{name:S.keyFile.name,type:S.keyFile.type,data:await f2b(S.keyFile)});
+    let done=0;
+    for(let i=0;i<S.stuFiles.length;i++){
+      const f=S.stuFiles[i];
+      setSy(((i+1)/(S.stuFiles.length+1))*100,`📄 ${f.name} (${i+1}/${S.stuFiles.length})`);
+      try{
+        await fbSet(`folders/${id}/files/stu_${i}`,{name:f.name,type:f.type,data:await f2b(f),index:i});
+        done++;
+        await fbSet(`folders/${id}/files/stuCount`,done);// update per file so other devices see progress
+      }catch(e){console.warn('upload stu_'+i,e);}
+    }
+    setSy(100,'完了');setTimeout(hideSy,500);
+  }catch(e){hideSy();throw e;}
+}
+async function fbAppend(id,files,start){
+  for(let i=0;i<files.length;i++){
+    await fbSet(`folders/${id}/files/stu_${start+i}`,{name:files[i].name,type:files[i].type,data:await f2b(files[i]),index:start+i});
+    await fbSet(`folders/${id}/files/stuCount`,start+i+1);// per file
+  }
+}
+
+// ── FIREBASE DOWNLOAD (individual fetches) ───────────────────────
+async function fbDlAll(id){
+  const cnt=(await fbGet(`folders/${id}/files/stuCount`))||0;
+  const key=await fbGet(`folders/${id}/files/key`);
+  if(!key)return false;
+  showSy('ダウンロード中...','クラウドからファイルを取得しています');
+  setSy(0,`📄 ${key.name}`);
+  S.keyFile=b2f(key.data,key.name,key.type);
+  const del=(await fbGet(`folders/${id}/deletedNames`))||[];
+  S.stuFiles=[];
+  for(let i=0;i<cnt;i++){
+    const d=await fbGet(`folders/${id}/files/stu_${i}`);
+    if(d&&!del.includes(d.name)){setSy(((i+1)/(cnt+1))*100,`📄 ${d.name} (${i+1}/${cnt})`);S.stuFiles.push(b2f(d.data,d.name,d.type));}
+  }
+  setSy(100,'完了');setTimeout(hideSy,500);return true;
+}
+async function fbDlDiff(id,from,to){
+  const del=(await fbGet(`folders/${id}/deletedNames`))||[];
+  for(let i=from;i<to;i++){
+    const d=await fbGet(`folders/${id}/files/stu_${i}`);
+    if(d&&!del.includes(d.name)&&!S.stuFiles.find(f=>f.name===d.name))S.stuFiles.push(b2f(d.data,d.name,d.type));
+  }
+  document.getElementById('scnt').textContent=`${S.currIdx+1} / ${S.stuFiles.length}`;
+}
+
+// ── FIREBASE SAVE DATA ───────────────────────────────────────────
+async function fbSaveData(id){_lastSave=Date.now();await fbSet(`folders/${id}/data`,{marks:encM(S.marks),zones:S.zones.length?S.zones:null,markSize:S.mSz,updatedAt:_lastSave});}
+
+// ── FIREBASE SUBSCRIBE ───────────────────────────────────────────
+function fbSub(id){
+  fbUnsub();if(!id)return;
+  let fd=true;
+  const u1=window._fb.onValue(fbr(`folders/${id}/data`),async snap=>{
+    if(fd){fd=false;return;}
+    const d=snap.exists()?snap.val():null;if(!d)return;
+    if((d.updatedAt||0)>_lastSave+500){
+      S.marks=decM(d.marks);S.zones=d.zones||[];
+      if(d.markSize){S.mSz=d.markSize;document.getElementById('msz').value=d.markSize;}
+      if(document.getElementById('ov').style.display==='none'){renderMks();updUI();toast('🔄 他のデバイスの変更を反映');}
+    }
+  });
+  _uns.data=u1;
+  let fc=true;
+  const u2=window._fb.onValue(fbr(`folders/${id}/files/stuCount`),async snap=>{
+    if(fc){fc=false;return;}
+    const rc=snap.exists()?snap.val():0,lc=S.stuFiles.length;
+    if(rc<=lc)return;
+    toast(`📥 ${rc-lc} 件の答案を取得中...`);
+    await fbDlDiff(id,lc,rc);
+    await idbCache(id);
+    toast(`✅ ${S.stuFiles.length} 件に更新`);
+  });
+  _uns.cnt=u2;
+}
+function fbUnsub(){for(const u of Object.values(_uns)){try{u();}catch(_){}}  _uns={};}
+
+// ── IDB CACHE ────────────────────────────────────────────────────
+async function idbCache(id){
+  if(!S.keyFile)return;
+  try{
+    const kb=await f2buf(S.keyFile),sbs=await Promise.all(S.stuFiles.map(f2buf));
+    await idbPut({id,keyFile:{name:S.keyFile.name,type:S.keyFile.type,buffer:kb},stuFiles:S.stuFiles.map((f,i)=>({name:f.name,type:f.type,buffer:sbs[i]})),marks:S.marks,zones:S.zones,markSize:S.mSz});
+  }catch(e){console.warn('idbCache',e);}
+}
+
+// ── OPEN FOLDER ──────────────────────────────────────────────────
+async function openFolder(id){
+  toast('📂 フォルダを読み込んでいます...');
+  fbUnsub();
+
+  // 1. IDB first
+  const loc=await idbGet(id).catch(()=>null);
+  if(loc?.keyFile){S.keyFile=new File([loc.keyFile.buffer],loc.keyFile.name,{type:loc.keyFile.type});S.stuFiles=(loc.stuFiles||[]).map(f=>new File([f.buffer],f.name,{type:f.type}));}
+  else{S.keyFile=null;S.stuFiles=[];}
+
+  // 2. Meta+data from Firebase (NOT files - avoids size limit)
+  const fbMeta=await fbGet(`folders/${id}/meta`);
+  const fbData=await fbGet(`folders/${id}/data`);
+
+  // 3. If nothing → check files/key
+  if(!loc&&!fbData){
+    const kex=await fbGet(`folders/${id}/files/key`);
+    if(!kex){toast('⚠️ フォルダが見つかりません');return;}
+  }
+
+  // 4. Marks/zones: Firebase wins
+  if(fbData){S.marks=decM(fbData.marks);S.zones=fbData.zones||[];S.mSz=fbData.markSize||44;}
+  else if(loc){S.marks=loc.marks||{};S.zones=loc.zones||[];S.mSz=loc.markSize||44;}
+  document.getElementById('msz').value=S.mSz;
+
+  // 5. Files: download if missing, diff if partial
+  if(!S.keyFile){
+    if(!await fbDlAll(id)){toast('⚠️ ファイルのダウンロードに失敗');return;}
+  }else{
+    const rc=(await fbGet(`folders/${id}/files/stuCount`))||0;
+    if(rc>S.stuFiles.length){toast(`📥 ${rc-S.stuFiles.length} 件を取得中...`);await fbDlDiff(id,S.stuFiles.length,rc);}
+  }
+
+  // 6. Cache to IDB
+  await idbCache(id);
+
+  // 7. Meta
+  const metaE=fbMeta||{id,name:`フォルダ (${id.slice(0,6)})`,createdAt:Date.now()};
+  const meta=gMeta();if(!meta.find(f=>f.id===id)){meta.unshift(metaE);sMeta(meta);}
+  aVis(id);S.folderId=id;
+
+  // 8. Subscribe
+  fbSub(id);
+
+  // 9. Ensure data node
+  if(!fbData&&S.keyFile){_lastSave=Date.now();fbSet(`folders/${id}/data`,{marks:encM(S.marks),zones:S.zones.length?S.zones:null,markSize:S.mSz,updatedAt:_lastSave}).catch(()=>{});}
+
+  // 10. UI
+  history.replaceState(null,'','#folder-'+id);
+  document.getElementById('udis').textContent='#folder-'+id;
+  document.getElementById('fpn').textContent=metaE.name;
+  document.getElementById('fpill').style.display='flex';
+  document.getElementById('sbar').classList.add('on');
+  closeM('fm');
+
+  if(S.keyFile){
+    document.getElementById('ov').style.display='none';
+    await drawImg(S.keyFile,'cvL','wL','scL','l');
+    if(S.stuFiles.length>0)await loadS(0);else renderMks();
+  }else{
+    document.getElementById('ov').style.display='flex';
+    toast('採点データを同期しました。PDFをアップロードしてください。');
+  }
+}
+
+// ── CREATE / DELETE FOLDER ───────────────────────────────────────
+async function createFolder(){
+  const nm=document.getElementById('nfn').value.trim()||`採点 ${new Date().toLocaleDateString('ja-JP')}`;
+  const id=genId(),mo={id,name:nm,createdAt:Date.now(),stuCount:0};
+  const meta=gMeta();meta.unshift(mo);sMeta(meta);aVis(id);
+  await idbPut({id,keyFile:null,stuFiles:[],marks:{},zones:[],markSize:44});
+  fbSet(`folders/${id}/meta`,mo).catch(()=>{});
+  document.getElementById('nfn').value='';
+  renderFL();toast(`📁 「${nm}」を作成しました`);
+}
+async function delFolder(id){
+  if(!confirm('このフォルダを完全に削除しますか？'))return;
+  await idbDel(id).catch(()=>{});
+  sMeta(gMeta().filter(f=>f.id!==id));
+  localStorage.setItem(VK,JSON.stringify(gVis().filter(v=>v!==id)));
+  const cnt=(await fbGet(`folders/${id}/files/stuCount`))||0;
+  const jobs=[fbDel(`folders/${id}/meta`),fbDel(`folders/${id}/data`),fbDel(`folders/${id}/files/key`),fbDel(`folders/${id}/files/stuCount`)];
+  for(let i=0;i<cnt;i++)jobs.push(fbDel(`folders/${id}/files/stu_${i}`));
+  await Promise.allSettled(jobs);
+  renderFL();toast('フォルダを削除しました');
+}
+
+// ── RENDER FOLDER LIST ───────────────────────────────────────────
+async function renderFL(){
+  const list=document.getElementById('flist');
+  list.innerHTML='<div style="text-align:center;padding:22px;color:var(--muted);font-size:.8rem">🔄 読み込み中...</div>';
+  const lm=gMeta(),vis=gVis(),m={};
+  lm.forEach(f=>m[f.id]=f);
+  vis.forEach(id=>{if(!m[id])m[id]={id,name:`フォルダ (${id.slice(0,6)}...)`,createdAt:0,stuCount:'?',fromUrl:true};});
+  await Promise.allSettled(Object.keys(m).map(async id=>{const c=await fbGet(`folders/${id}/files/stuCount`).catch(()=>null);if(c!==null)m[id].stuCount=c;}));
+  const items=Object.values(m).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  sMeta(items.filter(f=>!f.fromUrl));
+  if(!items.length){list.innerHTML='<div class="fe">📂<br>フォルダがまだありません。<br>新規作成するか、フォルダURLを受け取った場合はそのURLを開いてください。</div>';return;}
+  list.innerHTML='';
+  items.forEach(f=>{
+    const act=f.id===S.folderId;
+    const dt=f.createdAt?new Date(f.createdAt).toLocaleDateString('ja-JP',{month:'short',day:'numeric'}):'不明';
+    const c=document.createElement('div');c.className='fc';
+    c.innerHTML=`<div class="fi2">${act?'📂':f.fromUrl?'🔗':'📁'}</div>
+<div class="fn2"><div class="fn3">${f.name}${act?' <span style="font-size:.58rem;background:rgba(34,211,238,.13);color:var(--pri);border:1px solid rgba(34,211,238,.28);padding:1px 6px;border-radius:20px;font-weight:700">開いています</span>':''}</div>
+<div class="fm2"><span>${dt}</span><span class="ac">${f.stuCount??'?'} 件</span>${f.fromUrl?'<span style="color:var(--pri)">URLから</span>':''}</div></div>
+<div class="fa">
+  <button class="btn" style="height:27px;padding:0 7px;font-size:.68rem" onclick="event.stopPropagation();shareF('${f.id}')">🔗 共有</button>
+  <button class="btn btn-p" style="height:27px;font-size:.72rem" onclick="event.stopPropagation();openFolder('${f.id}')">開く</button>
+  <button class="btn btn-d" style="height:27px;padding:0 7px;font-size:.68rem" onclick="event.stopPropagation();delFolder('${f.id}')">削除</button>
+</div>`;
+    list.appendChild(c);
+  });
+}
+function shareF(id){navigator.clipboard.writeText(location.origin+location.pathname+'#folder-'+id).then(()=>toast('🔗 URLをコピーしました'));}
+
+// ── SAVE ─────────────────────────────────────────────────────────
+function openSaveModal(){
+  if(!S.keyFile||!S.stuFiles.length){toast('先にファイルをアップロードしてください');return;}
+  const sel=document.getElementById('svSel');sel.innerHTML='';
+  const meta=gMeta();
+  if(!meta.length){const o=document.createElement('option');o.value='';o.textContent='（フォルダがありません）';sel.appendChild(o);}
+  else meta.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.name;if(f.id===S.folderId)o.selected=true;sel.appendChild(o);});
+  document.getElementById('svNm').value='';document.getElementById('svErr').textContent='';
+  openM('sv');
+}
+async function execSave(){
+  const err=document.getElementById('svErr');err.textContent='';
+  try{
+    toast('保存中...');
+    const nm=document.getElementById('svNm').value.trim(),sel=document.getElementById('svSel').value;
+    let tid=sel;const meta=gMeta();let mo;
+    if(nm){tid=genId();mo={id:tid,name:nm,createdAt:Date.now(),stuCount:S.stuFiles.length};meta.unshift(mo);aVis(tid);}
+    else if(tid){const i=meta.findIndex(f=>f.id===tid);if(i>=0){meta[i].stuCount=S.stuFiles.length;meta[i].updatedAt=Date.now();mo=meta[i];}else throw new Error('フォルダが見つかりません');}
+    else throw new Error('保存先を選択してください');
+    sMeta(meta);S.folderId=tid;_lastSave=Date.now();
+    await idbCache(tid);
+    await fbSet(`folders/${tid}/meta`,mo);
+    await fbSaveData(tid);
+    closeM('sv');
+    await fbUpAll(tid);
+    fbSub(tid);
+    document.getElementById('fpn').textContent=mo.name;
+    document.getElementById('fpill').style.display='flex';
+    document.getElementById('sbar').classList.add('on');
+    document.getElementById('udis').textContent='#folder-'+tid;
+    history.replaceState(null,'','#folder-'+tid);
+    toast('✅ 保存しました');
+  }catch(e){err.textContent=e.message;}
+}
+async function quickSave(){
+  if(!S.folderId||!S.keyFile)return;
+  const meta=gMeta(),i=meta.findIndex(f=>f.id===S.folderId);
+  if(i>=0){meta[i].stuCount=S.stuFiles.length;meta[i].updatedAt=Date.now();sMeta(meta);fbSet(`folders/${S.folderId}/meta`,meta[i]).catch(()=>{});}
+  await idbCache(S.folderId);await fbSaveData(S.folderId);toast('💾 上書き保存しました');
+}
+
+// ── FILE MANAGER ─────────────────────────────────────────────────
+function openFileMgr(){
+  const b=document.getElementById('mgrB');b.innerHTML='';
+  if(!S.folderId){b.innerHTML='<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:22px">フォルダに保存してから使用してください</div>';openM('mgr');return;}
+  if(S.keyFile){const r=document.createElement('div');r.className='fr';r.innerHTML=`<div class="fri">🔑</div><div class="frn">${S.keyFile.name}</div><div class="fkb">模範解答</div><div class="frt">${S.keyFile.type.includes('pdf')?'PDF':'IMG'}</div>`;b.appendChild(r);}
+  if(!S.stuFiles.length){const d=document.createElement('div');d.style.cssText='color:var(--muted);font-size:.78rem;text-align:center;padding:18px';d.textContent='生徒答案がありません';b.appendChild(d);}
+  else S.stuFiles.forEach((f)=>{const r=document.createElement('div');r.className='fr';r.innerHTML=`<div class="fri">📄</div><div class="frn">${f.name}</div><div class="frt">${f.type.includes('pdf')?'PDF':'IMG'}</div><button class="btn btn-d" style="height:25px;padding:0 7px;font-size:.67rem;flex-shrink:0" onclick="delStu('${f.name}')">削除</button>`;b.appendChild(r);});
+  openM('mgr');
+}
+async function delStu(nm){
+  if(!confirm(`「${nm}」を削除しますか？`))return;
+  const i=S.stuFiles.findIndex(f=>f.name===nm);if(i<0)return;
+  S.stuFiles.splice(i,1);
+  if(S.currIdx>=S.stuFiles.length)S.currIdx=Math.max(0,S.stuFiles.length-1);
+  delete S.marks[nm];
+  if(S.folderId){
+    const del=(await fbGet(`folders/${S.folderId}/deletedNames`))||[];
+    if(!del.includes(nm))del.push(nm);
+    await fbSet(`folders/${S.folderId}/deletedNames`,del);
+    await fbSaveData(S.folderId);await idbCache(S.folderId);
+  }
+  openFileMgr();
+  if(S.stuFiles.length>0)loadS(S.currIdx);else renderMks();
+  updUI();toast(`🗑 「${nm}」を削除しました`);
+}
+
+// ── SAVE TO STORAGE ──────────────────────────────────────────────
+function saveStorage(){
+  localStorage.setItem('QM_MK',JSON.stringify({marks:S.marks,zones:S.zones,markSize:S.mSz}));
+  if(S.folderId)fbSaveData(S.folderId).catch(()=>{});
+}
+
+// ── DRAW / ZOOM ──────────────────────────────────────────────────
+async function drawImg(file,cvId,wId,scId,side){
+  const cv=document.getElementById(cvId),ctx=cv.getContext('2d');
+  if(file.type==='application/pdf'){
+    const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+    const pg=await doc.getPage(1);
+    const v1=pg.getViewport({scale:1});
+    if(side==='r')S.pgMm={w:v1.width*.352778,h:v1.height*.352778};
+    const v=pg.getViewport({scale:3});cv.width=v.width;cv.height=v.height;
+    await pg.render({canvasContext:ctx,viewport:v}).promise;
+  }else{
+    await new Promise(res=>{const img=new Image();img.onload=()=>{cv.width=img.width;cv.height=img.height;ctx.drawImage(img,0,0);if(side==='r')S.pgMm={w:img.width*25.4/96,h:img.height*25.4/96};res();};img.src=URL.createObjectURL(file);});
+  }
+  const con=document.getElementById(scId),fw=Math.max(200,con.clientWidth-56);
+  S.fitW[side]=fw;S.zoom[side]=100;applyZoom(side);
+}
+function addZoom(s,d){S.zoom[s]=Math.max(10,Math.min(500,S.zoom[s]+d));applyZoom(s);}
+function applyZoom(s){
+  document.getElementById(s==='l'?'wL':'wR').style.width=(S.fitW[s]*(S.zoom[s]/100))+'px';
+  document.getElementById(s==='l'?'zL':'zR').textContent=S.zoom[s]+'%';
+  if(s==='r')renderMks();
+}
+
+// ── LOAD STUDENT ─────────────────────────────────────────────────
+async function loadS(idx){
+  if(idx<0||idx>=S.stuFiles.length)return;
+  S.currIdx=idx;closeTxtEd();
+  const f=S.stuFiles[idx];
+  document.getElementById('snm').textContent=f.name;
+  document.getElementById('scnt').textContent=`${idx+1} / ${S.stuFiles.length}`;
+  const ms=S.marks[f.name]||[];S.nextQ=(ms.reduce((m,v)=>v.qNum>m?v.qNum:m,0))+1;
+  updUI();await drawImg(f,'cvR','wR','scR','r');renderMks();
+}
+async function loadSSilent(idx){
+  if(idx<0||idx>=S.stuFiles.length)return;
+  S.currIdx=idx;const f=S.stuFiles[idx];
+  document.getElementById('snm').textContent=f.name;document.getElementById('scnt').textContent=`${idx+1} / ${S.stuFiles.length}`;
+  const ms=S.marks[f.name]||[];S.nextQ=(ms.reduce((m,v)=>v.qNum>m?v.qNum:m,0))+1;
+  updUI();await drawImg(f,'cvR','wR','scR','r');renderMks();
+}
+function navS(d){loadS(S.currIdx+d);}
+
+// ── ADD STUDENTS ─────────────────────────────────────────────────
+async function addStudents(files){
+  if(!files?.length)return;
+  const ex=new Set(S.stuFiles.map(f=>f.name));
+  const add=Array.from(files).filter(f=>{if(ex.has(f.name)){toast(`スキップ: ${f.name}（重複）`);return false;}return true;});
+  if(!add.length)return;
+  const si=S.stuFiles.length;S.stuFiles.push(...add);
+  document.getElementById('scnt').textContent=`${S.currIdx+1} / ${S.stuFiles.length}`;
+  toast(`${add.length} 件追加しました`);
+  if(S.folderId){await quickSave();await fbAppend(S.folderId,add,si);}
+}
+document.getElementById('iAddS').addEventListener('change',e=>{addStudents(e.target.files);e.target.value='';});
+
+// ── MARKS ────────────────────────────────────────────────────────
+function renderMks(){
+  const lm=document.getElementById('lMk'),lz=document.getElementById('lZn');
+  lm.innerHTML='';lz.innerHTML='';
+  const sc=S.zoom.r/100,ds=S.mSz*sc;
+  document.documentElement.style.setProperty('--ms',ds+'px');
+  S.zones.forEach(z=>{const d=document.createElement('div');d.className='zone';d.style.width=ds+'px';d.style.height=(ds*.58)+'px';d.style.left=z.x+'%';d.style.top=z.y+'%';d.textContent=z.qNum;lz.appendChild(d);});
+  const fn=S.stuFiles[S.currIdx]?.name;if(!fn)return;
+  (S.marks[fn]||[]).forEach((m,i)=>{
+    if(m.type==='text'){
+      const d=document.createElement('div');d.className='mk-txt';if(S.selTxt===i)d.classList.add('sel');
+      d.style.left=m.x+'%';d.style.top=m.y+'%';d.style.color=m.color;d.style.fontSize=m.size+'px';d.textContent=m.text;
+      d.onmousedown=e=>{e.stopPropagation();startDrag(i,d);};lm.appendChild(d);
+    }else{
+      const d=document.createElement('div');d.className=`mk mk-${m.type}`;
+      d.style.left=m.x+'%';d.style.top=m.y+'%';d.style.width=ds+'px';d.style.height=ds+'px';
+      if(m.type==='tri'){const sh=document.createElement('div');sh.className='mk-tri-sh';const tx=document.createElement('span');tx.className='mk-tri-tx';tx.textContent=m.text;d.appendChild(sh);d.appendChild(tx);}
+      const b=document.createElement('div');b.className='mb';b.textContent=m.qNum;d.appendChild(b);lm.appendChild(d);
+    }
   });
 }
 
-async function fbSaveFolderMeta(folderId, metaObj) {
-  await waitForFirebase();
-  try {
-    await fbSet(fbRef(fbDb, `folders/${folderId}/meta`), metaObj);
-  } catch(e) { console.warn('Firebase meta save failed:', e); }
+function addMk(x,y,q){
+  const fn=S.stuFiles[S.currIdx]?.name;if(!fn)return;
+  if(!S.marks[fn])S.marks[fn]=[];
+  if(S.tool==='text'){const t=prompt('文字を入力:','');if(!t)return;S.marks[fn].push({x,y,type:'text',text:t,size:24,color:'#ef4444'});}
+  else if(S.tool==='tri'){const t=prompt('部分点または文字:','1');if(t===null)return;const oi=S.marks[fn].findIndex(m=>m.qNum===q&&m.type!=='text');if(oi>=0)S.marks[fn].splice(oi,1);S.marks[fn].push({x,y,type:'tri',text:t,qNum:q});S.nextQ=q+1;}
+  else{const oi=S.marks[fn].findIndex(m=>m.qNum===q&&m.type!=='text');if(oi>=0)S.marks[fn].splice(oi,1);S.marks[fn].push({x,y,type:S.tool,qNum:q});S.nextQ=q+1;}
+  saveStorage();renderMks();updUI();
 }
 
-// Firebase キーに使えない文字をエスケープ（. # $ [ ] / を %XX に変換）
-function fbEncodeKey(str) {
-  return str.replace(/[.#$[\]/]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
-}
-function fbDecodeKey(str) {
-  return str.replace(/%([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
-}
-function encodeMarks(marks) {
-  const encoded = {};
-  Object.entries(marks).forEach(([k, v]) => { encoded[fbEncodeKey(k)] = v; });
-  return encoded;
-}
-function decodeMarks(marks) {
-  if (!marks) return {};
-  const decoded = {};
-  Object.entries(marks).forEach(([k, v]) => { decoded[fbDecodeKey(k)] = v; });
-  return decoded;
+function setTool(t){
+  S.tool=t;
+  document.querySelectorAll('[id^="t"]').forEach(b=>{if(['tO','tX','tT','tTx'].includes(b.id))b.classList.remove('active');});
+  const m={o:'tO',x:'tX',tri:'tT',text:'tTx'};if(m[t])document.getElementById(m[t]).classList.add('active');
 }
 
-async function fbSaveMarksAndZones(folderId, marks, zones, markSize) {
-  await waitForFirebase();
-  try {
-    await fbSet(fbRef(fbDb, `folders/${folderId}/data`), {
-      marks: encodeMarks(marks || {}),
-      zones: zones && zones.length > 0 ? zones : null,
-      markSize: markSize || 44,
-      updatedAt: Date.now()
-    });
-  } catch(e) { console.warn('Firebase data save failed:', e); showToast('⚠️ クラウド保存失敗: ' + e.message); }
+function updUI(){
+  const fn=S.stuFiles[S.currIdx]?.name;const ms=S.marks[fn]||[];
+  let sc=0;ms.forEach(m=>{if(m.type==='o')sc+=1;if(m.type==='tri'){const v=parseFloat(m.text);if(!isNaN(v))sc+=v;}});
+  document.getElementById('sco').textContent=Number.isInteger(sc)?sc:sc.toFixed(1);
+  document.getElementById('nq').textContent=S.nextQ;
 }
 
+function undo(){const fn=S.stuFiles[S.currIdx]?.name;if(!fn)return;if(S.marks[fn]?.length){const r=S.marks[fn].pop();if(r.qNum)S.nextQ=r.qNum;saveStorage();renderMks();updUI();}}
+function clearMks(){if(!confirm('この答案のマークをすべて消去しますか？'))return;const fn=S.stuFiles[S.currIdx]?.name;if(!fn)return;S.marks[fn]=[];S.nextQ=1;saveStorage();renderMks();updUI();}
 
-async function fbGetFolderData(folderId) {
-  await waitForFirebase();
-  try {
-    // files ノード（base64）は別途取得するため、meta と data のみ読み込む
-    const [metaSnap, dataSnap] = await Promise.all([
-      fbGet(fbRef(fbDb, `folders/${folderId}/meta`)),
-      fbGet(fbRef(fbDb, `folders/${folderId}/data`)),
-    ]);
-    if (!metaSnap.exists() && !dataSnap.exists()) return null;
-    return {
-      meta: metaSnap.exists() ? metaSnap.val() : null,
-      data: dataSnap.exists() ? dataSnap.val() : null,
-    };
-  } catch(e) { console.warn('Firebase get failed:', e); return null; }
+// ── GRID ─────────────────────────────────────────────────────────
+function toggleLayout(){S.layout=!S.layout;document.getElementById('lbar').style.display=S.layout?'flex':'none';S.gPts=[];document.getElementById('lTp').innerHTML='';renderMks();}
+function addGpt(x,y){S.gPts.push({x,y});const d=document.createElement('div');d.style.cssText=`position:absolute;width:10px;height:10px;background:var(--info);border-radius:50%;left:${x}%;top:${y}%;transform:translate(-50%,-50%);box-shadow:0 0 5px #000`;document.getElementById('lTp').appendChild(d);if(S.gPts.length===2)toast('行・列を指定して生成');}
+function genGrid(){
+  if(S.gPts.length<2){alert('始点と終点を指定してください');return;}
+  const[p1,p2]=S.gPts,rows=+document.getElementById('gR').value,cols=+document.getElementById('gC').value;
+  const sq=+document.getElementById('gS').value||1,dir=document.getElementById('gD').value;
+  S.zones=[];let q=sq;
+  if(dir==='h'){for(let r=0;r<rows;r++){const ry=rows===1?0:r/(rows-1),cy=p1.y+(p2.y-p1.y)*ry;for(let c=0;c<cols;c++){const rx=cols===1?0:c/(cols-1),cx=p1.x+(p2.x-p1.x)*rx;S.zones.push({x:cx,y:cy,qNum:q++});}}}
+  else{for(let c=0;c<cols;c++){const rx=cols===1?0:c/(cols-1),cx=p1.x+(p2.x-p1.x)*rx;for(let r=0;r<rows;r++){const ry=rows===1?0:r/(rows-1),cy=p1.y+(p2.y-p1.y)*ry;S.zones.push({x:cx,y:cy,qNum:q++});}}}
+  saveStorage();renderMks();S.gPts=[];document.getElementById('lTp').innerHTML='';toast('グリッドを生成しました');
 }
+function clearZones(){if(!confirm('ゾーンをすべて消去しますか？'))return;S.zones=[];saveStorage();renderMks();}
 
-async function fbGetAllFoldersMeta() {
-  await waitForFirebase();
-  try {
-    // folders 全体を読むと files（base64）も含まれてサイズ超過するため meta のみ読む
-    const snap = await fbGet(fbRef(fbDb, 'folders'));
-    if (!snap.exists()) return {};
-    const all = snap.val();
-    const result = {};
-    Object.entries(all).forEach(([id, val]) => {
-      if (val.meta) result[id] = val.meta;
-    });
-    return result;
-  } catch(e) {
-    console.warn('Firebase list failed (full read):', e);
-    return {};
-  }
+// ── TEXT DRAG ────────────────────────────────────────────────────
+function startDrag(i,el){S.selTxt=i;S.drag=true;const fn=S.stuFiles[S.currIdx].name,m=S.marks[fn][i];document.getElementById('txSz').value=m.size;document.getElementById('txCl').value=m.color;const ed=document.getElementById('te'),wr=document.getElementById('wR').getBoundingClientRect(),tr=el.getBoundingClientRect();ed.style.display='flex';ed.style.top=(tr.bottom-wr.top+5)+'px';ed.style.left=(tr.left-wr.left)+'px';}
+function endDrag(){S.drag=false;saveStorage();}
+function closeTxtEd(){S.selTxt=null;document.getElementById('te').style.display='none';renderMks();}
+function delSelTxt(){if(S.selTxt===null)return;S.marks[S.stuFiles[S.currIdx].name].splice(S.selTxt,1);closeTxtEd();saveStorage();}
+document.getElementById('txSz').addEventListener('input',e=>{if(S.selTxt!==null){S.marks[S.stuFiles[S.currIdx].name][S.selTxt].size=e.target.value;renderMks();}});
+document.getElementById('txCl').addEventListener('input',e=>{if(S.selTxt!==null){S.marks[S.stuFiles[S.currIdx].name][S.selTxt].color=e.target.value;renderMks();}});
+
+// ── CANVAS EVENTS ────────────────────────────────────────────────
+const wR=document.getElementById('wR'),cg=document.getElementById('cg');
+wR.addEventListener('mousemove',e=>{
+  if(S.layout)return;
+  const r=wR.getBoundingClientRect();const px=((e.clientX-r.left)/r.width)*100,py=((e.clientY-r.top)/r.height)*100;
+  cg.style.display='block';cg.style.left=(e.clientX-r.left)+'px';cg.style.top=(e.clientY-r.top)+'px';
+  cg.classList.remove('sn');delete cg.dataset.sn;
+  const SNAP=2.5,z=S.zones.find(z=>Math.abs(z.x-px)<SNAP&&Math.abs(z.y-py)<SNAP);
+  if(z&&S.tool!=='text'){cg.classList.add('sn');cg.dataset.sn=z.qNum;}
+  if(S.drag&&S.selTxt!==null){const fn=S.stuFiles[S.currIdx].name;if(S.marks[fn]?.[S.selTxt]){S.marks[fn][S.selTxt].x=px;S.marks[fn][S.selTxt].y=py;renderMks();}}
+});
+wR.addEventListener('mouseleave',()=>{cg.style.display='none';});
+wR.addEventListener('mousedown',e=>{
+  if(e.button!==0)return;if(S.selTxt!==null&&!S.drag)closeTxtEd();if(S.drag)return;
+  const r=wR.getBoundingClientRect(),px=((e.clientX-r.left)/r.width)*100,py=((e.clientY-r.top)/r.height)*100;
+  if(S.layout){addGpt(px,py);return;}
+  let q=S.nextQ,fx=px,fy=py;
+  if(cg.dataset.sn&&S.tool!=='text'){const z=S.zones.find(z=>z.qNum==cg.dataset.sn);q=z.qNum;fx=z.x;fy=z.y;}
+  addMk(fx,fy,q);
+});
+window.addEventListener('mouseup',endDrag);
+document.getElementById('msz').addEventListener('input',e=>{S.mSz=parseInt(e.target.value);renderMks();saveStorage();});
+document.getElementById('scR').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();addZoom('r',e.deltaY<0?5:-5);}},{passive:false});
+document.getElementById('scL').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();addZoom('l',e.deltaY<0?5:-5);}},{passive:false});
+
+// ── RESIZER ──────────────────────────────────────────────────────
+let resizing=false;
+document.getElementById('rsz').addEventListener('mousedown',()=>{resizing=true;document.getElementById('rsz').classList.add('on');});
+window.addEventListener('mouseup',()=>{resizing=false;document.getElementById('rsz').classList.remove('on');});
+window.addEventListener('mousemove',e=>{if(!resizing)return;const w=document.getElementById('ws').offsetWidth,p=(e.clientX/w)*100;if(p>10&&p<90){document.getElementById('pL').style.width=p+'%';document.getElementById('pR').style.width=(100-p)+'%';}});
+
+// ── UPLOAD SETUP ─────────────────────────────────────────────────
+function setupDrop(dId,iId,type){
+  const drop=document.getElementById(dId),inp=document.getElementById(iId);
+  drop.onclick=()=>inp.click();
+  inp.onchange=e=>handleF(e.target.files,type);
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('ov');});
+  drop.addEventListener('dragleave',()=>drop.classList.remove('ov'));
+  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('ov');handleF(e.dataTransfer.files,type);});
 }
-
-async function fbDeleteFolder(folderId) {
-  await waitForFirebase();
-  try {
-    await fbRemove(fbRef(fbDb, `folders/${folderId}`));
-  } catch(e) { console.warn('Firebase delete failed:', e); }
+setupDrop('dKey','iKey','key');setupDrop('dStu','iStu','stu');
+function handleF(files,type){
+  if(!files.length)return;
+  if(type==='key'){S.keyFile=files[0];const el=document.getElementById('sKey');el.textContent=`✓ ${S.keyFile.name}`;el.classList.add('ok');}
+  else{S.stuFiles=Array.from(files);const el=document.getElementById('sStu');el.textContent=`✓ ${S.stuFiles.length}枚`;el.classList.add('ok');}
+  document.getElementById('bStart').disabled=!(S.keyFile&&S.stuFiles.length>0);
 }
-
-// Subscribe to real-time mark updates for the open folder
-function fbSubscribeFolder(folderId) {
-  fbUnsubscribeAll();
-  if (!folderId) return;
-  waitForFirebase().then(() => {
-    // マーク・ゾーンの監視
-    const dataRef = fbRef(fbDb, `folders/${folderId}/data`);
-    let isFirstFire = true;
-    const unsubData = fbOnValue(dataRef, (snap) => {
-      if (!snap.exists()) return;
-      if (isFirstFire) { isFirstFire = false; return; }
-      const data = snap.val();
-      const remoteUpdatedAt = data.updatedAt || 0;
-      if (remoteUpdatedAt > (window._lastLocalSave || 0) + 500) {
-        state.marks = decodeMarks(data.marks);
-        state.zones = data.zones || [];
-        if (data.markSize) {
-          state.globalMarkSize = data.markSize;
-          markSizeRange.value = data.markSize;
-        }
-        if (document.getElementById('overlay').style.display === 'none') {
-          renderMarks();
-          updateUI();
-          showToast('🔄 他のデバイスの変更を反映しました');
-        }
-      }
-    });
-    fbSyncListeners[folderId + '_data'] = unsubData;
-
-    // 他デバイスの答案追加を検知して自動ダウンロード＋IDBキャッシュ
-    const stuCountRef = fbRef(fbDb, `folders/${folderId}/files/stuCount`);
-    let isFirstCountFire = true;
-    const unsubCount = fbOnValue(stuCountRef, async (snap) => {
-      if (!snap.exists()) return;
-      if (isFirstCountFire) { isFirstCountFire = false; return; }
-      const remoteCount = snap.val();
-      const localCount = state.stuFiles.length;
-      if (remoteCount <= localCount) return;
-
-      showToast(`📥 他のデバイスが ${remoteCount - localCount} 件の答案を追加しました。ダウンロード中...`);
-      for (let i = localCount; i < remoteCount; i++) {
-        try {
-          const stuSnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`));
-          if (stuSnap.exists()) {
-            const entry = stuSnap.val();
-            const file = base64ToFile(entry.data, entry.name, entry.type);
-            if (!state.stuFiles.find(f => f.name === file.name)) {
-              state.stuFiles.push(file);
-            }
-          }
-        } catch(e) { console.warn(`stu_${i} のダウンロード失敗:`, e); }
-      }
-      document.getElementById('stuCount').textContent = `${state.currIdx + 1} / ${state.stuFiles.length}`;
-      showToast(`✅ ${state.stuFiles.length} 件の答案を同期しました`);
-
-      // IDB にキャッシュ（次回ページ読み込み時に再ダウンロード不要にする）
-      try {
-        const keyBuffer = await readFileAsBuffer(state.keyFile);
-        const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-        await idbPut('folders', {
-          id: folderId,
-          keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-          stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-          marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
-        });
-      } catch(e) { console.warn('IDB auto-cache failed:', e); }
-    });
-    fbSyncListeners[folderId + '_stuCount'] = unsubCount;
-  });
-}
-
-function fbUnsubscribeAll() {
-  Object.values(fbSyncListeners).forEach(unsub => { try { unsub(); } catch(e) {} });
-  fbSyncListeners = {};
-}
-
-// =============================================
-// FIREBASE RTDB — FILE SYNC (base64)
-// Spark プラン対応: Storage 不要、RTDB に直接保存
-// =============================================
-function showSyncUI(title, sub) {
-  document.getElementById('syncTitle').textContent = title;
-  document.getElementById('syncSub').textContent = sub || '';
-  document.getElementById('syncIcon').textContent = '☁️';
-  document.getElementById('syncProgressBar').style.width = '0%';
-  document.getElementById('syncFileLabel').textContent = '';
-  document.getElementById('fileSyncOverlay').classList.add('open');
-}
-function hideSyncUI() {
-  document.getElementById('fileSyncOverlay').classList.remove('open');
-}
-function setSyncProgress(pct, label) {
-  document.getElementById('syncProgressBar').style.width = pct + '%';
-  if (label !== undefined) document.getElementById('syncFileLabel').textContent = label;
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function base64ToFile(b64, name, type) {
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return new File([arr], name, { type });
-}
-
-// 各ファイルを個別ノードに分割して保存（RDBの書き込み上限対策）
-async function fbSaveFilesToRTDB(folderId) {
-  await waitForFirebase();
-  showSyncUI('ファイルをアップロード中...', '他のデバイスでも開けるようにしています');
-  const total = 1 + state.stuFiles.length;
-  let done = 0;
-  try {
-    setSyncProgress((done / total) * 100, `📄 ${state.keyFile.name}`);
-    const keyB64 = await fileToBase64(state.keyFile);
-    await fbSet(fbRef(fbDb, `folders/${folderId}/files/key`), {
-      name: state.keyFile.name, type: state.keyFile.type, data: keyB64
-    });
-    done++;
-
-    let successCount = 0;
-    for (let i = 0; i < state.stuFiles.length; i++) {
-      const f = state.stuFiles[i];
-      setSyncProgress(((done + i) / total) * 100, `📄 ${f.name} (${i+1}/${state.stuFiles.length})`);
-      try {
-        const b64 = await fileToBase64(f);
-        await fbSet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`), {
-          name: f.name, type: f.type, data: b64, index: i
-        });
-        successCount++;
-        await fbSet(fbRef(fbDb, `folders/${folderId}/files/stuCount`), successCount);
-      } catch(fileErr) {
-        console.warn(`stu_${i} (${f.name}) のアップロード失敗:`, fileErr);
-        showToast(`⚠️ ${f.name} のアップロード失敗（スキップ）`);
-      }
-    }
-    setSyncProgress(100, '完了');
-    setTimeout(hideSyncUI, 600);
-  } catch(e) {
-    hideSyncUI();
-    console.error('fbSaveFilesToRTDB failed:', e);
-    throw e;
-  }
-}
-
-async function fbLoadFilesFromRTDB(folderId) {
-  await waitForFirebase();
-  try {
-    const countSnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/stuCount`));
-    const stuCount = countSnap.exists() ? countSnap.val() : 0;
-
-    const keySnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/key`));
-    if (!keySnap.exists()) {
-      console.log('RTDB: key file not found for', folderId);
-      return false;
-    }
-
-    showSyncUI('ファイルをダウンロード中...', 'クラウドからファイルを取得しています');
-    const total = 1 + stuCount;
-    let done = 0;
-
-    const keyData = keySnap.val();
-    setSyncProgress((done / total) * 100, `📄 ${keyData.name}`);
-    state.keyFile = base64ToFile(keyData.data, keyData.name, keyData.type);
-    done++;
-
-    state.stuFiles = [];
-    for (let i = 0; i < stuCount; i++) {
-      try {
-        const stuSnap = await fbGet(fbRef(fbDb, `folders/${folderId}/files/stu_${i}`));
-        if (stuSnap.exists()) {
-          const entry = stuSnap.val();
-          setSyncProgress(((done + i) / total) * 100, `📄 ${entry.name} (${i+1}/${stuCount})`);
-          state.stuFiles.push(base64ToFile(entry.data, entry.name, entry.type));
-        } else {
-          console.warn(`RTDB: stu_${i} not found, skipping`);
-        }
-      } catch(fileErr) {
-        console.warn(`RTDB: stu_${i} download failed:`, fileErr);
-      }
-    }
-
-    setSyncProgress(100, '完了');
-    setTimeout(hideSyncUI, 600);
-    return true;
-  } catch(e) {
-    hideSyncUI();
-    console.error('fbLoadFilesFromRTDB failed:', e);
-    showToast('⚠️ ファイルのダウンロードに失敗: ' + e.message);
-    return false;
-  }
-}
-
-// 新規答案追加時: 差分のみ追加
-async function fbAppendStuFilesToRTDB(folderId, newFiles, startIndex) {
-  await waitForFirebase();
-  for (let i = 0; i < newFiles.length; i++) {
-    const f = newFiles[i];
-    const b64 = await fileToBase64(f);
-    await fbSet(fbRef(fbDb, `folders/${folderId}/files/stu_${startIndex + i}`), {
-      name: f.name, type: f.type, data: b64, index: startIndex + i
-    });
-    // 1枚保存するたびに stuCount を更新（他デバイスの監視に即反映させる）
-    await fbSet(fbRef(fbDb, `folders/${folderId}/files/stuCount`), startIndex + i + 1);
-  }
-}
-
-// End of Firebase sync layer
-
-const state = {
-  keyFile: null,
-  stuFiles: [],
-  currIdx: 0,
-  zoom: { left: 100, right: 100 },
-  fitWidths: { left: 0, right: 0 },
-  marks: {},
-  zones: [],
-  tool: 'o',
-  layoutMode: false,
-  gridPoints: [],
-  nextQ: 1,
-  selectedText: null,
-  dragging: false,
-  globalMarkSize: 44,
-  currentFolderId: null,
-  pageSizeMm: { width: 210, height: 297 }
+const bStart=document.getElementById('bStart');
+bStart.onclick=async()=>{
+  if(!S.folderId){const r=localStorage.getItem('QM_MK');if(r)try{const d=JSON.parse(r);S.marks=d.marks||{};S.zones=d.zones||[];S.mSz=d.markSize||44;document.getElementById('msz').value=S.mSz;}catch(_){}}
+  document.getElementById('ov').style.display='none';
+  document.getElementById('sbar').classList.add('on');
+  if(S.folderId){document.getElementById('fpill').style.display='flex';await quickSave();}
+  else{document.getElementById('nfi').textContent=`📄 ${S.keyFile.name}  |  👥 ${S.stuFiles.length}名  ·  保存ボタンでフォルダに保存できます`;}
+  await drawImg(S.keyFile,'cvL','wL','scL','l');
+  await loadS(0);
 };
 
-const dropKey = document.getElementById('dropKey');
-const inpKey = document.getElementById('inpKey');
-const dropStu = document.getElementById('dropStu');
-const inpStu = document.getElementById('inpStu');
-const btnStart = document.getElementById('btnStart');
-const markSizeRange = document.getElementById('markSizeRange');
-
-// =============================================
-// INDEXEDDB
-// =============================================
-const DB_NAME = 'QMarkDB';
-const DB_VERSION = 1;
-let qmDB = null;
-
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains('folders')) {
-        d.createObjectStore('folders', { keyPath: 'id' });
-      }
-    };
-    req.onsuccess = (e) => { qmDB = e.target.result; resolve(); };
-    req.onerror = () => reject(req.error);
-  });
+// ── STATS ────────────────────────────────────────────────────────
+function calcStats(){
+  if(!S.stuFiles.length)return null;
+  const sc=S.stuFiles.map(f=>{let s=0;(S.marks[f.name]||[]).forEach(m=>{if(m.type==='o')s+=1;if(m.type==='tri'){const v=parseFloat(m.text);if(!isNaN(v))s+=v;}});return{name:f.name,score:s};});
+  const n=sc.length,mean=sc.reduce((s,x)=>s+x.score,0)/n;
+  const sd=Math.sqrt(sc.reduce((s,x)=>s+Math.pow(x.score-mean,2),0)/n);
+  const srt=[...sc].map(x=>x.score).sort((a,b)=>a-b);
+  const med=n%2===0?(srt[n/2-1]+srt[n/2])/2:srt[Math.floor(n/2)];
+  sc.forEach(s=>{s.dev=sd>0?Math.round((50+10*(s.score-mean)/sd)*10)/10:50;s.rank=sc.filter(x=>x.score>s.score).length+1;});
+  return{scores:sc,mean:Math.round(mean*10)/10,sd:Math.round(sd*10)/10,max:Math.max(...sc.map(x=>x.score)),min:Math.min(...sc.map(x=>x.score)),med:Math.round(med*10)/10,n};
 }
-function idbPut(store, data) {
-  return new Promise((resolve, reject) => {
-    const tx = qmDB.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).put(data);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
+function openStats(){
+  if(!S.stuFiles.length){toast('生徒答案がありません');return;}
+  const st=calcStats();if(!st)return;
+  const cur=S.stuFiles[S.currIdx]?.name,ms=st.max||1;
+  let h=`<div class="sg"><div class="stl"><div class="stll">平均点</div><div class="stlv cy">${st.mean}</div></div><div class="stl"><div class="stll">標準偏差</div><div class="stlv bl">${st.sd}</div></div><div class="stl"><div class="stll">最高点</div><div class="stlv gr">${st.max}</div></div><div class="stl"><div class="stll">最低点</div><div class="stlv rd">${st.min}</div></div></div>`;
+  const bars=st.scores.map(s=>`<div class="bi" title="${s.name}: ${s.score}点"><div class="bf${s.name===cur?' cur':''}" style="height:${Math.round((s.score/ms)*66)+2}px"></div><div class="bbl">${s.name.replace(/\.[^.]+$/,'')}</div></div>`).join('');
+  h+=`<div class="bw"><div class="bwt">得点分布</div><div class="bars">${bars}</div></div>`;
+  const rc=r=>r===1?'r1':r===2?'r2':r===3?'r3':'rn';
+  const rows=[...st.scores].sort((a,b)=>a.rank-b.rank).map(s=>`<tr class="${s.name===cur?'me':''}"><td><span class="rb ${rc(s.rank)}">${s.rank}</span></td><td style="max-width:190px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:${s.name===cur?'var(--pri)':'inherit'}">${s.name}</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${s.score===st.max?'var(--ok)':s.score===st.min?'var(--ng)':'inherit'}">${s.score}</td><td style="font-family:'JetBrains Mono',monospace;color:${s.dev>=60?'var(--ok)':s.dev<=40?'var(--ng)':'inherit'}">${s.dev}</td><td><div class="db"><div class="df" style="width:${Math.max(4,Math.min(110,s.dev*1.15))}px"></div></div></td></tr>`).join('');
+  h+=`<div style="overflow-x:auto"><table class="stab"><thead><tr><th>順位</th><th>ファイル名</th><th>得点</th><th>偏差値</th><th>—</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  h+=`<div class="seb"><button class="btn btn-p" onclick="dlStatsCSV()">📥 CSV</button><button class="btn" onclick="dlAllPDF()">📄 合本PDF</button></div>`;
+  document.getElementById('stB').innerHTML=h;openM('st');
 }
-function idbGet(store, key) {
-  return new Promise((resolve, reject) => {
-    const tx = qmDB.transaction(store, 'readonly');
-    const req = tx.objectStore(store).get(key);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-function idbDelete(store, key) {
-  return new Promise((resolve, reject) => {
-    const tx = qmDB.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).delete(key);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-function readFileAsBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
+function dlStatsCSV(){
+  const st=calcStats();if(!st)return;
+  let csv='\uFEFF順位,氏名,得点,偏差値\n';
+  [...st.scores].sort((a,b)=>a.rank-b.rank).forEach(s=>{csv+=`${s.rank},"${s.name}",${s.score},${s.dev}\n`;});
+  csv+=`\n平均,${st.mean},,\n標準偏差,${st.sd},,\n最高,${st.max},,\n最低,${st.min},,\n`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='statistics.csv';a.click();
 }
 
-// =============================================
-// NO-AUTH FOLDER SYSTEM
-// フォルダはURLで共有可能。アカウント不要。
-// =============================================
-const FOLDER_META_KEY = 'QM_FOLDERS_V3';
-const VISITED_KEY = 'QM_VISITED_FOLDERS';
-
-function getFolderMeta() {
-  return JSON.parse(localStorage.getItem(FOLDER_META_KEY) || '[]');
+// ── EXPORT ───────────────────────────────────────────────────────
+async function dlPDF(){
+  toast('PDF生成中...');
+  const cv=document.getElementById('cvR'),fn=S.stuFiles[S.currIdx].name,ms=S.marks[fn]||[];
+  const pw=S.pgMm.w,ph=S.pgMm.h,land=pw>ph;
+  const pdf=new jsPDF({orientation:land?'l':'p',unit:'mm',format:[land?ph:pw,land?pw:ph]});
+  const W=pdf.internal.pageSize.getWidth(),H=pdf.internal.pageSize.getHeight(),s=5;
+  pdf.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,W,H);
+  ms.forEach(m=>{const x=(m.x/100)*W,y=(m.y/100)*H;if(m.type==='o'){pdf.setDrawColor(52,211,153);pdf.setLineWidth(.6);pdf.circle(x,y,s);}else if(m.type==='x'){pdf.setDrawColor(248,113,113);pdf.setLineWidth(.6);const r=s*.8;pdf.line(x-r,y-r,x+r,y+r);pdf.line(x+r,y-r,x-r,y+r);}else if(m.type==='tri'){pdf.setDrawColor(251,191,36);pdf.setLineWidth(.6);pdf.triangle(x,y-s,x-s,y+s,x+s,y+s,'S');pdf.setTextColor(251,191,36);pdf.setFontSize(7);pdf.text(String(m.text),x,y+s*.6,{align:'center'});}else{pdf.setTextColor(m.color);pdf.setFontSize(m.size*.35);pdf.text(m.text,x,y);}});
+  pdf.save(`graded_${fn}.pdf`);toast('PDF保存完了');
 }
-function saveFolderMeta(folders) {
-  localStorage.setItem(FOLDER_META_KEY, JSON.stringify(folders));
-}
-function getVisitedFolderIds() {
-  return JSON.parse(localStorage.getItem(VISITED_KEY) || '[]');
-}
-function addVisitedFolder(id) {
-  const visited = getVisitedFolderIds();
-  if (!visited.includes(id)) {
-    visited.unshift(id);
-    localStorage.setItem(VISITED_KEY, JSON.stringify(visited.slice(0, 50)));
+async function dlAllPDF(){
+  if(!S.stuFiles.length){toast('生徒答案がありません');return;}
+  toast('合本PDF生成中...');
+  const st=calcStats(),orig=S.currIdx;
+  await loadSSilent(0);await new Promise(r=>setTimeout(r,200));
+  const fw=S.pgMm.w,fh=S.pgMm.h,fl=fw>fh;
+  const pdf=new jsPDF({orientation:fl?'l':'p',unit:'mm',format:[fl?fh:fw,fl?fw:fh]});
+  for(let i=0;i<S.stuFiles.length;i++){
+    if(i>0){await loadSSilent(i);await new Promise(r=>setTimeout(r,200));}
+    const cv=document.getElementById('cvR'),fn=S.stuFiles[i].name,ms=S.marks[fn]||[];
+    const pw=S.pgMm.w,ph=S.pgMm.h,land=pw>ph;
+    if(i>0)pdf.addPage([land?ph:pw,land?pw:ph],land?'l':'p');
+    const W=pdf.internal.pageSize.getWidth(),H=pdf.internal.pageSize.getHeight(),s=5;
+    pdf.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,W,H);
+    ms.forEach(m=>{const x=(m.x/100)*W,y=(m.y/100)*H;if(m.type==='o'){pdf.setDrawColor(52,211,153);pdf.setLineWidth(.6);pdf.circle(x,y,s);}else if(m.type==='x'){pdf.setDrawColor(248,113,113);pdf.setLineWidth(.6);const r=s*.8;pdf.line(x-r,y-r,x+r,y+r);pdf.line(x+r,y-r,x-r,y+r);}else if(m.type==='tri'){pdf.setDrawColor(251,191,36);pdf.setLineWidth(.6);pdf.triangle(x,y-s,x-s,y+s,x+s,y+s,'S');}});
+    const ss=st?.scores.find(x=>x.name===fn);if(ss){pdf.setFontSize(9);pdf.setTextColor(80,80,80);pdf.text(`得点: ${ss.score}  偏差値: ${ss.dev}  順位: ${ss.rank}/${st.n}`,5,H-4);}
   }
+  await loadSSilent(orig);pdf.save('all_graded.pdf');toast('合本PDF保存完了');
 }
-function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,8); }
-
-async function createFolder() {
-  const name = document.getElementById('newFolderName').value.trim() || `採点 ${new Date().toLocaleDateString('ja-JP')}`;
-  const meta = getFolderMeta();
-  const id = genId();
-  const metaObj = { id, name, createdAt: Date.now(), stuCount: 0 };
-  meta.unshift(metaObj);
-  saveFolderMeta(meta);
-  await idbPut('folders', { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 });
-  addVisitedFolder(id);
-  // Sync to Firebase
-  fbSaveFolderMeta(id, metaObj);
-  document.getElementById('newFolderName').value = '';
-  renderFolderList();
-  showToast(`フォルダ「${name}」を作成しました`);
+function dlCSV(){
+  let mx=0;S.zones.forEach(z=>mx=Math.max(mx,z.qNum));Object.values(S.marks).forEach(ms=>ms.forEach(m=>{if(m.qNum)mx=Math.max(mx,m.qNum);}));if(!mx)mx=10;
+  const fn=S.stuFiles.map(f=>f.name);let csv='\uFEFFNumber,';fn.forEach(n=>csv+=`"${n}",`);csv+='\n';
+  let tot='Total Score,';fn.forEach(n=>{let s=0;(S.marks[n]||[]).forEach(m=>{if(m.type==='o')s+=1;if(m.type==='tri')s+=(parseFloat(m.text)||0);});tot+=s+',';});csv+=tot+'\n';
+  for(let i=1;i<=mx;i++){let r=`${i},`;fn.forEach(n=>{const m=(S.marks[n]||[]).find(x=>x.qNum===i);let v='';if(m){if(m.type==='o')v='1';else if(m.type==='x')v='0';else if(m.type==='tri')v=m.text;}r+=v+',';});csv+=r+'\n';}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='results.csv';a.click();
 }
 
-async function openFolder(id) {
-  showToast('フォルダを読み込んでいます...');
-
-  let localData = await idbGet('folders', id).catch(() => null);
-  const fbData = await fbGetFolderData(id);
-
-  if (!localData && !fbData) {
-    // meta/data がなくても files だけ存在するケースがあるので確認する
-    const keyExistsSnap = await fbGet(fbRef(fbDb, `folders/${id}/files/key`)).catch(() => null);
-    if (!keyExistsSnap || !keyExistsSnap.exists()) {
-      showToast('フォルダが見つかりません');
-      return;
-    }
-    // files は存在する → fbData が null でも続行
-  }
-
-  if (!localData) {
-    localData = { id, keyFile: null, stuFiles: [], marks: {}, zones: [], markSize: 44 };
-    await idbPut('folders', localData);
-  }
-
-  // ローカル IDB からファイルを復元
-  if (localData.keyFile) {
-    state.keyFile = new File([localData.keyFile.buffer], localData.keyFile.name, { type: localData.keyFile.type });
-  } else {
-    state.keyFile = null;
-  }
-  if (localData.stuFiles && localData.stuFiles.length > 0) {
-    state.stuFiles = localData.stuFiles.map(f => new File([f.buffer], f.name, { type: f.type }));
-  } else {
-    state.stuFiles = [];
-  }
-
-  // RTDB の stuCount を取得して IDB との差分を確認
-  const rtdbCountSnap = await fbGet(fbRef(fbDb, `folders/${id}/files/stuCount`)).catch(() => null);
-  const rtdbStuCount = rtdbCountSnap && rtdbCountSnap.exists() ? rtdbCountSnap.val() : 0;
-
-  // ローカルにファイルがなければ全件 RTDB からダウンロード
-  if (!state.keyFile) {
-    const downloaded = await fbLoadFilesFromRTDB(id);
-    if (downloaded && state.keyFile) {
-      window._pendingIdbCache = true;
-    }
-  } else if (state.stuFiles.length < rtdbStuCount) {
-    // IDB にファイルはあるが RTDB の方が多い → 差分のみ追加取得
-    const missing = rtdbStuCount - state.stuFiles.length;
-    showToast(`📥 他のデバイスの答案 ${missing} 件を取得中...`);
-    for (let i = state.stuFiles.length; i < rtdbStuCount; i++) {
-      try {
-        const stuSnap = await fbGet(fbRef(fbDb, `folders/${id}/files/stu_${i}`));
-        if (stuSnap.exists()) {
-          const entry = stuSnap.val();
-          const file = base64ToFile(entry.data, entry.name, entry.type);
-          if (!state.stuFiles.find(f => f.name === file.name)) {
-            state.stuFiles.push(file);
-          }
-        }
-      } catch(e) { console.warn(`stu_${i} の差分取得失敗:`, e); }
-    }
-    window._pendingIdbCache = true;
-    showToast(`✅ ${state.stuFiles.length} 件の答案を読み込みました`);
-  }
-
-  // マーク/ゾーンは Firebase 優先
-  if (fbData && fbData.data) {
-    state.marks = decodeMarks(fbData.data.marks);
-    state.zones = fbData.data.zones || [];
-    state.globalMarkSize = fbData.data.markSize || 44;
-  } else {
-    state.marks = localData.marks || {};
-    state.zones = localData.zones || [];
-    state.globalMarkSize = localData.markSize || 44;
-  }
-  markSizeRange.value = state.globalMarkSize;
-
-  // RTDB からダウンロードしたファイルを IDB にキャッシュ（marks確定後）
-  if (window._pendingIdbCache && state.keyFile) {
-    window._pendingIdbCache = false;
-    try {
-      const keyBuffer = await readFileAsBuffer(state.keyFile);
-      const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-      await idbPut('folders', {
-        id,
-        keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-        stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-        marks: state.marks,
-        zones: state.zones,
-        markSize: state.globalMarkSize
-      });
-    } catch(e) { console.warn('IDB cache failed:', e); }
-  }
-  state.currentFolderId = id;
-  addVisitedFolder(id);
-
-  if (fbData && fbData.meta) {
-    const meta = getFolderMeta();
-    if (!meta.find(f => f.id === id)) {
-      meta.unshift(fbData.meta);
-      saveFolderMeta(meta);
-    }
-  }
-
-  fbSubscribeFolder(id);
-
-  // data ノードがなければ即座に保存（初回保存漏れ対策）
-  if (state.keyFile && (!fbData || !fbData.data)) {
-    window._lastLocalSave = Date.now();
-    fbSaveMarksAndZones(id, state.marks, state.zones, state.globalMarkSize);
-  }
-
-  history.replaceState(null, '', '#folder-' + id);
-  document.getElementById('urlHashDisplay').textContent = '#folder-' + id;
-
-  closeModal('folderModal');
-
-  const meta = getFolderMeta();
-  const folder = meta.find(f => f.id === id);
-  const folderName = folder ? folder.name : (fbData?.meta?.name || id);
-  document.getElementById('folderIndicatorName').textContent = folderName;
-  document.getElementById('folderIndicator').style.display = 'flex';
-  document.getElementById('noFolderRow').style.display = 'none';
-  document.getElementById('sessionBar').classList.add('visible');
-
-  if (state.keyFile) {
-    document.getElementById('overlay').style.display = 'none';
-    await drawImage(state.keyFile, 'cvLeft', 'wrapLeft', 'scrollLeft', 'left');
-    if (state.stuFiles.length > 0) await loadStudent(0);
-    else renderMarks();
-  } else {
-    document.getElementById('overlay').style.display = 'flex';
-    document.getElementById('statKey').textContent = '選択してください';
-    document.getElementById('statKey').className = 'upload-status';
-    document.getElementById('statStu').textContent = '選択してください (複数可)';
-    document.getElementById('statStu').className = 'upload-status';
-    btnStart.disabled = true;
-    showToast('採点データを同期しました。PDFをアップロードしてください。');
-  }
-}
-
-async function deleteFolder(id) {
-  if (!confirm('このフォルダを完全に削除しますか？\n（Firebaseのデータも削除されます）')) return;
-  await idbDelete('folders', id);
-  const meta = getFolderMeta().filter(f => f.id !== id);
-  saveFolderMeta(meta);
-  const visited = getVisitedFolderIds().filter(v => v !== id);
-  localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
-  fbUnsubscribeAll();
-  await fbDeleteFolder(id);
-  renderFolderList();
-  showToast('フォルダを削除しました');
-}
-
-function shareFolderUrl(id) {
-  const url = location.origin + location.pathname + '#folder-' + id;
-  navigator.clipboard.writeText(url).then(() => showToast('フォルダURLをコピーしました！'));
-}
-
-function openSaveFolderModal() {
-  if (!state.keyFile || state.stuFiles.length === 0) {
-    showToast('先にファイルをアップロードしてください');
-    return;
-  }
-  const meta = getFolderMeta();
-  const sel = document.getElementById('saveFolderSelect');
-  sel.innerHTML = '';
-  if (meta.length === 0) {
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = '（フォルダがありません）';
-    sel.appendChild(opt);
-  } else {
-    meta.forEach(f => {
-      const opt = document.createElement('option');
-      opt.value = f.id;
-      opt.textContent = f.name;
-      if (f.id === state.currentFolderId) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  }
-  document.getElementById('saveFolderNewName').value = '';
-  document.getElementById('saveError').textContent = '';
-  openModal('saveFolderModal');
-}
-
-async function executeSaveToFolder() {
-  const errEl = document.getElementById('saveError');
-  errEl.textContent = '';
-  try {
-    showToast('保存中...');
-    const keyBuffer = await readFileAsBuffer(state.keyFile);
-    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-
-    const newName = document.getElementById('saveFolderNewName').value.trim();
-    const selectedId = document.getElementById('saveFolderSelect').value;
-    let targetId = selectedId;
-
-    const meta = getFolderMeta();
-    let metaObj;
-    if (newName) {
-      const id = genId();
-      metaObj = { id, name: newName, createdAt: Date.now(), stuCount: state.stuFiles.length };
-      meta.unshift(metaObj);
-      targetId = id;
-      addVisitedFolder(id);
-    } else if (targetId) {
-      const idx = meta.findIndex(f => f.id === targetId);
-      if (idx >= 0) {
-        meta[idx].stuCount = state.stuFiles.length;
-        meta[idx].updatedAt = Date.now();
-        metaObj = meta[idx];
-      }
-    } else {
-      throw new Error('保存先を選択するか、新しいフォルダ名を入力してください');
-    }
-
-    const folderData = {
-      id: targetId,
-      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-      stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-      marks: state.marks,
-      zones: state.zones,
-      markSize: state.globalMarkSize
-    };
-
-    await idbPut('folders', folderData);
-    saveFolderMeta(meta);
-
-    window._lastLocalSave = Date.now();
-    if (metaObj) fbSaveFolderMeta(targetId, metaObj);
-    fbSaveMarksAndZones(targetId, state.marks, state.zones, state.globalMarkSize);
-
-    // ファイルを RTDB に base64 でアップロード
-    closeModal('saveFolderModal');
-    try {
-      await fbSaveFilesToRTDB(targetId);
-    } catch(e) { console.warn('RTDB file upload failed:', e); showToast('⚠️ ファイルのクラウド同期に失敗しました（採点データは保存済み）'); }
-
-    state.currentFolderId = targetId;
-    fbSubscribeFolder(targetId);
-
-    const folderName = newName || meta.find(f => f.id === targetId)?.name || 'フォルダ';
-    document.getElementById('folderIndicatorName').textContent = folderName;
-    document.getElementById('folderIndicator').style.display = 'flex';
-    document.getElementById('noFolderRow').style.display = 'none';
-    document.getElementById('sessionBar').classList.add('visible');
-
-    history.replaceState(null, '', '#folder-' + targetId);
-    document.getElementById('urlHashDisplay').textContent = '#folder-' + targetId;
-
-    showToast('フォルダに保存しました！');
-  } catch(e) { errEl.textContent = e.message; showToast('保存に失敗しました'); }
-}
-
-async function renderFolderList() {
-  const list = document.getElementById('folderList');
-  list.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">🔄 読み込み中...</div>`;
-
-  const fbMeta = await fbGetAllFoldersMeta();
-
-  const localMeta = getFolderMeta();
-  const merged = { ...Object.fromEntries(localMeta.map(f => [f.id, f])) };
-  Object.entries(fbMeta).forEach(([id, meta]) => {
-    if (!merged[id]) merged[id] = { ...meta, fromCloud: true };
-    else merged[id] = { ...merged[id], ...meta };
-  });
-
-  const visitedIds = getVisitedFolderIds();
-  visitedIds.forEach(id => {
-    if (!merged[id]) merged[id] = { id, name: `フォルダ (${id.slice(0,6)}...)`, createdAt: 0, stuCount: '?', fromUrl: true };
-  });
-
-  const mergedList = Object.values(merged).sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
-  saveFolderMeta(mergedList.filter(f => !f.fromUrl));
-
-  if (mergedList.length === 0) {
-    list.innerHTML = `<div class="folder-empty"><div class="folder-empty-icon">📂</div><div class="folder-empty-text">フォルダがまだありません。<br>上のフィールドで新しいフォルダを作成しましょう。<br><small style="color:var(--text-muted)">フォルダURLを受け取った場合はそのURLを開いてください。</small></div></div>`;
-    return;
-  }
-
-  // RTDB から各フォルダの実際の stuCount を取得
-  const stuCountMap = {};
-  await Promise.all(mergedList.map(async folder => {
-    try {
-      const snap = await fbGet(fbRef(fbDb, `folders/${folder.id}/files/stuCount`));
-      if (snap.exists()) stuCountMap[folder.id] = snap.val();
-    } catch(e) {}
-  }));
-
-  list.innerHTML = '';
-  mergedList.forEach(folder => {
-    const card = document.createElement('div');
-    card.className = 'folder-card';
-    const date = folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' }) : '不明';
-    const isActive = folder.id === state.currentFolderId;
-    const stuCount = stuCountMap[folder.id] !== undefined ? stuCountMap[folder.id] : (folder.stuCount || 0);
-    card.innerHTML = `
-      <div class="folder-icon">${isActive ? '📂' : (folder.fromCloud ? '☁️' : folder.fromUrl ? '🔗' : '📁')}</div>
-      <div class="folder-info">
-        <div class="folder-name">${folder.name}${isActive ? ' <span class="folder-badge" style="display:inline;">現在開いています</span>':''}</div>
-        <div class="folder-meta">
-          <span>${date}</span>
-          <span class="folder-stat">${stuCount} 名の答案</span>
-          ${folder.updatedAt ? `<span>最終更新: ${new Date(folder.updatedAt).toLocaleDateString('ja-JP')}</span>` : ''}
-          ${folder.fromCloud ? '<span style="color:var(--info);">☁️ クラウド同期</span>' : ''}
-        </div>
-      </div>
-      <div class="folder-actions">
-        <button class="btn" style="height:32px; font-size:0.75rem; padding:0 8px;" onclick="event.stopPropagation(); shareFolderUrl('${folder.id}')" title="URLをコピー">🔗 共有</button>
-        <button class="btn btn-primary" style="height:32px; font-size:0.8rem;" onclick="event.stopPropagation(); openFolder('${folder.id}')">開く</button>
-        <button class="btn btn-danger" style="height:32px; font-size:0.8rem; padding:0 10px;" onclick="event.stopPropagation(); deleteFolder('${folder.id}')">削除</button>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-}
-
-// =============================================
-// STATISTICS
-// =============================================
-function calculateStats() {
-  if (state.stuFiles.length === 0) return null;
-  const scores = state.stuFiles.map(f => {
-    const ms = state.marks[f.name] || [];
-    let score = 0;
-    ms.forEach(m => {
-      if (m.type === 'o') score += 1;
-      if (m.type === 'tri') score += (parseFloat(m.text) || 0);
-    });
-    return { name: f.name, score };
-  });
-
-  const n = scores.length;
-  const mean = scores.reduce((s, x) => s + x.score, 0) / n;
-  const variance = scores.reduce((s, x) => s + Math.pow(x.score - mean, 2), 0) / n;
-  const sd = Math.sqrt(variance);
-  const max = Math.max(...scores.map(x => x.score));
-  const min = Math.min(...scores.map(x => x.score));
-  const median = (() => {
-    const sorted = [...scores].map(x => x.score).sort((a, b) => a - b);
-    const m = Math.floor(n / 2);
-    return n % 2 === 0 ? (sorted[m-1] + sorted[m]) / 2 : sorted[m];
-  })();
-
-  scores.forEach(s => {
-    s.deviation = sd > 0 ? Math.round((50 + 10 * (s.score - mean) / sd) * 10) / 10 : 50;
-    s.rank = scores.filter(x => x.score > s.score).length + 1;
-  });
-
-  return { scores, mean: Math.round(mean * 10) / 10, sd: Math.round(sd * 10) / 10, max, min, median: Math.round(median * 10) / 10, n };
-}
-
-function openStatsModal() {
-  if (state.stuFiles.length === 0) { showToast('生徒答案を読み込んでください'); return; }
-  const stats = calculateStats();
-  if (!stats) return;
-
-  // Summary cards
-  document.getElementById('statsSummary').innerHTML = `
-    <div class="stat-card"><div class="stat-card-label">平均点</div><div class="stat-card-value mean">${stats.mean}</div></div>
-    <div class="stat-card"><div class="stat-card-label">標準偏差</div><div class="stat-card-value sd">${stats.sd}</div></div>
-    <div class="stat-card"><div class="stat-card-label">最高点</div><div class="stat-card-value max">${stats.max}</div></div>
-    <div class="stat-card"><div class="stat-card-label">最低点</div><div class="stat-card-value min">${stats.min}</div></div>
-  `;
-
-  // Bar chart
-  const maxScore = stats.max || 1;
-  const currentName = state.stuFiles[state.currIdx]?.name;
-  const barHTML = stats.scores.map(s => `
-    <div class="bar-item" title="${s.name}: ${s.score}点">
-      <div class="bar-fill" style="height:${Math.round((s.score/maxScore)*70)+2}px; ${s.name===currentName?'background:linear-gradient(135deg,#f59e0b,#ef4444)':''}"></div>
-      <div class="bar-label">${s.name.replace(/\.[^.]+$/,'')}</div>
-    </div>
-  `).join('');
-  document.getElementById('statsBarChart').innerHTML = `
-    <div class="bar-chart-title">得点分布（全生徒）</div>
-    <div class="bar-chart-container">${barHTML}</div>
-  `;
-
-  // Table
-  const sorted = [...stats.scores].sort((a,b) => a.rank - b.rank || b.score - a.score);
-  const rankClass = r => r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-other';
-  const tableHTML = `
-    <thead>
-      <tr>
-        <th>順位</th><th>氏名 / ファイル名</th><th>得点</th><th>偏差値</th><th>偏差値バー</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${sorted.map(s => `
-        <tr class="${s.name===currentName?'current-student':''}">
-          <td><span class="rank-badge ${rankClass(s.rank)}">${s.rank}</span></td>
-          <td style="max-width:200px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:${s.name===currentName?'var(--primary-hover)':'inherit'}">${s.name}</td>
-          <td style="font-family:'JetBrains Mono'; font-weight:700; color:${s.score===stats.max?'var(--success)':s.score===stats.min?'var(--danger)':'inherit'}">${s.score}</td>
-          <td style="font-family:'JetBrains Mono'; font-weight:700; color:${s.deviation>=60?'var(--success)':s.deviation<=40?'var(--danger)':'var(--text-main)'}">${s.deviation}</td>
-          <td>
-            <div class="deviation-bar">
-              <div class="deviation-fill" style="width:${Math.max(4, Math.min(120, s.deviation * 1.2))}px; opacity:${s.deviation>=60?1:s.deviation<=40?0.5:0.75}"></div>
-              <span style="font-size:0.72rem; color:var(--text-muted);">${s.deviation>=60?'高':''}${s.deviation<=40?'低':''}</span>
-            </div>
-          </td>
-        </tr>
-      `).join('')}
-    </tbody>
-  `;
-  document.getElementById('statsTable').innerHTML = tableHTML;
-
-  openModal('statsModal');
-}
-
-function downloadStatsCSV() {
-  const stats = calculateStats();
-  if (!stats) return;
-  const sorted = [...stats.scores].sort((a,b) => a.rank - b.rank);
-  let csv = '\uFEFF順位,氏名,得点,偏差値\n';
-  sorted.forEach(s => { csv += `${s.rank},"${s.name}",${s.score},${s.deviation}\n`; });
-  csv += `\n平均点,${stats.mean},,\n標準偏差,${stats.sd},,\n最高点,${stats.max},,\n最低点,${stats.min},,\n`;
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'statistics.csv'; a.click();
-}
-
-async function downloadAllGradedPDF() {
-  if (state.stuFiles.length === 0) { showToast('生徒答案がありません'); return; }
-  showToast('合本PDF生成中...');
-  const stats = calculateStats();
-  const origIdx = state.currIdx;
-
-  // 最初のページのサイズでPDFを初期化（後続ページは addPage で個別指定）
-  await loadStudentSilent(0);
-  await new Promise(r => setTimeout(r, 200));
-  const firstW = state.pageSizeMm.width;
-  const firstH = state.pageSizeMm.height;
-  const isFirstLandscape = firstW > firstH;
-  const pdf = new jsPDF({
-    orientation: isFirstLandscape ? 'l' : 'p',
-    unit: 'mm',
-    format: [isFirstLandscape ? firstH : firstW, isFirstLandscape ? firstW : firstH]
-  });
-
-  for (let i = 0; i < state.stuFiles.length; i++) {
-    if (i > 0) {
-      await loadStudentSilent(i);
-      await new Promise(r => setTimeout(r, 200));
-    }
-    const cv = document.getElementById('cvRight');
-    const fname = state.stuFiles[i].name;
-    const marks = state.marks[fname] || [];
-    const pageW = state.pageSizeMm.width;
-    const pageH = state.pageSizeMm.height;
-    const isLandscape = pageW > pageH;
-
-    if (i > 0) {
-      pdf.addPage([isLandscape ? pageH : pageW, isLandscape ? pageW : pageH], isLandscape ? 'l' : 'p');
-    }
-
-    const pdfW = pdf.internal.pageSize.getWidth();
-    const pdfH = pdf.internal.pageSize.getHeight();
-
-    pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pdfW, pdfH);
-
-    const s = 5;
-    marks.forEach(m => {
-      const x = (m.x / 100) * pdfW;
-      const y = (m.y / 100) * pdfH;
-      if (m.type === 'o') { pdf.setDrawColor(52, 211, 153); pdf.setLineWidth(0.6); pdf.circle(x, y, s); }
-      else if (m.type === 'x') { pdf.setDrawColor(248, 113, 113); pdf.setLineWidth(0.6); const r = s*0.8; pdf.line(x-r,y-r,x+r,y+r); pdf.line(x+r,y-r,x-r,y+r); }
-      else if (m.type === 'tri') { pdf.setDrawColor(251, 191, 36); pdf.setLineWidth(0.6); pdf.triangle(x,y-s,x-s,y+s,x+s,y+s,'S'); }
-    });
-
-    const stuStats = stats?.scores.find(s => s.name === fname);
-    if (stuStats) {
-      pdf.setFontSize(9); pdf.setTextColor(80, 80, 80);
-      pdf.text(`得点: ${stuStats.score}  偏差値: ${stuStats.deviation}  順位: ${stuStats.rank}/${stats.n}`, 5, pdfH - 4);
-    }
-  }
-
-  await loadStudentSilent(origIdx);
-  pdf.save('all_graded.pdf');
-  showToast('合本PDF保存完了');
-}
-
-async function loadStudentSilent(idx) {
-  if (idx < 0 || idx >= state.stuFiles.length) return;
-  state.currIdx = idx;
-  const f = state.stuFiles[idx];
-  document.getElementById('stuName').textContent = f.name;
-  document.getElementById('stuCount').textContent = `${idx + 1} / ${state.stuFiles.length}`;
-  const ms = state.marks[f.name] || [];
-  const max = ms.reduce((m, v) => (v.qNum > m ? v.qNum : m), 0);
-  state.nextQ = max + 1;
-  updateUI();
-  await drawImage(f, 'cvRight', 'wrapRight', 'scrollRight', 'right');
-  renderMarks();
-}
-
-// =============================================
-// MODAL HELPERS
-// =============================================
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
-
-function openFolderModal() {
-  renderFolderList();
-  openModal('folderModal');
-}
-
-// =============================================
-// EXISTING CORE LOGIC (unchanged)
-// =============================================
-function loadFromStorage() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
-  try {
-    const data = JSON.parse(raw);
-    if (data.marks) state.marks = data.marks;
-    if (data.zones) state.zones = data.zones;
-    if (data.markSize) { state.globalMarkSize = data.markSize; markSizeRange.value = data.markSize; }
-  } catch(e) { console.error(e); }
-}
-function saveToStorage() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ marks: state.marks, zones: state.zones, markSize: state.globalMarkSize }));
-  if (state.currentFolderId) {
-    window._lastLocalSave = Date.now();
-    fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
-  }
-}
-
-function setupUpload(dropId, inpId, type) {
-  const drop = document.getElementById(dropId);
-  const inp = document.getElementById(inpId);
-  drop.onclick = () => inp.click();
-  inp.onchange = (e) => handleFiles(e.target.files, type);
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
-  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); handleFiles(e.dataTransfer.files, type); });
-}
-setupUpload('dropKey', 'inpKey', 'key');
-setupUpload('dropStu', 'inpStu', 'stu');
-
-function handleFiles(files, type) {
-  if (files.length === 0) return;
-  if (type === 'key') {
-    state.keyFile = files[0];
-    document.getElementById('statKey').textContent = `OK: ${state.keyFile.name}`;
-    document.getElementById('statKey').classList.add('ok');
-  } else {
-    state.stuFiles = Array.from(files);
-    document.getElementById('statStu').textContent = `OK: ${state.stuFiles.length}枚`;
-    document.getElementById('statStu').classList.add('ok');
-  }
-  btnStart.disabled = !(state.keyFile && state.stuFiles.length > 0);
-}
-
-btnStart.onclick = async () => {
-  if (!state.currentFolderId) loadFromStorage();
-  document.getElementById('overlay').style.display = 'none';
-  const bar = document.getElementById('sessionBar');
-  bar.classList.add('visible');
-  if (!state.currentFolderId) {
-    document.getElementById('folderIndicator').style.display = 'none';
-    const info = document.getElementById('noFolderRow');
-    info.style.display = 'flex';
-    document.getElementById('sessionFileInfo').textContent =
-      `📄 ${state.keyFile.name}  |  👥 ${state.stuFiles.length}名の答案  ·  💾 保存ボタンでフォルダに保存できます`;
-  } else {
-    await quickSaveFolder();
-  }
-  showToast('画像を読み込んでいます...');
-  await drawImage(state.keyFile, 'cvLeft', 'wrapLeft', 'scrollLeft', 'left');
-  await loadStudent(0);
-};
-
-async function drawImage(file, cvId, wrapId, scrollId, side) {
-  const cv = document.getElementById(cvId);
-  const ctx = cv.getContext('2d');
-  if (file.type === 'application/pdf') {
-    const buff = await file.arrayBuffer();
-    const doc = await pdfjsLib.getDocument({data: buff}).promise;
-    const page = await doc.getPage(1);
-    const viewport1 = page.getViewport({scale: 1.0});
-    // 1pt = 0.3528mm (PDF標準72dpi基準)
-    const PT_TO_MM = 0.352778;
-    if (side === 'right') {
-      state.pageSizeMm = { width: viewport1.width * PT_TO_MM, height: viewport1.height * PT_TO_MM };
-    }
-    const viewport = page.getViewport({scale: 3.0});
-    cv.width = viewport.width; cv.height = viewport.height;
-    await page.render({canvasContext: ctx, viewport}).promise;
-  } else {
-    await new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        cv.width = img.width; cv.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        // 画像は 96dpi 基準でmm換算
-        if (side === 'right') {
-          const PX_TO_MM = 25.4 / 96;
-          state.pageSizeMm = { width: img.width * PX_TO_MM, height: img.height * PX_TO_MM };
-        }
-        resolve();
-      };
-      img.src = URL.createObjectURL(file);
-    });
-  }
-  const container = document.getElementById(scrollId);
-  const fitW = Math.max(200, container.clientWidth - 80);
-  state.fitWidths[side] = fitW;
-  state.zoom[side] = 100;
-  applyZoom(side);
-}
-
-async function loadStudent(idx) {
-  if (idx < 0 || idx >= state.stuFiles.length) return;
-  state.currIdx = idx;
-  closeTextEditor();
-  const f = state.stuFiles[idx];
-  document.getElementById('stuName').textContent = f.name;
-  document.getElementById('stuCount').textContent = `${idx + 1} / ${state.stuFiles.length}`;
-  const ms = state.marks[f.name] || [];
-  const max = ms.reduce((m, v) => (v.qNum > m ? v.qNum : m), 0);
-  state.nextQ = max + 1;
-  updateUI();
-  await drawImage(f, 'cvRight', 'wrapRight', 'scrollRight', 'right');
-  renderMarks();
-  // URL hash update
-  updateUrlHash(idx);
-}
-function navStudent(d) { loadStudent(state.currIdx + d); }
-
-async function addStudents(files) {
-  if (!files || files.length === 0) return;
-  const newFiles = Array.from(files);
-  // Skip duplicates by name
-  const existingNames = new Set(state.stuFiles.map(f => f.name));
-  const toAdd = newFiles.filter(f => {
-    if (existingNames.has(f.name)) {
-      showToast(`スキップ: ${f.name}（同名ファイルが存在します）`);
-      return false;
-    }
-    return true;
-  });
-  if (toAdd.length === 0) return;
-
-  state.stuFiles = [...state.stuFiles, ...toAdd];
-  document.getElementById('stuCount').textContent = `${state.currIdx + 1} / ${state.stuFiles.length}`;
-  showToast(`${toAdd.length}件の答案を追加しました`);
-
-  if (state.currentFolderId) {
-    await quickSaveFolder();
-    // 差分のみ RTDB に追記
-    try {
-      const startIndex = state.stuFiles.length - toAdd.length;
-      await fbAppendStuFilesToRTDB(state.currentFolderId, toAdd, startIndex);
-    } catch(e) { console.warn('RTDB append failed:', e); }
-  }
-}
-
-// Wire up the add button
-document.getElementById('inpAddStu').addEventListener('change', (e) => {
-  addStudents(e.target.files);
-  e.target.value = ''; // reset so same file can be re-added if needed
+// ── MISC ─────────────────────────────────────────────────────────
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2500);}
+function openM(id){document.getElementById(id).classList.add('on');}
+function closeM(id){document.getElementById(id).classList.remove('on');}
+function openFolderModal(){renderFL();openM('fm');}
+function cpURL(){if(!S.folderId){toast('フォルダに保存してください');return;}navigator.clipboard.writeText(location.origin+location.pathname+'#folder-'+S.folderId).then(()=>toast('🔗 URLをコピーしました'));}
+function backToTop(){if(!confirm('トップに戻りますか？'))return;fbUnsub();S.folderId=null;document.getElementById('ov').style.display='flex';history.replaceState(null,'',location.pathname);document.getElementById('udis').textContent='';document.getElementById('sKey').textContent='クリックまたはドラッグ';document.getElementById('sKey').classList.remove('ok');document.getElementById('sStu').textContent='クリックまたはドラッグ（複数可）';document.getElementById('sStu').classList.remove('ok');bStart.disabled=true;}
+document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
+document.addEventListener('keydown',e=>{
+  if(document.querySelector('.mo.on'))return;if(document.getElementById('ov').style.display!=='none')return;if(e.target.tagName==='INPUT')return;
+  const k=e.key.toLowerCase();
+  if(k==='z'||k==='1')setTool('o');if(k==='x'||k==='2')setTool('x');if(k==='c'||k==='3')setTool('tri');if(k==='t')setTool('text');
+  if(k==='arrowright')navS(1);if(k==='arrowleft')navS(-1);
+  if(e.ctrlKey&&k==='z'){e.preventDefault();undo();}if(k==='delete'||k==='backspace')delSelTxt();
 });
 
-// =============================================
-// URL HASH ROUTING
-// =============================================
-function updateUrlHash(idx) {
-  if (state.stuFiles.length === 0) return;
-  const name = encodeURIComponent(state.stuFiles[idx].name.replace(/\.[^.]+$/, ''));
-  // Preserve folder ID in hash if present
-  const folderPart = state.currentFolderId ? `folder-${state.currentFolderId}|` : '';
-  const hash = `#${folderPart}student-${idx + 1}-${name}`;
-  history.replaceState(null, '', hash);
-  document.getElementById('urlHashDisplay').textContent = state.currentFolderId ? `#folder-${state.currentFolderId}` : hash;
-}
-
-function getIdxFromHash() {
-  const hash = location.hash;
-  const m = hash.match(/student-(\d+)/);
-  if (m) {
-    const idx = parseInt(m[1]) - 1;
-    if (!isNaN(idx) && idx >= 0 && idx < state.stuFiles.length) return idx;
-  }
-  return null;
-}
-
-function getFolderIdFromHash() {
-  const hash = location.hash;
-  // Support #folder-ID or #folder-ID|...
-  const m = hash.match(/^#folder-([a-z0-9]+)/i);
-  return m ? m[1] : null;
-}
-
-window.addEventListener('hashchange', () => {
-  if (document.getElementById('overlay').style.display !== 'none') return;
-  const idx = getIdxFromHash();
-  if (idx !== null && idx !== state.currIdx) loadStudent(idx);
-});
-
-function copyCurrentUrl() {
-  const url = location.href;
-  navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
-}
-
-// =============================================
-// QUICK SAVE (overwrite current folder)
-// =============================================
-async function quickSaveFolder() {
-  if (!state.currentFolderId) { openSaveFolderModal(); return; }
-  if (!state.keyFile || state.stuFiles.length === 0) { showToast('先にファイルをアップロードしてください'); return; }
-  try {
-    showToast('上書き保存中...');
-    const keyBuffer = await readFileAsBuffer(state.keyFile);
-    const stuBuffers = await Promise.all(state.stuFiles.map(readFileAsBuffer));
-    const meta = getFolderMeta();
-    const idx = meta.findIndex(f => f.id === state.currentFolderId);
-    if (idx >= 0) { meta[idx].stuCount = state.stuFiles.length; meta[idx].updatedAt = Date.now(); }
-    const folderData = {
-      id: state.currentFolderId,
-      keyFile: { name: state.keyFile.name, type: state.keyFile.type, buffer: keyBuffer },
-      stuFiles: state.stuFiles.map((f, i) => ({ name: f.name, type: f.type, buffer: stuBuffers[i] })),
-      marks: state.marks, zones: state.zones, markSize: state.globalMarkSize
-    };
-    await idbPut('folders', folderData);
-    saveFolderMeta(meta);
-    window._lastLocalSave = Date.now();
-    if (idx >= 0) fbSaveFolderMeta(state.currentFolderId, meta[idx]);
-    await fbSaveMarksAndZones(state.currentFolderId, state.marks, state.zones, state.globalMarkSize);
-
-    // RTDB にファイルがまだなければアップロード（毎回は不要）
-    const fbData = await fbGetFolderData(state.currentFolderId).catch(() => null);
-    const hasRTDBFiles = fbData && fbData.files && fbData.files.key;
-    if (!hasRTDBFiles) {
-      try {
-        await fbSaveFilesToRTDB(state.currentFolderId);
-      } catch(e) { console.warn('RTDB file upload failed:', e); }
-    }
-
-    showToast('💾 上書き保存しました！');
-  } catch(e) { showToast('保存に失敗しました'); console.error(e); }
-}
-
-function addZoom(side, d) {
-  let newVal = Math.max(10, Math.min(500, state.zoom[side] + d));
-  state.zoom[side] = newVal; applyZoom(side);
-}
-function applyZoom(side) {
-  const z = state.zoom[side];
-  const wrap = document.getElementById(side === 'left' ? 'wrapLeft' : 'wrapRight');
-  document.getElementById(side === 'left' ? 'zoomValLeft' : 'zoomValRight').textContent = z + '%';
-  const pxWidth = state.fitWidths[side] * (z / 100);
-  wrap.style.width = pxWidth + 'px';
-  if (side === 'right') renderMarks();
-}
-
-const scrollRight = document.getElementById('scrollRight');
-scrollRight.addEventListener('wheel', (e) => {
-  if (e.ctrlKey) {
-    e.preventDefault();
-    const delta = -e.deltaY;
-    delta > 0 ? addZoom('right', 5) : addZoom('right', -5);
-  }
-}, { passive: false });
-
-const wrapRight = document.getElementById('wrapRight');
-const guide = document.getElementById('cursorGuide');
-
-wrapRight.addEventListener('mousemove', e => {
-  if (state.dragging && state.selectedText !== null) {
-    const r = wrapRight.getBoundingClientRect();
-    const x = e.clientX - r.left; const y = e.clientY - r.top;
-    const fname = state.stuFiles[state.currIdx].name;
-    if (state.marks[fname]?.[state.selectedText]) {
-      state.marks[fname][state.selectedText].x = (x / r.width) * 100;
-      state.marks[fname][state.selectedText].y = (y / r.height) * 100;
-      renderMarks();
-    }
-    return;
-  }
-  const r = wrapRight.getBoundingClientRect();
-  const x = e.clientX - r.left; const y = e.clientY - r.top;
-  guide.style.display = 'block';
-  const currentScale = state.zoom.right / 100;
-  const currentSize = state.globalMarkSize * currentScale;
-  document.documentElement.style.setProperty('--mark-size', currentSize + 'px');
-
-  if (state.layoutMode) {
-    guide.style.left = x + 'px'; guide.style.top = y + 'px';
-    guide.className = ''; guide.style.borderColor = 'var(--warning)'; guide.style.borderRadius = '0';
-    delete guide.dataset.snap; return;
-  }
-  if (state.tool !== 'text' && state.zones.length > 0) {
-    let target = null; let minDist = Infinity;
-    state.zones.forEach(z => {
-      const zx = (z.x / 100) * r.width; const zy = (z.y / 100) * r.height;
-      const dist = Math.hypot(x - zx, y - zy);
-      if (dist < 20 && dist < minDist) { minDist = dist; target = z; }
-    });
-    if (target) {
-      guide.style.left = (target.x / 100 * r.width) + 'px'; guide.style.top = (target.y / 100 * r.height) + 'px';
-      guide.className = 'snapped'; guide.style.borderRadius = '50%'; guide.dataset.snap = target.qNum;
-    } else {
-      guide.style.left = x + 'px'; guide.style.top = y + 'px'; guide.className = '';
-      guide.style.borderColor = state.tool==='o'?'var(--success)':state.tool==='x'?'var(--danger)':'var(--warning)';
-      guide.style.borderRadius = '50%'; delete guide.dataset.snap;
-    }
-  } else {
-    guide.style.left = x + 'px'; guide.style.top = y + 'px'; guide.className = '';
-    guide.style.borderColor = 'white'; guide.style.borderRadius = '50%'; delete guide.dataset.snap;
-  }
-});
-wrapRight.addEventListener('mouseleave', () => { guide.style.display = 'none'; if (state.dragging) endDrag(); });
-wrapRight.addEventListener('mouseup', () => { if (state.dragging) endDrag(); });
-wrapRight.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;
-  if (state.selectedText !== null && !state.dragging) closeTextEditor();
-  if (state.dragging) return;
-  const r = wrapRight.getBoundingClientRect();
-  const px = ((e.clientX - r.left) / r.width) * 100;
-  const py = ((e.clientY - r.top) / r.height) * 100;
-  if (state.layoutMode) { addGridPoint(px, py); return; }
-  let q = state.nextQ; let fx = px, fy = py;
-  if (guide.dataset.snap && state.tool !== 'text') {
-    const z = state.zones.find(zn => zn.qNum == guide.dataset.snap);
-    q = z.qNum; fx = z.x; fy = z.y;
-  }
-  addMark(fx, fy, q);
-});
-
-function addMark(x, y, q) {
-  const fname = state.stuFiles[state.currIdx].name;
-  if (!state.marks[fname]) state.marks[fname] = [];
-  if (state.tool === 'text') {
-    const t = prompt('文字を入力:', '');
-    if (t) state.marks[fname].push({ x, y, type: 'text', text: t, size: 24, color: '#ef4444' });
-  } else if (state.tool === 'tri') {
-    const t = prompt('部分点(数値) または 文字を入力:', '1');
-    if (t !== null) {
-      const oldIdx = state.marks[fname].findIndex(m => m.qNum === q && m.type !== 'text');
-      if (oldIdx >= 0) state.marks[fname].splice(oldIdx, 1);
-      state.marks[fname].push({ x, y, type: 'tri', text: t, qNum: q });
-      state.nextQ = q + 1;
-    }
-  } else {
-    const oldIdx = state.marks[fname].findIndex(m => m.qNum === q && m.type !== 'text');
-    if (oldIdx >= 0) state.marks[fname].splice(oldIdx, 1);
-    state.marks[fname].push({ x, y, type: state.tool, qNum: q });
-    state.nextQ = q + 1;
-  }
-  saveToStorage(); renderMarks(); updateUI();
-}
-
-markSizeRange.addEventListener('input', (e) => {
-  state.globalMarkSize = parseInt(e.target.value); renderMarks(); saveToStorage();
-});
-
-function renderMarks() {
-  const lMarks = document.getElementById('layerMarks');
-  const lZones = document.getElementById('layerZones');
-  lMarks.innerHTML = ''; lZones.innerHTML = '';
-  const currentScale = state.zoom.right / 100;
-  const displaySize = state.globalMarkSize * currentScale;
-  document.documentElement.style.setProperty('--mark-size', displaySize + 'px');
-  state.zones.forEach(z => {
-    const div = document.createElement('div');
-    div.className = 'zone';
-    div.style.width = displaySize + 'px'; div.style.height = (displaySize * 0.6) + 'px';
-    div.style.left = z.x + '%'; div.style.top = z.y + '%';
-    div.textContent = z.qNum; lZones.appendChild(div);
-  });
-  const fname = state.stuFiles[state.currIdx]?.name;
-  if (!fname) return;
-  const list = state.marks[fname] || [];
-  list.forEach((m, i) => {
-    if (m.type === 'text') {
-      const d = document.createElement('div');
-      d.className = 'mark-text';
-      if (state.selectedText === i) d.classList.add('selected');
-      d.id = `txt-${i}`; d.style.left = m.x + '%'; d.style.top = m.y + '%';
-      d.style.color = m.color; d.style.fontSize = m.size + 'px'; d.textContent = m.text;
-      d.onmousedown = (e) => { e.stopPropagation(); startTextDrag(i, d); };
-      lMarks.appendChild(d);
-    } else {
-      const d = document.createElement('div');
-      d.className = `mark mark-${m.type}`;
-      d.style.left = m.x + '%'; d.style.top = m.y + '%';
-      d.style.width = displaySize + 'px'; d.style.height = displaySize + 'px';
-      if (m.type === 'tri') {
-        const shape = document.createElement('div'); shape.className = 'mark-tri-shape';
-        const txt = document.createElement('span'); txt.className = 'mark-tri-text'; txt.textContent = m.text;
-        d.appendChild(shape); d.appendChild(txt);
-      }
-      const b = document.createElement('div'); b.className = 'mark-badge'; b.textContent = m.qNum;
-      d.appendChild(b); lMarks.appendChild(d);
-    }
-  });
-}
-
-function setTool(t) {
-  state.tool = t;
-  document.querySelectorAll('.toolbar .btn').forEach(b => b.classList.remove('active'));
-  const map = { 'o': 'toolO', 'x': 'toolX', 'tri': 'toolTri', 'text': 'toolText' };
-  if (map[t]) document.getElementById(map[t]).classList.add('active');
-}
-
-function updateUI() {
-  const fname = state.stuFiles[state.currIdx]?.name;
-  const ms = state.marks[fname] || [];
-  let score = 0;
-  ms.forEach(m => {
-    if (m.type === 'o') score += 1;
-    if (m.type === 'tri') { const val = parseFloat(m.text); if (!isNaN(val)) score += val; }
-  });
-  document.getElementById('scoreDisplay').textContent = Number.isInteger(score) ? score : score.toFixed(1);
-  document.getElementById('nextQ').textContent = state.nextQ;
-}
-
-function toggleLayoutMode() {
-  state.layoutMode = !state.layoutMode;
-  document.getElementById('layoutBar').style.display = state.layoutMode ? 'flex' : 'none';
-  state.gridPoints = []; document.getElementById('layerTemp').innerHTML = '';
-  renderMarks();
-}
-
-function addGridPoint(x, y) {
-  state.gridPoints.push({x, y});
-  const dot = document.createElement('div');
-  dot.style.cssText = `position:absolute; width:10px; height:10px; background:var(--info); border-radius:50%; left:${x}%; top:${y}%; transform:translate(-50%,-50%); box-shadow:0 0 5px black;`;
-  document.getElementById('layerTemp').appendChild(dot);
-  if (state.gridPoints.length === 2) showToast('行・列を指定して生成してください');
-}
-
-function generateGrid() {
-  if (state.gridPoints.length < 2) return alert('始点と終点を指定してください');
-  const [p1, p2] = state.gridPoints;
-  const rows = parseInt(document.getElementById('gridRows').value);
-  const cols = parseInt(document.getElementById('gridCols').value);
-  const startQ = parseInt(document.getElementById('gridStart').value) || 1;
-  const dir = document.getElementById('gridDir').value;
-  state.zones = []; let q = startQ;
-  if (dir === 'h') {
-    for (let r = 0; r < rows; r++) {
-      const ry = rows===1?0:r/(rows-1); const cy = p1.y+(p2.y-p1.y)*ry;
-      for (let c = 0; c < cols; c++) { const rx=cols===1?0:c/(cols-1); const cx=p1.x+(p2.x-p1.x)*rx; state.zones.push({x:cx,y:cy,qNum:q++}); }
-    }
-  } else {
-    for (let c = 0; c < cols; c++) {
-      const rx=cols===1?0:c/(cols-1); const cx=p1.x+(p2.x-p1.x)*rx;
-      for (let r = 0; r < rows; r++) { const ry=rows===1?0:r/(rows-1); const cy=p1.y+(p2.y-p1.y)*ry; state.zones.push({x:cx,y:cy,qNum:q++}); }
-    }
-  }
-  saveToStorage(); renderMarks(); state.gridPoints = []; document.getElementById('layerTemp').innerHTML = '';
-  showToast('グリッドを生成しました');
-}
-
-function clearZones() { state.zones = []; saveToStorage(); renderMarks(); }
-
-function startTextDrag(idx, el) {
-  state.selectedText = idx; state.dragging = true;
-  const fname = state.stuFiles[state.currIdx].name;
-  const m = state.marks[fname][idx];
-  document.getElementById('txtSize').value = m.size;
-  document.getElementById('txtColor').value = m.color;
-  const editor = document.getElementById('textEditor');
-  const wRect = document.getElementById('wrapRight').getBoundingClientRect();
-  const tRect = el.getBoundingClientRect();
-  editor.style.display = 'flex';
-  editor.style.top = (tRect.bottom - wRect.top + 5) + 'px';
-  editor.style.left = (tRect.left - wRect.left) + 'px';
-}
-function endDrag() { state.dragging = false; saveToStorage(); }
-function closeTextEditor() { state.selectedText = null; document.getElementById('textEditor').style.display = 'none'; renderMarks(); }
-function deleteSelectedText() {
-  const fname = state.stuFiles[state.currIdx].name;
-  state.marks[fname].splice(state.selectedText, 1);
-  closeTextEditor(); saveToStorage();
-}
-
-document.getElementById('txtSize').addEventListener('input', e => {
-  if (state.selectedText !== null) {
-    state.marks[state.stuFiles[state.currIdx].name][state.selectedText].size = e.target.value;
-    renderMarks();
-  }
-});
-document.getElementById('txtColor').addEventListener('input', e => {
-  if (state.selectedText !== null) {
-    state.marks[state.stuFiles[state.currIdx].name][state.selectedText].color = e.target.value;
-    renderMarks();
-  }
-});
-
-function undo() {
-  const fname = state.stuFiles[state.currIdx].name;
-  if (state.marks[fname]?.length) {
-    const rm = state.marks[fname].pop();
-    if (rm.qNum) state.nextQ = rm.qNum;
-    saveToStorage(); renderMarks(); updateUI();
-  }
-}
-function clearMarks() {
-  if (confirm('全消去しますか？')) {
-    state.marks[state.stuFiles[state.currIdx].name] = [];
-    state.nextQ = 1;
-    saveToStorage(); renderMarks(); updateUI();
-  }
-}
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-const resizer = document.getElementById('dragHandle');
-const paneLeft = document.getElementById('paneLeft');
-const paneRight = document.getElementById('paneRight');
-let isResizing = false;
-resizer.addEventListener('mousedown', () => { isResizing = true; resizer.classList.add('resizing'); });
-window.addEventListener('mouseup', () => { isResizing = false; resizer.classList.remove('resizing'); });
-window.addEventListener('mousemove', (e) => {
-  if (!isResizing) return;
-  const containerWidth = document.getElementById('workspace').offsetWidth;
-  const newLeftWidth = (e.clientX / containerWidth) * 100;
-  if (newLeftWidth > 10 && newLeftWidth < 90) {
-    paneLeft.style.width = newLeftWidth + '%';
-    paneRight.style.width = (100 - newLeftWidth) + '%';
-  }
-});
-
-async function downloadPDF() {
-  showToast('PDF生成中...');
-  const cv = document.getElementById('cvRight');
-  const fname = state.stuFiles[state.currIdx].name;
-  const marks = state.marks[fname] || [];
-
-  const pageW = state.pageSizeMm.width;
-  const pageH = state.pageSizeMm.height;
-  const isLandscape = pageW > pageH;
-  const pdf = new jsPDF({
-    orientation: isLandscape ? 'l' : 'p',
-    unit: 'mm',
-    format: [isLandscape ? pageH : pageW, isLandscape ? pageW : pageH]
-  });
-  const pdfW = pdf.internal.pageSize.getWidth();
-  const pdfH = pdf.internal.pageSize.getHeight();
-
-  // canvas → mm の変換比率
-  const scaleX = pdfW / cv.width;
-  const scaleY = pdfH / cv.height;
-
-  pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pdfW, pdfH);
-
-  const s = 5;
-  marks.forEach(m => {
-    const x = (m.x / 100) * pdfW;
-    const y = (m.y / 100) * pdfH;
-    if (m.type === 'o') {
-      pdf.setDrawColor(52, 211, 153); pdf.setLineWidth(0.6); pdf.circle(x, y, s);
-    } else if (m.type === 'x') {
-      pdf.setDrawColor(248, 113, 113); pdf.setLineWidth(0.6);
-      const r = s * 0.8;
-      pdf.line(x-r, y-r, x+r, y+r); pdf.line(x+r, y-r, x-r, y+r);
-    } else if (m.type === 'tri') {
-      pdf.setDrawColor(251, 191, 36); pdf.setLineWidth(0.6);
-      pdf.triangle(x, y-s, x-s, y+s, x+s, y+s, 'S');
-      pdf.setTextColor(251, 191, 36); pdf.setFontSize(7);
-      pdf.text(String(m.text), x, y + s * 0.6, { align: 'center' });
-    } else {
-      pdf.setTextColor(m.color); pdf.setFontSize(m.size * 0.35);
-      pdf.text(m.text, x, y);
-    }
-  });
-
-  pdf.save(`graded_${fname}.pdf`);
-  showToast('PDF保存完了');
-}
-
-function downloadCSV() {
-  let maxQ = 0;
-  state.zones.forEach(z => maxQ = Math.max(maxQ, z.qNum));
-  Object.values(state.marks).forEach(ms => ms.forEach(m => { if(m.qNum) maxQ = Math.max(maxQ, m.qNum); }));
-  if (maxQ === 0) maxQ = 10;
-  const fnames = state.stuFiles.map(f => f.name);
-  let csv = '\uFEFFNumber,'; fnames.forEach(n => csv += `"${n}",`); csv += '\n';
-  let totalRow = 'Total Score,';
-  fnames.forEach(n => {
-    const ms = state.marks[n] || []; let score = 0;
-    ms.forEach(m => { if(m.type==='o') score+=1; if(m.type==='tri') score+=(parseFloat(m.text)||0); });
-    totalRow += `${score},`;
-  });
-  csv += totalRow + '\n';
-  for (let i = 1; i <= maxQ; i++) {
-    let row = `${i},`;
-    fnames.forEach(n => {
-      const ms = state.marks[n] || []; const m = ms.find(x => x.qNum === i); let val = '';
-      if (m) { if(m.type==='o') val='1'; else if(m.type==='x') val='0'; else if(m.type==='tri') val=m.text; }
-      row += val + ',';
-    });
-    csv += row + '\n';
-  }
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'results.csv'; a.click();
-}
-
-document.addEventListener('keydown', e => {
-  if (document.querySelector('.modal-overlay.open')) return;
-  if (document.getElementById('overlay').style.display !== 'none') return;
-  if (e.target.tagName === 'INPUT') return;
-  const k = e.key.toLowerCase();
-  if (k === 'z' || k === '1') setTool('o');
-  if (k === 'x' || k === '2') setTool('x');
-  if (k === 'c' || k === '3') setTool('tri');
-  if (k === 't') setTool('text');
-  if (k === 'arrowright') navStudent(1);
-  if (k === 'arrowleft') navStudent(-1);
-  if (e.ctrlKey && k === 'z') { e.preventDefault(); undo(); }
-  if (k === 'delete' || k === 'backspace') deleteSelectedText();
-});
-
-// Close modal-overlay on backdrop click
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('open');
-  });
-});
-
-// =============================================
-// INIT
-// =============================================
-function backToTop() {
-  if (!confirm('トップに戻りますか？\n（現在の採点データはブラウザに保存されています）')) return;
-  fbUnsubscribeAll();
-  document.getElementById('overlay').style.display = 'flex';
-  // Clear URL hash (keep folder ID if exists)
-  if (state.currentFolderId) {
-    history.replaceState(null, '', '#folder-' + state.currentFolderId);
-    document.getElementById('urlHashDisplay').textContent = '#folder-' + state.currentFolderId;
-  } else {
-    history.replaceState(null, '', location.pathname);
-    document.getElementById('urlHashDisplay').textContent = '';
-  }
-  // Re-init file status
-  document.getElementById('statKey').textContent = state.keyFile ? `OK: ${state.keyFile.name}` : '選択してください';
-  document.getElementById('statKey').className = 'upload-status' + (state.keyFile ? ' ok' : '');
-  document.getElementById('statStu').textContent = state.stuFiles.length > 0 ? `OK: ${state.stuFiles.length}枚` : '選択してください (複数可)';
-  document.getElementById('statStu').className = 'upload-status' + (state.stuFiles.length > 0 ? ' ok' : '');
-  btnStart.disabled = !(state.keyFile && state.stuFiles.length > 0);
-}
-
-(async () => {
-  await initDB();
-  // Wait for Firebase then check URL hash
-  await waitForFirebase();
-  const folderId = getFolderIdFromHash();
-  if (folderId) {
-    addVisitedFolder(folderId);
-    await openFolder(folderId);
-  }
+// ── INIT ─────────────────────────────────────────────────────────
+(async()=>{
+  await initDB();await waitFB();
+  const m=location.hash.match(/#folder-([a-z0-9]+)/i);
+  if(m){aVis(m[1]);await openFolder(m[1]);}
 })();
 </script>
 </body>
