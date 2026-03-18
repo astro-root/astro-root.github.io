@@ -33,7 +33,7 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     header {
@@ -97,12 +97,17 @@
       width: 100%;
       min-height: 0;
       position: relative;
+      overflow: auto;
     }
+    .scoreboard::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scoreboard::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     #grid {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       gap: 15px;
       align-items: start;
       position: relative;
+      padding-bottom: 10px;
     }
 
     .column {
@@ -349,9 +354,67 @@
     return n + 'th';
   }
 
-  function setGridColumnsByCount(count){
-    grid.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+  function applyCardSizes() {
+    const count = players.length;
+    if (count === 0) return;
+
+    const scoreboard = document.querySelector('.scoreboard');
+    if (!scoreboard) return;
+
+    const gap = 15;
+    const rows = count <= 12 ? 1 : 2;
+    const perRow = rows === 1 ? count : Math.ceil(count / 2);
+
+    // --- 幅 ---
+    const availableWidth = scoreboard.clientWidth || (window.innerWidth - 40);
+    const cardWidth = Math.max(80, Math.floor((availableWidth - (perRow - 1) * gap) / perRow));
+
+    // 2段の場合: min-width を設定して横スクロール可能に
+    if (rows === 2) {
+      grid.style.minWidth = `${perRow * (cardWidth + gap)}px`;
+    } else {
+      grid.style.minWidth = '';
+    }
+
+    // --- 高さ ---
+    const availableHeight = scoreboard.clientHeight || (window.innerHeight - 200);
+    const cardHeight = Math.floor((availableHeight - (rows - 1) * gap - 24) / rows);
+
+    // デフォルト想定カード高さ約390px を基準にスケール（0.3〜1.0）
+    const BASE = 390;
+    const s = Math.min(1.0, Math.max(0.3, cardHeight / BASE));
+
+    const nameH     = Math.max(40,  Math.round(240 * s));
+    const scoreH    = Math.max(50,  Math.round(140 * s));
+    const bigNumPx  = Math.max(14,  Math.round(42  * s));
+    const nameFsPx  = Math.max(10,  Math.round(18  * s));
+    const rankFsPx  = Math.max(11,  Math.round(20  * s));
+    const btnPadPx  = Math.max(3,   Math.round(12  * s));
+    const btnFsPx   = Math.max(10,  Math.round(16  * s));
+    const strkFsPx  = Math.max(9,   Math.round(12  * s));
+
+    grid.querySelectorAll('.column').forEach(col => {
+      col.style.width = `${cardWidth}px`;
+      col.style.flex  = `0 0 ${cardWidth}px`;
+
+      const nameEl   = col.querySelector('.name-input');
+      const scoreArea= col.querySelector('.big-score-area');
+      const bigNums  = col.querySelectorAll('.big-num');
+      const rankEl   = col.querySelector('.rank-indicator');
+      const btns     = col.querySelectorAll('.btn-op');
+      const streaks  = col.querySelectorAll('.streak-badge');
+
+      if (nameEl)    { nameEl.style.height = `${nameH}px`; nameEl.style.fontSize = `${nameFsPx}px`; }
+      if (scoreArea) { scoreArea.style.height = `${scoreH}px`; }
+      bigNums.forEach(n => n.style.fontSize = `${bigNumPx}px`);
+      if (rankEl)    { rankEl.style.fontSize = `${rankFsPx}px`; }
+      btns.forEach(b => { b.style.padding = `${btnPadPx}px 0`; b.style.fontSize = `${btnFsPx}px`; });
+      streaks.forEach(b => b.style.fontSize = `${strkFsPx}px`);
+    });
   }
+
+  // ダミー互換（内部呼び出しのみ）
+  function setGridColumnsByCount(count){ applyCardSizes(); }
 
   function pushHistory(){
     const snapshot = {
@@ -480,6 +543,8 @@
           p.el.style.transform = '';
         }
       });
+      // アニメーション確定後にサイズを保証
+      requestAnimationFrame(applyCardSizes);
     });
   }
 
@@ -679,6 +744,8 @@
     players.push(p);
     playerCountInput.value = players.length;
     renderAndCheckStreaks(false);
+    // DOM確定後にサイズを再適用（追加カードが反映されていない場合の保険）
+    requestAnimationFrame(applyCardSizes);
   }
 
   setupBtn.addEventListener('click', ()=>{
@@ -706,6 +773,11 @@
   addBtn.addEventListener('click', addPlayer);
 
   createGrid(Math.max(2, Math.min(20, parseInt(playerCountInput.value || 6))));
+  requestAnimationFrame(applyCardSizes);
+
+  window.addEventListener('resize', () => {
+    requestAnimationFrame(applyCardSizes);
+  });
 
 })();
 </script>
