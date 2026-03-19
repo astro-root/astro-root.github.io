@@ -785,7 +785,8 @@ select.fi{height:auto;padding:9px 12px;cursor:pointer}
   <button class="tbtn" onclick="undo()" title="元に戻す [Ctrl+Z]">↩</button>
   <div class="vsep"></div>
   <button class="tbtn tbtn-primary" onclick="dlPDF()" title="現在の答案をPDF保存">PDF</button>
-  <button class="tbtn" onclick="dlCSV()" title="採点データをCSV出力">CSV</button>
+  <button class="tbtn" onclick="dlIndivCSV(S.stus[S.idx]?.name)" title="現在の答案をCSV保存">個人CSV</button>
+  <button class="tbtn" onclick="dlCSV()" title="全データをCSV一括出力">CSV一括</button>
 </div>
 
 <!-- ══════════════════════════════════════════════
@@ -1973,9 +1974,33 @@ function dlExcel(){
   toast('✅ Excelファイルを保存しました');
 }
 
-function dlStatsCSV(){dlCSV()}
+function dlIndivCSV(name){
+  // 現在の答案1人分のCSVをダウンロード
+  const st=calcStats();if(!st)return;
+  const mx=getMaxQ();
+  const short=name.replace(/\.[^.]+$/,'');
+  const ss=st.scores.find(x=>x.name===name);
+  let csv='\uFEFF問番号,配点,結果,得点\n';
+  let total=0;
+  for(let i=1;i<=mx;i++){
+    const pt=S.points[i]!==undefined?S.points[i]:1;
+    const m=(S.marks[name]||[]).find(x=>x.qNum===i);
+    let label='',val='';
+    if(m){
+      if(m.type==='o'){label='○';val=pt;total+=pt;}
+      else if(m.type==='x'){label='×';val=0;}
+      else if(m.type==='tri'){const v=parseFloat(m.text);label=`△(${m.text})`;val=isNaN(v)?0:v;total+=isNaN(v)?0:v;}
+    }
+    csv+=`${i},${pt},"${label}",${val}\n`;
+  }
+  csv+=`\n合計得点,,,${total}\n`;
+  if(ss){csv+=`偏差値,,,${ss.dev}\n順位,,,${ss.rank}/${st.n}\n`;}
+  dl(new Blob([csv],{type:'text/csv'}),`${short}_results.csv`);
+  toast(`${short}_results.csv を出力しました`);
+}
 
 function dlCSV(){
+  // statistics.csv / results.csv / 個人別 [名前]_results.csv を別ファイルで一括出力
   if(!S.stus.length){toast('生徒答案がありません');return}
   const st=calcStats();if(!st)return;
   const mx=getMaxQ();
@@ -1983,17 +2008,14 @@ function dlCSV(){
   const shortNames=fns.map(n=>n.replace(/\.[^.]+$/,''));
   const maxPt=(()=>{let t=0;for(let i=1;i<=mx;i++)t+=S.points[i]!==undefined?S.points[i]:1;return t})();
 
-  let csv='\uFEFF';
+  // ── ① statistics.csv ──
+  let csv1='\uFEFF順位,氏名,得点,偏差値\n';
+  [...st.scores].sort((a,b)=>a.rank-b.rank).forEach(s=>{csv1+=`${s.rank},"${s.name}",${s.score},${s.dev}\n`});
+  csv1+=`\n平均,${st.mean},,\n標準偏差,${st.sd},,\n最高,${st.max},,\n最低,${st.min},,\n中央値,${st.med},,\n`;
+  dl(new Blob([csv1],{type:'text/csv'}),'statistics.csv');
 
-  // ── セクション1: 統計 ──
-  csv+='【統計】\n';
-  csv+='順位,氏名,得点,偏差値\n';
-  [...st.scores].sort((a,b)=>a.rank-b.rank).forEach(s=>{csv+=`${s.rank},"${s.name}",${s.score},${s.dev}\n`});
-  csv+=`\n平均,${st.mean},,\n標準偏差,${st.sd},,\n最高,${st.max},,\n最低,${st.min},,\n中央値,${st.med},,\n`;
-
-  // ── セクション2: 正誤表（まとめ） ──
-  csv+='\n【正誤表（まとめ）】\n';
-  csv+='問番号,配点,'+shortNames.map(n=>`"${n}"`).join(',')+'\n';
+  // ── ② results.csv（全員まとめ正誤表） ──
+  let csv2='\uFEFF問番号,配点,'+shortNames.map(n=>`"${n}"`).join(',')+'\n';
   for(let i=1;i<=mx;i++){
     const pt=S.points[i]!==undefined?S.points[i]:1;
     let row=`${i},${pt}`;
@@ -2003,37 +2025,20 @@ function dlCSV(){
       if(m){if(m.type==='o')v='○';else if(m.type==='x')v='×';else if(m.type==='tri')v=`△(${m.text})`;}
       row+=`,"${v}"`;
     });
-    csv+=row+'\n';
+    csv2+=row+'\n';
   }
-  csv+=`\n得点合計,（満点${maxPt}点）,`+fns.map(n=>getScore(n)).join(',')+'\n';
-  csv+='偏差値,,'+fns.map(n=>{const s=st.scores.find(x=>x.name===n);return s?s.dev:''}).join(',')+'\n';
-  csv+='順位,,'+fns.map(n=>{const s=st.scores.find(x=>x.name===n);return s?s.rank:''}).join(',')+'\n';
+  csv2+=`\n得点合計,（満点${maxPt}点）,`+fns.map(n=>getScore(n)).join(',')+'\n';
+  csv2+='偏差値,,'+fns.map(n=>{const s=st.scores.find(x=>x.name===n);return s?s.dev:''}).join(',')+'\n';
+  csv2+='順位,,'+fns.map(n=>{const s=st.scores.find(x=>x.name===n);return s?s.rank:''}).join(',')+'\n';
+  dl(new Blob([csv2],{type:'text/csv'}),'results.csv');
 
-  // ── セクション3〜: 個人別正誤表 ──
-  S.stus.forEach(f=>{
-    const name=f.name,short=name.replace(/\.[^.]+$/,'');
-    const ss=st.scores.find(x=>x.name===name);
-    csv+=`\n【${short}】\n`;
-    csv+='問番号,配点,結果,得点\n';
-    let total=0;
-    for(let i=1;i<=mx;i++){
-      const pt=S.points[i]!==undefined?S.points[i]:1;
-      const m=(S.marks[name]||[]).find(x=>x.qNum===i);
-      let label='',val='';
-      if(m){
-        if(m.type==='o'){label='○';val=pt;total+=pt;}
-        else if(m.type==='x'){label='×';val=0;}
-        else if(m.type==='tri'){const v=parseFloat(m.text);label=`△(${m.text})`;val=isNaN(v)?0:v;total+=isNaN(v)?0:v;}
-      }
-      csv+=`${i},${pt},"${label}",${val}\n`;
-    }
-    csv+=`合計得点,,,${total}\n`;
-    if(ss){csv+=`偏差値,,,${ss.dev}\n順位,,,${ss.rank}/${st.n}\n`;}
-  });
+  // ── ③ 個人別 [名前]_results.csv ──
+  S.stus.forEach(f=>dlIndivCSV(f.name));
 
-  dl(new Blob([csv],{type:'text/csv'}),'results.csv');
-  toast('results.csv を出力しました');
+  toast(`CSV ${S.stus.length+2} ファイルを出力しました`);
 }
+
+function dlStatsCSV(){dlCSV()}
 async function dlPDF(){
   if(!S.stus.length){toast('生徒答案がありません');return}
   toast('PDF生成中...');
