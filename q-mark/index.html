@@ -795,7 +795,7 @@ select.fi{height:auto;padding:9px 12px;cursor:pointer}
 <div id="sbar">
   <div class="fp" id="fp" style="display:none">
     <span style="color:var(--ok)">📁</span>
-    <span class="fp-name" id="fpName">—</span>
+    <span class="fp-name" id="fpName"> - </span>
     <span class="fp-status">に同期中</span>
     <button class="sbtn tbtn-ok" style="border-color:rgba(34,197,94,.25)" onclick="quickSave()">上書き保存</button>
   </div>
@@ -847,7 +847,7 @@ select.fi{height:auto;padding:9px 12px;cursor:pointer}
       <div class="s-nav">
         <button class="tbtn" style="padding:0 10px" onclick="navS(-1)" title="前の答案 [←]">◀</button>
         <div class="s-info">
-          <div class="s-name" id="sName">—</div>
+          <div class="s-name" id="sName"> - </div>
           <div class="s-count" id="sCnt">0 / 0</div>
         </div>
         <button class="tbtn" style="padding:0 10px" onclick="navS(1)" title="次の答案 [→]">▶</button>
@@ -988,7 +988,7 @@ select.fi{height:auto;padding:9px 12px;cursor:pointer}
     </div>
     <div class="mbdy">
       <div class="infobox">○（正解）マークに適用される配点を問題ごとに設定します。△（部分点）はマーク時に直接入力した値が使われます。</div>
-      <div class="pts-total" id="ptsTotalDisp">満点: — 点</div>
+      <div class="pts-total" id="ptsTotalDisp">満点: - 点</div>
       <div class="pts-grid" id="ptsGrid"></div>
       <div style="display:flex;gap:8px;padding-top:4px">
         <button class="tbtn tbtn-primary" style="flex:1;height:38px;justify-content:center" onclick="savePoints()">✓ 保存して反映</button>
@@ -1261,7 +1261,7 @@ async function openFolder(id){
 
   if(S.key){
     document.getElementById('ov').style.display='none';
-    document.title=`${meta.name} — Q-Mark`;
+    document.title=`${meta.name} - Q-Mark`;
     await drawImg(S.key,'cvL','wL','scL','l');
     if(S.stus.length>0)await loadS(0);else renderMks();
     toast(`✅ 「${meta.name}」を開きました`);
@@ -1693,6 +1693,7 @@ wR.addEventListener('mousemove',e=>{
 wR.addEventListener('mouseleave',()=>{cgEl.style.display='none'});
 wR.addEventListener('mousedown',e=>{
   if(e.button!==0)return;
+  if(_spaceDown||_panning){_startPan(e,document.getElementById('scR'));return;}
   if(S.selTxt!==null&&!S.drag)closeTxtEd();
   if(S.drag)return;
   const r=wR.getBoundingClientRect();
@@ -1704,10 +1705,63 @@ wR.addEventListener('mousedown',e=>{
   }
   addMk(fx,fy,q);
 });
-window.addEventListener('mouseup',endDrag);
 document.getElementById('mszR').addEventListener('input',e=>{S.mSz=+e.target.value;renderMks();saveStorage()});
-document.getElementById('scR').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();addZoom('r',e.deltaY<0?5:-5)}},{passive:false});
-document.getElementById('scL').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();addZoom('l',e.deltaY<0?5:-5)}},{passive:false});
+
+// ── ZOOM & PAN ────────────────────────────────────────────────────
+// ホイール: ズーム（カーソル中心）/ Shift+ホイール: 横スクロール
+// Space+ドラッグ or 中ボタンドラッグ: パン
+let _spaceDown=false,_panning=false,_panStart={x:0,y:0},_panScroll={x:0,y:0};
+
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&document.getElementById('ov').style.display==='none'&&!document.querySelector('.mo.on')&&e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();_spaceDown=true;document.getElementById('scR').style.cursor='grab';document.getElementById('scL').style.cursor='grab';}});
+document.addEventListener('keyup',e=>{if(e.code==='Space'){_spaceDown=false;_panning=false;document.getElementById('scR').style.cursor='';document.getElementById('scL').style.cursor='';}});
+
+function _startPan(e,scEl){
+  if(!_spaceDown&&e.button!==1)return;
+  e.preventDefault();_panning=true;
+  _panStart={x:e.clientX,y:e.clientY};
+  _panScroll={x:scEl.scrollLeft,y:scEl.scrollTop};
+  scEl.style.cursor='grabbing';
+  scEl.dataset.panning='1';
+}
+function _doPan(e){
+  if(!_panning)return;
+  const scEl=document.querySelector('[data-panning="1"]');if(!scEl)return;
+  scEl.scrollLeft=_panScroll.x-(e.clientX-_panStart.x);
+  scEl.scrollTop=_panScroll.y-(e.clientY-_panStart.y);
+}
+function _endPan(){
+  if(!_panning)return;_panning=false;
+  const scEl=document.querySelector('[data-panning="1"]');
+  if(scEl){scEl.style.cursor=_spaceDown?'grab':'';delete scEl.dataset.panning;}
+}
+
+['scR','scL'].forEach(id=>{
+  const scEl=document.getElementById(id);
+  const side=id==='scL'?'l':'r';
+  scEl.addEventListener('mousedown',e=>_startPan(e,scEl));
+  scEl.addEventListener('wheel',e=>{
+    e.preventDefault();
+    if(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)){
+      // Shift+ホイール or トラックパッド横: 横スクロール
+      scEl.scrollLeft+=e.deltaX||e.deltaY;
+      return;
+    }
+    // 通常ホイール: カーソル中心ズーム
+    const rect=scEl.getBoundingClientRect();
+    const cursorX=e.clientX-rect.left+scEl.scrollLeft;
+    const cursorY=e.clientY-rect.top+scEl.scrollTop;
+    const oldZoom=S.zoom[side];
+    const delta=e.deltaY<0?8:-8;
+    S.zoom[side]=Math.max(10,Math.min(500,oldZoom+delta));
+    applyZoom(side);
+    // スクロール位置をカーソル位置に合わせて補正
+    const ratio=S.zoom[side]/oldZoom;
+    scEl.scrollLeft=cursorX*ratio-(e.clientX-rect.left);
+    scEl.scrollTop=cursorY*ratio-(e.clientY-rect.top);
+  },{passive:false});
+});
+window.addEventListener('mousemove',_doPan);
+window.addEventListener('mouseup',e=>{_endPan();endDrag();});
 
 // ── RESIZER ──────────────────────────────────────────────────────
 let _resizing=false;
@@ -1767,7 +1821,7 @@ function calcStats(){
   if(!S.stus.length)return null;
   const sc=S.stus.map(f=>({name:f.name,score:getScore(f.name)}));
   const n=sc.length,mean=sc.reduce((s,x)=>s+x.score,0)/n;
-  const sd=Math.sqrt(sc.reduce((s,x)=>s+Math.pow(x.score-mean,2),0)/n);
+  const sd=n>0?Math.sqrt(sc.reduce((s,x)=>s+Math.pow(x.score-mean,2),0)/n):0;
   const sorted=[...sc].map(x=>x.score).sort((a,b)=>a-b);
   const med=n%2===0?(sorted[n/2-1]+sorted[n/2])/2:sorted[Math.floor(n/2)];
   sc.forEach(s=>{s.dev=sd>0?Math.round((50+10*(s.score-mean)/sd)*10)/10:50;s.rank=sc.filter(x=>x.score>s.score).length+1});
