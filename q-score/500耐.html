@@ -33,7 +33,7 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
 
     header {
@@ -96,11 +96,14 @@
       flex: 1;
       width: 100%;
       min-height: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     #grid {
       display: grid;
       gap: 15px;
       align-items: start;
+      min-width: 100%;
     }
 
     .column {
@@ -336,8 +339,23 @@
     phase: 'PLAYING'
   };
 
+  const SCROLL_THRESHOLD = 12; // この人数までは画面内に収める
+
   function setGridColumnsByCount(count){
-    grid.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+    const scoreboard = document.querySelector('.scoreboard');
+    const available = scoreboard ? scoreboard.clientWidth : window.innerWidth;
+
+    if(count <= SCROLL_THRESHOLD){
+      // 12人以下: 全員を画面幅に収める
+      grid.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+      grid.style.width = '';
+    } else {
+      // 13人以上: 12人割の列幅を基準に横スクロール
+      const colWidth = Math.floor((available - 15 * (SCROLL_THRESHOLD - 1)) / SCROLL_THRESHOLD);
+      const totalWidth = count * colWidth + (count - 1) * 15;
+      grid.style.gridTemplateColumns = `repeat(${count}, ${colWidth}px)`;
+      grid.style.width = `${totalWidth}px`;
+    }
   }
 
   function pushHistory(){
@@ -609,7 +627,7 @@
   function addPlayer(){
     pushHistory();
     state.players.push({
-      name: `Player ${state.players.length + 1}`,
+      name: `プレイヤー${state.players.length + 1}`,
       score: 0,
       stars: 0,
       yellows: 0,
