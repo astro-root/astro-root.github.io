@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q-Cumber</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b0a;
+  --surface: #111514;
+  --surface2: #181e1c;
+  --surface3: #1f2825;
+  --border: #232e2a;
+  --border2: #2e3e39;
+  --accent: #3dffa0;
+  --accent-dim: rgba(61,255,160,.12);
+  --accent-glow: rgba(61,255,160,.25);
+  --accent2: #ff6b6b;
+  --accent2-dim: rgba(255,107,107,.12);
+  --accent3: #ffd166;
+  --accent3-dim: rgba(255,209,102,.12);
+  --text: #dceee7;
+  --text2: #6e8c82;
+  --text3: #3d5750;
+  --win: #3dffa0;
+  --lose: #ff4757;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --radius-xs: 6px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Noise layer ── */
+.noise {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+/* ── Ambient glow ── */
+.ambient {
+  position: fixed; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 300px; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at center, rgba(61,255,160,.06) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+/* ── Header ── */
+header {
+  position: relative; z-index: 10;
+  padding: var(--space-3) var(--space-3) 0;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-2);
+  border-bottom: 1px solid rgba(35,46,42,.6);
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem; letter-spacing: 4px;
+  color: var(--accent);
+  text-shadow: 0 0 60px rgba(61,255,160,.35);
+  line-height: 1;
+}
+.logo-sub {
+  color: var(--text3);
+  font-size: .7rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 2px;
+  display: block;
+  margin-top: 3px;
+  text-transform: uppercase;
+}
+.header-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: .68rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--text3);
+  letter-spacing: 1px;
+}
+.header-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Container ── */
+.container {
+  position: relative; z-index: 5;
+  max-width: 728px; margin: 0 auto; width: 100%;
+  padding: var(--space-3) var(--space-2) 100px;
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  transition: border-color 200ms ease, transform 180ms ease, box-shadow 200ms ease;
+  will-change: transform;
+}
+.card:hover {
+  border-color: var(--border2);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+}
+
+/* ── Section title ── */
+.section-title {
+  font-size: .65rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 2.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+
+/* ── Label ── */
+.label {
+  font-size: .65rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── Select & Input ── */
+select, input[type=number] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .95rem;
+  padding: 11px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+  -webkit-appearance: none;
+}
+select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236e8c82' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+select:focus, input[type=number]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(61,255,160,.1);
+}
+input[type=number]::-webkit-inner-spin-button { opacity: .4; }
+
+/* ── Rule select wrap ── */
+.rule-select-wrap { display: flex; flex-direction: column; gap: var(--space-1); }
+
+/* ── Rule desc ── */
+.rule-desc {
+  font-size: .875rem;
+  color: var(--text2);
+  line-height: 1.75;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--accent);
+  transition: opacity 160ms ease;
+}
+.rule-desc.fade { opacity: 0; }
+
+/* ── Params grid ── */
+.params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+.param-item { display: flex; flex-direction: column; }
+
+/* ── Mode buttons ── */
+.mode-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.mode-btn {
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: .8rem;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 160ms ease;
+  will-change: transform;
+}
+.mode-btn:hover { border-color: var(--text3); color: var(--text); transform: translateY(-1px); }
+.mode-btn.active {
+  background: var(--accent); color: #000;
+  border-color: var(--accent); font-weight: 700;
+  box-shadow: 0 4px 14px rgba(61,255,160,.3);
+}
+
+/* ── Scoreboard ── */
+.scoreboard {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-1);
+}
+@media(min-width: 480px) { .scoreboard { grid-template-columns: repeat(4, 1fr); } }
+
+.score-cell {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 18px 12px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+  transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  will-change: transform;
+  cursor: default;
+}
+.score-cell:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+.score-cell .val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem; line-height: 1;
+  color: var(--text);
+  transition: color 200ms ease;
+}
+.score-cell .val.accent { color: var(--accent); }
+.score-cell .val.danger { color: var(--accent2); }
+.score-cell .val.warn { color: var(--accent3); }
+.score-cell .lbl {
+  font-size: .6rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* Score flash animation */
+@keyframes score-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  70% { transform: scale(.96); }
+  100% { transform: scale(1); }
+}
+.val.bump { animation: score-bump 240ms cubic-bezier(.34,1.56,.64,1); }
+
+/* ── Status bar ── */
+.status-bar {
+  padding: 18px var(--space-3);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
+  letter-spacing: 4px;
+  transition: color 200ms ease, border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text3);
+  position: relative; overflow: hidden;
+}
+.status-bar::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+.status-bar.active {
+  color: var(--accent);
+  border-color: rgba(61,255,160,.35);
+  background: rgba(61,255,160,.05);
+  box-shadow: 0 0 30px rgba(61,255,160,.08), inset 0 0 30px rgba(61,255,160,.04);
+}
+.status-bar.win {
+  color: var(--win);
+  border-color: var(--win);
+  background: rgba(61,255,160,.1);
+  box-shadow: 0 0 50px rgba(61,255,160,.2), inset 0 0 40px rgba(61,255,160,.06);
+  animation: status-win 280ms cubic-bezier(.34,1.56,.64,1);
+}
+.status-bar.lose {
+  color: var(--lose);
+  border-color: var(--lose);
+  background: rgba(255,71,87,.1);
+  box-shadow: 0 0 50px rgba(255,71,87,.2), inset 0 0 40px rgba(255,71,87,.06);
+  animation: status-lose 300ms ease;
+}
+@keyframes status-win {
+  0% { transform: scale(.96); opacity: .7; }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes status-lose {
+  0% { transform: translateX(-4px); }
+  25% { transform: translateX(4px); }
+  50% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+/* ── Buttons ── */
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btns.triple { grid-template-columns: 1fr 1fr 1fr; }
+.btns.quad { grid-template-columns: 1fr 1fr; row-gap: 10px; }
+
+.btn {
+  padding: 20px 12px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease, filter 120ms ease;
+  letter-spacing: .5px;
+  position: relative; overflow: hidden;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.1) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.15);
+  opacity: 0;
+  transition: opacity 80ms ease;
+  border-radius: inherit;
+}
+.btn:hover { transform: translateY(-2px) scale(1.012); }
+.btn:active { transform: translateY(0) scale(.96); }
+.btn:active::after { opacity: 1; }
+
+.btn-correct { background: var(--accent); color: #000; }
+.btn-correct:hover { box-shadow: 0 8px 28px rgba(61,255,160,.4); filter: brightness(1.08); }
+
+.btn-wrong { background: var(--accent2); color: #fff; }
+.btn-wrong:hover { box-shadow: 0 8px 28px rgba(255,107,107,.4); filter: brightness(1.08); }
+
+.btn-skip { background: var(--accent3); color: #000; }
+.btn-skip:hover { box-shadow: 0 8px 28px rgba(255,209,102,.4); filter: brightness(1.08); }
+
+.btn-neutral {
+  background: var(--surface2); color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-neutral:hover { border-color: var(--border2); color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+
+.btn-reset {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: .82rem;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+}
+.btn-reset:hover { border-color: var(--accent2); color: var(--accent2); box-shadow: 0 0 16px rgba(255,71,87,.12); }
+
+.btn:disabled {
+  opacity: .25; cursor: not-allowed;
+  transform: none !important; box-shadow: none !important;
+  filter: none !important;
+}
+
+/* ── Info row ── */
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 36px;
+  margin-top: var(--space-1);
+}
+
+/* ── Badges ── */
+.combo-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(61,255,160,.2);
+  border-radius: 20px;
+  font-size: .78rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--accent);
+  animation: badge-in 200ms cubic-bezier(.34,1.56,.64,1);
+}
+.rest-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--accent3-dim);
+  border: 1px solid rgba(255,209,102,.2);
+  border-radius: 20px;
+  font-size: .78rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--accent3);
+  animation: badge-in 200ms cubic-bezier(.34,1.56,.64,1);
+}
+.disadv-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--accent2-dim);
+  border: 1px solid rgba(255,107,107,.2);
+  border-radius: 20px;
+  font-size: .78rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--accent2);
+  animation: badge-in 200ms cubic-bezier(.34,1.56,.64,1);
+}
+.combo-num { font-size: 1rem; font-weight: 700; }
+@keyframes badge-in {
+  0% { transform: scale(.85) translateY(4px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ── Log area ── */
+.log-area {
+  max-height: 168px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.log-entry {
+  font-size: .76rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--text3);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  background: var(--surface2);
+  display: flex; justify-content: space-between; gap: 8px;
+  border: 1px solid transparent;
+  animation: log-slide 160ms ease;
+}
+.log-entry:first-child { border-color: var(--border); color: var(--text2); }
+@keyframes log-slide {
+  0% { opacity: 0; transform: translateX(-6px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.log-entry .tag { color: var(--accent); font-size: .68rem; white-space: nowrap; }
+.log-entry .tag.wrong { color: var(--accent2); }
+.log-entry .tag.skip { color: var(--accent3); }
+
+/* ── Modal overlay ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-2);
+  opacity: 0;
+  animation: overlay-in 180ms ease forwards;
+}
+.modal-overlay.closing { animation: overlay-out 160ms ease forwards; }
+@keyframes overlay-in { to { opacity: 1; } }
+@keyframes overlay-out { to { opacity: 0; } }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  max-width: 360px; width: 100%;
+  box-shadow: 0 32px 64px rgba(0,0,0,.5);
+  transform: scale(.92) translateY(12px);
+  animation: modal-in 200ms cubic-bezier(.34,1.56,.64,1) forwards;
+}
+.modal-overlay.closing .modal { animation: modal-out 160ms ease forwards; }
+@keyframes modal-in { to { transform: scale(1) translateY(0); } }
+@keyframes modal-out { to { transform: scale(.92) translateY(12px); opacity: 0; } }
+
+.modal-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--accent2-dim);
+  border: 1px solid rgba(255,107,107,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: var(--space-2);
+}
+.modal h2 {
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text); margin-bottom: 8px;
+}
+.modal p {
+  font-size: .875rem; color: var(--text2);
+  line-height: 1.6; margin-bottom: var(--space-3);
+}
+.modal-btns {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.modal-btn {
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9rem; font-weight: 600;
+  cursor: pointer;
+  transition: all 140ms ease;
+  will-change: transform;
+}
+.modal-btn:hover { transform: translateY(-1px); }
+.modal-btn:active { transform: scale(.97); }
+.modal-btn-cancel {
+  background: var(--surface2); color: var(--text);
+  border-color: var(--border2);
+}
+.modal-btn-cancel:hover { border-color: var(--text3); }
+.modal-btn-reset {
+  background: var(--accent2); color: #fff; border-color: var(--accent2);
+}
+.modal-btn-reset:hover { box-shadow: 0 6px 20px rgba(255,71,87,.35); filter: brightness(1.08); }
+
+/* ── Footer ── */
+footer {
+  position: relative; z-index: 5;
+  margin-top: auto;
+  padding: var(--space-3) var(--space-2);
+  border-top: 1px solid rgba(35,46,42,.5);
+}
+.footer-inner {
+  max-width: 728px; margin: 0 auto;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-2);
+}
+.footer-copy {
+  font-size: .65rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--text3);
+  letter-spacing: 1px;
+}
+.footer-dev {
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: flex-end;
+}
+.footer-dev-label {
+  font-size: .6rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.footer-dev-name {
+  font-size: .8rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  color: var(--text2);
+}
+.footer-links {
+  display: flex; gap: var(--space-1); flex-wrap: wrap; justify-content: flex-end;
+}
+.footer-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text3);
+  font-size: .68rem;
+  font-family: 'DM Mono', monospace;
+  text-decoration: none;
+  letter-spacing: .5px;
+  transition: all 160ms ease;
+}
+.footer-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(61,255,160,.12);
+  transform: translateY(-1px);
+}
+.footer-link svg { flex-shrink: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  header { padding: var(--space-2) var(--space-2) 0; }
+  .container { padding: var(--space-2) var(--space-1) 80px; gap: var(--space-1); }
+  .card { padding: var(--space-2); }
+  .logo { font-size: 2rem; }
+  .btns.triple { grid-template-columns: 1fr 1fr; }
+  .btns.triple .btn:first-child { grid-column: 1/-1; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+  .footer-dev { align-items: flex-start; }
+  .footer-links { justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="ambient"></div>
+
+<header>
+  <div>
+    <div class="logo">Q-Cumber</div>
+    <span class="logo-sub">早押しクイズ得点管理</span>
+  </div>
+  <div class="header-badge">
+    <span class="header-badge-dot"></span>
+    1P SCORE MANAGER
+  </div>
+</header>
+
+<div class="container">
+  <!-- Rule -->
+  <div class="card">
+    <div class="section-title">ルール設定</div>
+    <div class="rule-select-wrap">
+      <div class="label">ルール選択</div>
+      <select id="ruleSelect"></select>
+      <div class="rule-desc" id="ruleDesc"></div>
+      <div id="paramsArea"></div>
+    </div>
+  </div>
+
+  <!-- Score -->
+  <div class="card">
+    <div class="section-title">現在のスコア</div>
+    <div class="scoreboard" id="scoreboard"></div>
+    <div style="margin-top:var(--space-1)">
+      <div class="status-bar" id="statusBar">READY</div>
+    </div>
+    <div class="info-row" id="infoRow"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="card" id="actionCard">
+    <div class="section-title">操作</div>
+    <div id="actionBtns"></div>
+  </div>
+
+  <!-- Log -->
+  <div class="card">
+    <div class="section-title">アクションログ</div>
+    <div class="log-area" id="logArea"></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">Q-Cumber &mdash; 1-Player Quiz Score Manager</div>
+    <div class="footer-dev">
+      <div class="footer-dev-label">Developer</div>
+      <div class="footer-dev-name">Root</div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://astro-root.com/" target="_blank" rel="noopener noreferrer">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          astro-root.com
+        </a>
+        <a class="footer-link" href="https://x.com/root_qscore" target="_blank" rel="noopener noreferrer">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @root_qscore
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Reset confirm modal -->
+<div class="modal-overlay" id="resetModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modalBox">
+    <div class="modal-icon">⚠️</div>
+    <h2 id="modalTitle">スコアをリセット</h2>
+    <p>現在のスコアとログをすべてリセットします。<br>この操作は元に戻せません。</p>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" id="modalCancel">キャンセル</button>
+      <button class="modal-btn modal-btn-reset" id="modalConfirm">リセット</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RULES = [
+  {
+    id:'free',name:'Free',
+    params:[],
+    desc:()=>'正解数と誤答数のみを記録します。勝ち抜け・失格条件なし。',
+    initState:()=>({correct:0,wrong:0}),
+    onCorrect(s){s.correct++;return{log:'正解 +1'}},
+    onWrong(s){s.wrong++;return{log:'誤答 +1'}},
+    getStatus(){return'ACTIVE'},
+    getDisplay(s){return[
+      {val:s.correct,lbl:'正解数',cls:'accent'},
+      {val:s.wrong,lbl:'誤答数',cls:'danger'},
+    ]}
+  },
+  {
+    id:'mon',name:'m◯n×',
+    params:[{key:'m',label:'m（勝ち抜け正解数）',def:5},{key:'n',label:'n（失格誤答数）',def:2}],
+    desc:(p)=>`${p.m}問正解で勝ち抜け、${p.n}問誤答で失格。`,
+    initState:()=>({correct:0,wrong:0}),
+    onCorrect(s,p){s.correct++;return{log:`正解 ${s.correct}/${p.m}`}},
+    onWrong(s,p){s.wrong++;return{log:`誤答 ${s.wrong}/${p.n}`}},
+    getStatus(s,p){
+      if(s.correct>=p.m)return'WIN';
+      if(s.wrong>=p.n)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.correct,lbl:`正解 /${p.m}`,cls:'accent'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+    ]}
+  },
+  {
+    id:'newyork',name:'NewYork',
+    params:[{key:'m',label:'m（正解加点）',def:1},{key:'n',label:'n（誤答減点）',def:1},{key:'x',label:'x（勝ち抜け点）',def:10},{key:'y',label:'y（失格点）',def:-10}],
+    desc:(p)=>`正解で+${p.m}点、誤答で−${p.n}点。${p.x}点で勝ち抜け、${p.y}点で失格。`,
+    initState:()=>({score:0,correct:0,wrong:0}),
+    onCorrect(s,p){s.score+=p.m;s.correct++;return{log:`正解 +${p.m} → ${s.score}点`}},
+    onWrong(s,p){s.score-=p.n;s.wrong++;return{log:`誤答 −${p.n} → ${s.score}点`,type:'wrong'}},
+    getStatus(s,p){
+      if(s.score>=p.x)return'WIN';
+      if(s.score<=p.y)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 (勝:${p.x}/負:${p.y})`,cls:s.score>=0?'accent':'danger'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:'誤答',cls:'danger'},
+    ]}
+  },
+  {
+    id:'updown',name:'Up-Down',
+    params:[{key:'m',label:'m（勝ち抜け点）',def:5},{key:'n',label:'n（失格誤答数）',def:2}],
+    desc:(p)=>`正解で+1点、誤答で得点を0にリセット。誤答${p.n}回で失格、${p.m}点で勝ち抜け。`,
+    initState:()=>({score:0,correct:0,wrong:0}),
+    onCorrect(s,p){s.score++;s.correct++;return{log:`正解 +1 → ${s.score}点`}},
+    onWrong(s,p){s.wrong++;const old=s.score;s.score=0;return{log:`誤答 得点0リセット (${old}→0) 誤答${s.wrong}/${p.n}`,type:'wrong'}},
+    getStatus(s,p){
+      if(s.score>=p.m)return'WIN';
+      if(s.wrong>=p.n)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+    ]}
+  },
+  {
+    id:'by',name:'by',
+    params:[{key:'m',label:'m（基準値）',def:5}],
+    desc:(p)=>`正解ポイント=正解数、誤答ポイント=${p.m}−誤答数。(正解ポイント×誤答ポイント)≧${p.m}²(=${p.m*p.m})で勝ち抜け。誤答ポイントが0以下で失格。`,
+    initState:()=>({correct:0,wrong:0}),
+    onCorrect(s,p){s.correct++;const cp=s.correct,dp=p.m-s.wrong;return{log:`正解 正解P=${cp} 誤答P=${dp} 積=${cp*dp}`}},
+    onWrong(s,p){s.wrong++;const cp=s.correct,dp=p.m-s.wrong;return{log:`誤答 正解P=${cp} 誤答P=${dp} 積=${cp*dp}`,type:'wrong'}},
+    getStatus(s,p){
+      const cp=s.correct,dp=p.m-s.wrong;
+      if(cp*dp>=p.m*p.m)return'WIN';
+      if(dp<=0)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){
+      const cp=s.correct,dp=p.m-s.wrong;
+      return[
+        {val:cp*dp,lbl:`積 (目標:${p.m*p.m})`,cls:'accent'},
+        {val:cp,lbl:'正解P',cls:'accent'},
+        {val:dp,lbl:'誤答P',cls:dp<=0?'danger':'warn'},
+      ]
+    }
+  },
+  {
+    id:'freeze',name:'Freeze',
+    params:[{key:'m',label:'m（勝ち抜け点）',def:5}],
+    desc:(p)=>`正解で+1点。誤答すると「通算誤答数」回の休みが発生。${p.m}点で勝ち抜け。休み消化にはスルーボタンを使用。`,
+    initState:()=>({score:0,correct:0,wrong:0,rest:0}),
+    onCorrect(s,p){s.score++;s.correct++;return{log:`正解 +1 → ${s.score}点`}},
+    onWrong(s,p){s.wrong++;s.rest+=s.wrong;return{log:`誤答 通算${s.wrong}回目 → 休み${s.wrong}回追加 (残休み${s.rest})`,type:'wrong'}},
+    onSkip(s){if(s.rest>0){s.rest--;return{log:`スルー 残休み${s.rest}`,type:'skip'}}return null},
+    getStatus(s,p){if(s.score>=p.m)return'WIN';return'ACTIVE'},
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:'誤答',cls:'danger'},
+      {val:s.rest,lbl:'残休み',cls:'warn'},
+    ]},
+    hasSkip:true
+  },
+  {
+    id:'mon_rest',name:'m◯n休',
+    params:[{key:'m',label:'m（勝ち抜け点）',def:5},{key:'n',label:'n（誤答休み数）',def:3}],
+    desc:(p)=>`正解で+1点、誤答で${p.n}回休み。${p.m}点で勝ち抜け。スルーで休みを消化。`,
+    initState:()=>({score:0,correct:0,wrong:0,rest:0}),
+    onCorrect(s,p){s.score++;s.correct++;return{log:`正解 +1 → ${s.score}点`}},
+    onWrong(s,p){s.wrong++;s.rest+=p.n;return{log:`誤答 → 休み${p.n}回追加 (残休み${s.rest})`,type:'wrong'}},
+    onSkip(s){if(s.rest>0){s.rest--;return{log:`スルー 残休み${s.rest}`,type:'skip'}}return null},
+    getStatus(s,p){if(s.score>=p.m)return'WIN';return'ACTIVE'},
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:'誤答',cls:'danger'},
+      {val:s.rest,lbl:'残休み',cls:'warn'},
+    ]},
+    hasSkip:true
+  },
+  {
+    id:'swedish',name:'Swedish',
+    params:[{key:'m',label:'m（勝ち抜け/失格基準）',def:10}],
+    desc:(p)=>`正解${p.m}問で勝ち抜け、累計ペナルティ${p.m}回で失格。誤答ペナルティは正解数に依存：0問目→1、1-2問目→2、3-5問目→3、6-9問目→4…`,
+    initState:()=>({correct:0,wrong:0,penalty:0}),
+    onCorrect(s,p){s.correct++;return{log:`正解 累計${s.correct}問`}},
+    onWrong(s,p){
+      const pen=getSwedishPenalty(s.correct);
+      s.wrong++;s.penalty+=pen;
+      return{log:`誤答 ペナルティ+${pen} 累計${s.penalty}/${p.m}`,type:'wrong'}
+    },
+    getStatus(s,p){
+      if(s.correct>=p.m)return'WIN';
+      if(s.penalty>=p.m)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.correct,lbl:`正解 /${p.m}`,cls:'accent'},
+      {val:s.wrong,lbl:'誤答',cls:'danger'},
+      {val:s.penalty,lbl:`累計ペナルティ /${p.m}`,cls:s.penalty>0?'danger':''},
+      {val:getSwedishPenalty(s.correct),lbl:'次の誤答ペナルティ',cls:'warn'},
+    ]}
+  },
+  {
+    id:'divide',name:'Divide',
+    params:[{key:'m',label:'m（初期点）',def:10},{key:'n',label:'n（正解加点）',def:10},{key:'x',label:'x（勝ち抜け点）',def:100}],
+    desc:(p)=>`初期${p.m}点から開始。正解で+${p.n}点。誤答ごとに「現在得点÷通算誤答数」で得点更新（小数切り捨て）。得点が1未満で失格、${p.x}点で勝ち抜け。`,
+    initState:(p)=>({score:p.m,correct:0,wrong:0}),
+    onCorrect(s,p){s.score+=p.n;s.correct++;return{log:`正解 +${p.n} → ${s.score}点`}},
+    onWrong(s,p){s.wrong++;const old=s.score;s.score=Math.floor(s.score/s.wrong);return{log:`誤答 ${old}÷${s.wrong}=${s.score}点`,type:'wrong'}},
+    getStatus(s,p){
+      if(s.score>=p.x)return'WIN';
+      if(s.score<1)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 /${p.x}`,cls:s.score<1?'danger':'accent'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:'誤答',cls:'danger'},
+    ]}
+  },
+  {
+    id:'lucky',name:'Lucky Shot',
+    params:[{key:'m',label:'m（正解最大加点）',def:10},{key:'n',label:'n（誤答最大減点）',def:10},{key:'x',label:'x（勝ち抜け点）',def:100},{key:'y',label:'y（失格点）',def:-20}],
+    desc:(p)=>`正解で0〜${p.m}のランダム加点、誤答で0〜${p.n}のランダム減点。${p.x}点で勝ち抜け、${p.y}点で失格。`,
+    initState:()=>({score:0,correct:0,wrong:0,lastAdd:0}),
+    onCorrect(s,p){const add=Math.floor(Math.random()*(p.m+1));s.score+=add;s.correct++;s.lastAdd=add;return{log:`正解 +${add} → ${s.score}点`}},
+    onWrong(s,p){const sub=Math.floor(Math.random()*(p.n+1));s.score-=sub;s.wrong++;return{log:`誤答 −${sub} → ${s.score}点`,type:'wrong'}},
+    getStatus(s,p){
+      if(s.score>=p.x)return'WIN';
+      if(s.score<=p.y)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 (勝:${p.x}/負:${p.y})`,cls:s.score>=0?'accent':'danger'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:'誤答',cls:'danger'},
+    ]}
+  },
+  {
+    id:'rensei',name:'連答付き',
+    params:[{key:'m',label:'m（勝ち抜け点）',def:5},{key:'n',label:'n（失格誤答数）',def:2}],
+    desc:(p)=>`正解で+1点+連答権獲得。連答権保持中の正解は+2点。等速：連答ボーナス後に連答権消失。加速：連続正解中は常に+2点。誤答で連答権消失。${p.m}点で勝ち抜け、${p.n}誤答で失格。`,
+    initState:()=>({score:0,correct:0,wrong:0,hasRight:false,mode:'even'}),
+    modes:[{key:'even',label:'等速'},{key:'accel',label:'加速'}],
+    onCorrect(s,p){
+      let add=1;
+      if(s.mode==='even'){
+        if(s.hasRight){add=2;s.hasRight=false;}
+        else{s.hasRight=true;}
+      } else {
+        if(s.hasRight){add=2;}
+        else{s.hasRight=true;add=1;}
+      }
+      s.score+=add;s.correct++;
+      return{log:`正解 +${add} → ${s.score}点 ${s.hasRight?'[連答権]':''}`,combo:s.hasRight}
+    },
+    onWrong(s,p){s.wrong++;s.hasRight=false;return{log:`誤答 連答権消失 誤答${s.wrong}/${p.n}`,type:'wrong'}},
+    onRelease(s){s.hasRight=false;return{log:'連答権手動解除',type:'skip'}},
+    getStatus(s,p){
+      if(s.score>=p.m)return'WIN';
+      if(s.wrong>=p.n)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+    ]},
+    hasRelease:true
+  },
+  {
+    id:'rengou',name:'連誤答付き',
+    params:[{key:'m',label:'m（勝ち抜け正解数）',def:5},{key:'n',label:'n（失格誤答数）',def:2}],
+    desc:(p)=>`正解でディスアド獲得。ディスアド保持中の誤答は2回分として扱う。自分の正解でディスアド消失。${p.m}正解で勝ち抜け、${p.n}誤答で失格。`,
+    initState:()=>({correct:0,wrong:0,disadv:false}),
+    onCorrect(s,p){s.correct++;const had=s.disadv;s.disadv=true;return{log:`正解 累計${s.correct}問 ${had?'ディスアド消失→再取得':'[ディスアド取得]'}`}},
+    onWrong(s,p){
+      if(s.disadv){s.wrong+=2;s.disadv=false;return{log:`誤答 ディスアド発動 −2回分 累計誤答${s.wrong}/${p.n}`,type:'wrong'}}
+      else{s.wrong+=1;return{log:`誤答 累計${s.wrong}/${p.n}`,type:'wrong'}}
+    },
+    getStatus(s,p){
+      if(s.correct>=p.m)return'WIN';
+      if(s.wrong>=p.n)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.correct,lbl:`正解 /${p.m}`,cls:'accent'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+    ]}
+  },
+  {
+    id:'combo',name:'m hits Combo',
+    params:[{key:'m',label:'m（勝ち抜け点）',def:6},{key:'n',label:'n（失格誤答数）',def:2}],
+    desc:(p)=>`連続正解数=コンボ数。1連答→+1、2連答→+2、3連答→+3…誤答でコンボリセット。${p.m}点で勝ち抜け、${p.n}誤答で失格。`,
+    initState:()=>({score:0,correct:0,wrong:0,combo:0}),
+    onCorrect(s,p){s.combo++;s.score+=s.combo;s.correct++;return{log:`正解 コンボ${s.combo} +${s.combo} → ${s.score}点`,combo:s.combo}},
+    onWrong(s,p){s.wrong++;s.combo=0;return{log:`誤答 コンボリセット 誤答${s.wrong}/${p.n}`,type:'wrong'}},
+    getStatus(s,p){
+      if(s.score>=p.m)return'WIN';
+      if(s.wrong>=p.n)return'LOSE';
+      return'ACTIVE';
+    },
+    getDisplay(s,p){return[
+      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
+      {val:s.combo,lbl:'現在コンボ',cls:'warn'},
+      {val:s.correct,lbl:'正解',cls:'accent'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+    ]}
+  },
+];
+
+function getSwedishPenalty(correct){
+  if(correct===0)return 1;
+  if(correct<=2)return 2;
+  if(correct<=5)return 3;
+  if(correct<=9)return 4;
+  const tier=Math.floor((correct-10)/5)+5;
+  return Math.min(tier+1,20);
+}
+
+let currentRule=RULES[0];
+let params={};
+let state={};
+let logs=[];
+let ended=false;
+
+const ruleSelect=document.getElementById('ruleSelect');
+const ruleDesc=document.getElementById('ruleDesc');
+const paramsArea=document.getElementById('paramsArea');
+const scoreboard=document.getElementById('scoreboard');
+const statusBar=document.getElementById('statusBar');
+const infoRow=document.getElementById('infoRow');
+const actionBtns=document.getElementById('actionBtns');
+const logArea=document.getElementById('logArea');
+const resetModal=document.getElementById('resetModal');
+const modalCancel=document.getElementById('modalCancel');
+const modalConfirm=document.getElementById('modalConfirm');
+
+RULES.forEach((r,i)=>{
+  const o=document.createElement('option');
+  o.value=i;o.textContent=r.name;
+  ruleSelect.appendChild(o);
+});
+
+ruleSelect.addEventListener('change',()=>{
+  currentRule=RULES[parseInt(ruleSelect.value)];
+  ruleDesc.classList.add('fade');
+  setTimeout(()=>{
+    initParams();
+    resetGame();
+    renderAll();
+    ruleDesc.classList.remove('fade');
+  },120);
+});
+
+function initParams(){
+  params={};
+  currentRule.params.forEach(p=>{params[p.key]=p.def});
+  if(currentRule.id==='divide'){
+    state=currentRule.initState(params);
+  }
+}
+
+function resetGame(){
+  if(currentRule.id==='divide'){
+    state=currentRule.initState(params);
+  } else {
+    state=currentRule.initState?currentRule.initState(params):{correct:0,wrong:0};
+    if(currentRule.id==='rensei')state.mode='even';
+  }
+  logs=[];
+  ended=false;
+}
+
+function renderAll(){
+  renderDesc();
+  renderParams();
+  renderScoreboard();
+  renderStatus();
+  renderInfo();
+  renderButtons();
+  renderLog();
+}
+
+function renderDesc(){
+  ruleDesc.textContent=currentRule.desc(params);
+}
+
+function renderParams(){
+  paramsArea.innerHTML='';
+  if(!currentRule.params.length&&!currentRule.modes)return;
+  const grid=document.createElement('div');
+  grid.className='params-grid';
+  currentRule.params.forEach(p=>{
+    const wrap=document.createElement('div');
+    wrap.className='param-item';
+    const lbl=document.createElement('div');
+    lbl.className='label';lbl.textContent=p.label;
+    wrap.appendChild(lbl);
+    const inp=document.createElement('input');
+    inp.type='number';inp.value=params[p.key];
+    inp.addEventListener('input',()=>{
+      const v=parseInt(inp.value);
+      if(!isNaN(v)){params[p.key]=v;renderDesc();}
+      if(currentRule.id==='divide'&&p.key==='m'){
+        state.score=v;
+        renderScoreboard();
+      }
+    });
+    wrap.appendChild(inp);
+    grid.appendChild(wrap);
+  });
+  paramsArea.appendChild(grid);
+  if(currentRule.modes){
+    const modeLabel=document.createElement('div');
+    modeLabel.className='label';modeLabel.style.marginTop='12px';modeLabel.textContent='モード選択';
+    paramsArea.appendChild(modeLabel);
+    const modeRow=document.createElement('div');
+    modeRow.className='mode-row';
+    currentRule.modes.forEach(m=>{
+      const btn=document.createElement('button');
+      btn.className='mode-btn'+(state.mode===m.key?' active':'');
+      btn.textContent=m.label;
+      btn.addEventListener('click',()=>{
+        state.mode=m.key;
+        renderParams();
+      });
+      modeRow.appendChild(btn);
+    });
+    paramsArea.appendChild(modeRow);
+  }
+}
+
+function renderScoreboard(){
+  const cells=currentRule.getDisplay(state,params);
+  scoreboard.innerHTML='';
+  cells.forEach(c=>{
+    const cell=document.createElement('div');
+    cell.className='score-cell';
+    const val=document.createElement('div');
+    val.className='val'+(c.cls?' '+c.cls:'');
+    val.textContent=c.val;
+    const lbl=document.createElement('div');
+    lbl.className='lbl';lbl.textContent=c.lbl;
+    cell.appendChild(val);cell.appendChild(lbl);
+    scoreboard.appendChild(cell);
+  });
+}
+
+function renderStatus(){
+  const st=currentRule.getStatus(state,params);
+  statusBar.className='status-bar';
+  if(st==='WIN'){statusBar.textContent='🏆 WINNER';statusBar.classList.add('win');ended=true;}
+  else if(st==='LOSE'){statusBar.textContent='💀 ELIMINATED';statusBar.classList.add('lose');ended=true;}
+  else{statusBar.textContent='● ACTIVE';statusBar.classList.add('active');ended=false;}
+}
+
+function renderInfo(){
+  infoRow.innerHTML='';
+  if(currentRule.id==='freeze'||currentRule.id==='mon_rest'){
+    if(state.rest>0){
+      const b=document.createElement('div');
+      b.className='rest-badge';
+      b.innerHTML=`⏸ 残休み <span class="combo-num">${state.rest}</span> 回`;
+      infoRow.appendChild(b);
+    }
+  }
+  if(currentRule.id==='rensei'&&state.hasRight){
+    const b=document.createElement('div');
+    b.className='combo-badge';
+    b.innerHTML=`⚡ 連答権 保持中`;
+    infoRow.appendChild(b);
+  }
+  if(currentRule.id==='combo'&&state.combo>0){
+    const b=document.createElement('div');
+    b.className='combo-badge';
+    b.innerHTML=`🔥 コンボ <span class="combo-num">${state.combo}</span>`;
+    infoRow.appendChild(b);
+  }
+  if(currentRule.id==='rengou'&&state.disadv){
+    const b=document.createElement('div');
+    b.className='disadv-badge';
+    b.innerHTML=`⚠ ディスアド 保持中`;
+    infoRow.appendChild(b);
+  }
+  const resetBtn=document.createElement('button');
+  resetBtn.className='btn btn-reset';
+  resetBtn.textContent='リセット';
+  resetBtn.addEventListener('click',()=>openResetModal());
+  infoRow.appendChild(resetBtn);
+}
+
+function renderButtons(){
+  actionBtns.innerHTML='';
+  const disabled=ended;
+  const hasSkip=currentRule.hasSkip&&state.rest>0;
+  const hasRelease=currentRule.hasRelease;
+
+  let grid;
+  if(hasSkip||hasRelease){
+    grid=document.createElement('div');grid.className='btns triple';
+  } else {
+    grid=document.createElement('div');grid.className='btns';
+  }
+
+  const correct=document.createElement('button');
+  correct.className='btn btn-correct';correct.textContent='✓ 正解';correct.disabled=disabled;
+  correct.addEventListener('click',()=>doAction('correct'));
+
+  const wrong=document.createElement('button');
+  wrong.className='btn btn-wrong';wrong.textContent='✗ 誤答';wrong.disabled=disabled;
+  wrong.addEventListener('click',()=>doAction('wrong'));
+
+  grid.appendChild(correct);grid.appendChild(wrong);
+
+  if(hasSkip){
+    const skip=document.createElement('button');
+    skip.className='btn btn-skip';skip.textContent='⏭ スルー';skip.disabled=disabled||state.rest===0;
+    skip.addEventListener('click',()=>doAction('skip'));
+    grid.appendChild(skip);
+  }
+  if(hasRelease){
+    const rel=document.createElement('button');
+    rel.className='btn btn-neutral';rel.textContent='⊘ 連答権解除';rel.disabled=disabled||!state.hasRight;
+    rel.addEventListener('click',()=>doAction('release'));
+    grid.appendChild(rel);
+  }
+  actionBtns.appendChild(grid);
+}
+
+function doAction(type){
+  if(ended)return;
+  let result=null;
+  if(type==='correct'&&currentRule.onCorrect)result=currentRule.onCorrect(state,params);
+  else if(type==='wrong'&&currentRule.onWrong)result=currentRule.onWrong(state,params);
+  else if(type==='skip'&&currentRule.onSkip)result=currentRule.onSkip(state,params);
+  else if(type==='release'&&currentRule.onRelease)result=currentRule.onRelease(state,params);
+  if(result){
+    logs.unshift({text:result.log,tag:type,type:result.type||type});
+    if(logs.length>50)logs.pop();
+  }
+  renderScoreboard();
+  bumpScoreCells();
+  renderStatus();
+  renderInfo();
+  renderButtons();
+  renderLog();
+}
+
+function bumpScoreCells(){
+  const vals=scoreboard.querySelectorAll('.val');
+  vals.forEach(v=>{
+    v.classList.remove('bump');
+    void v.offsetWidth;
+    v.classList.add('bump');
+    v.addEventListener('animationend',()=>v.classList.remove('bump'),{once:true});
+  });
+}
+
+function renderLog(){
+  logArea.innerHTML='';
+  if(!logs.length){
+    logArea.innerHTML='<div class="log-entry"><span style="color:var(--text3)">— ログなし —</span></div>';
+    return;
+  }
+  logs.forEach((l)=>{
+    const e=document.createElement('div');
+    e.className='log-entry';
+    const tag=document.createElement('span');
+    tag.className='tag'+(l.type==='wrong'?' wrong':l.type==='skip'?' skip':'');
+    tag.textContent=l.type==='wrong'?'✗ 誤答':l.type==='skip'?'⏭ スルー':l.type==='release'?'⊘ 解除':'✓ 正解';
+    const txt=document.createElement('span');
+    txt.textContent=l.text;
+    e.appendChild(tag);e.appendChild(txt);
+    logArea.appendChild(e);
+  });
+}
+
+/* ── Reset modal ── */
+let focusTrapElements=[];
+let lastFocusedElement=null;
+
+function openResetModal(){
+  lastFocusedElement=document.activeElement;
+  resetModal.style.display='flex';
+  resetModal.classList.remove('closing');
+  modalCancel.focus();
+  document.addEventListener('keydown',handleModalKey);
+}
+
+function closeResetModal(){
+  resetModal.classList.add('closing');
+  document.removeEventListener('keydown',handleModalKey);
+  setTimeout(()=>{
+    resetModal.style.display='none';
+    resetModal.classList.remove('closing');
+    if(lastFocusedElement)lastFocusedElement.focus();
+  },160);
+}
+
+function handleModalKey(e){
+  if(e.key==='Escape'){closeResetModal();return;}
+  if(e.key==='Tab'){
+    const focusable=[modalCancel,modalConfirm];
+    const idx=focusable.indexOf(document.activeElement);
+    if(e.shiftKey){
+      e.preventDefault();
+      focusable[(idx-1+focusable.length)%focusable.length].focus();
+    } else {
+      e.preventDefault();
+      focusable[(idx+1)%focusable.length].focus();
+    }
+  }
+}
+
+modalCancel.addEventListener('click',closeResetModal);
+modalConfirm.addEventListener('click',()=>{
+  closeResetModal();
+  setTimeout(()=>{
+    resetGame();
+    renderAll();
+  },160);
+});
+resetModal.addEventListener('click',(e)=>{
+  if(e.target===resetModal)closeResetModal();
+});
+
+initParams();
+resetGame();
+renderAll();
+</script>
+</body>
+</html>
