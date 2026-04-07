@@ -53,7 +53,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Subtle grain texture ── */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -62,7 +61,6 @@ body::before {
   background-size: 160px;
 }
 
-/* ── Header ── */
 header {
   position: relative; z-index: 10;
   padding: var(--space-3) var(--space-3) var(--space-2);
@@ -110,15 +108,13 @@ header {
   50%{ opacity:.35; transform:scale(.8); }
 }
 
-/* ── Container ── */
 .container {
   position: relative; z-index: 5;
   max-width: 720px; margin: 0 auto; width: 100%;
-  padding: var(--space-3) var(--space-2) 96px;
+  padding: var(--space-3) var(--space-2) var(--space-2);
   display: flex; flex-direction: column; gap: var(--space-2);
 }
 
-/* ── Card ── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -131,7 +127,6 @@ header {
   box-shadow: 0 4px 24px rgba(0,0,0,.18);
 }
 
-/* ── Section title ── */
 .section-title {
   font-size: .6rem;
   font-family: 'DM Mono', monospace;
@@ -146,7 +141,6 @@ header {
   background: var(--border);
 }
 
-/* ── Label ── */
 .label {
   font-size: .62rem;
   font-family: 'DM Mono', monospace;
@@ -156,7 +150,6 @@ header {
   margin-bottom: 5px;
 }
 
-/* ── Select & Input ── */
 select, input[type=number] {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -183,23 +176,24 @@ select:focus, input[type=number]:focus {
 }
 input[type=number]::-webkit-inner-spin-button { opacity: .3; }
 
-/* ── Rule select wrap ── */
 .rule-select-wrap { display: flex; flex-direction: column; gap: var(--space-1); }
 
-/* ── Rule desc ── */
 .rule-desc {
   font-size: .84rem;
   color: var(--text2);
-  line-height: 1.8;
-  padding: 12px 14px;
+  line-height: 2.0;
+  padding: 14px 16px;
   background: var(--surface2);
   border-radius: var(--radius-sm);
   border-left: 2px solid rgba(var(--accent-rgb),.4);
   transition: opacity var(--transition-fast);
 }
 .rule-desc.fade { opacity: 0; }
+.rule-desc strong {
+  color: var(--text);
+  font-weight: 600;
+}
 
-/* ── Params grid ── */
 .params-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -208,7 +202,6 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
 }
 .param-item { display: flex; flex-direction: column; }
 
-/* ── Mode buttons ── */
 .mode-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .mode-btn {
   padding: 6px 16px;
@@ -275,6 +268,32 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   color: var(--text3);
   text-transform: uppercase;
   margin-top: 5px;
+}
+
+/* ── Rank: primary (main score cell) ── */
+.score-cell.rank-primary {
+  border-color: rgba(var(--accent-rgb),.18);
+  background: rgba(var(--accent-rgb),.035);
+}
+.score-cell.rank-primary .val {
+  font-size: 3.2rem;
+}
+.score-cell.rank-primary .lbl {
+  color: rgba(var(--accent-rgb),.6);
+  letter-spacing: 2px;
+}
+.score-cell.rank-primary.danger-primary {
+  border-color: rgba(var(--accent2-rgb),.18);
+  background: rgba(var(--accent2-rgb),.035);
+}
+
+/* ── Rank: secondary (supporting stats) ── */
+.score-cell.rank-secondary .val {
+  font-size: 2.0rem;
+  opacity: 0.75;
+}
+.score-cell.rank-secondary .lbl {
+  opacity: 0.65;
 }
 
 @keyframes score-bump {
@@ -420,7 +439,7 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   margin-left: auto;
 }
 
-/* ── Control buttons (undo + reset) ── */
+/* ── Control buttons ── */
 .btn-undo {
   display: inline-flex; align-items: center; gap: 5px;
   background: transparent;
@@ -468,7 +487,8 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
 .btn-reset:active { transform: scale(.97); }
 
 /* ── Badges ── */
-.combo-badge, .rest-badge, .disadv-badge {
+.combo-badge, .rest-badge, .disadv-badge,
+.win-reach-badge, .lose-reach-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 5px 11px;
   border-radius: 20px;
@@ -491,6 +511,27 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   border: 1px solid rgba(var(--accent2-rgb),.2);
   color: var(--accent2);
 }
+
+/* ── Reach badges ── */
+.win-reach-badge {
+  background: rgba(var(--accent-rgb),.1);
+  border: 1px solid rgba(var(--accent-rgb),.35);
+  color: var(--accent);
+  font-weight: 600;
+  animation: badge-in 180ms cubic-bezier(.34,1.3,.64,1), reach-pulse 1.8s ease-in-out 200ms infinite;
+}
+.lose-reach-badge {
+  background: rgba(var(--accent2-rgb),.1);
+  border: 1px solid rgba(var(--accent2-rgb),.35);
+  color: var(--accent2);
+  font-weight: 600;
+  animation: badge-in 180ms cubic-bezier(.34,1.3,.64,1), reach-pulse 1.8s ease-in-out 200ms infinite;
+}
+@keyframes reach-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
 .combo-num { font-size: .9rem; font-weight: 700; }
 @keyframes badge-in {
   0%  { transform: scale(.84) translateY(3px); opacity: 0; }
@@ -596,17 +637,144 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
 }
 .modal-btn-reset:hover { box-shadow: 0 4px 16px rgba(var(--accent2-rgb),.35); filter: brightness(1.06); }
 
+/* ── Developer Section ── */
+.dev-section {
+  position: relative; z-index: 5;
+  max-width: 720px; margin: 0 auto var(--space-4);
+  width: 100%;
+  padding: 0 var(--space-2);
+}
+
+.dev-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+.dev-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(var(--accent-rgb),.4) 30%,
+    rgba(var(--accent-rgb),.7) 50%,
+    rgba(var(--accent-rgb),.4) 70%,
+    transparent 100%);
+}
+.dev-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(var(--accent-rgb),.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.dev-identity {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.dev-eyebrow {
+  font-size: .58rem;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.dev-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.4rem;
+  letter-spacing: 4px;
+  line-height: 1;
+  color: var(--text);
+}
+.dev-name span {
+  color: var(--accent);
+}
+.dev-tagline {
+  font-size: .78rem;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1px;
+}
+
+.dev-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.dev-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  text-decoration: none;
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  letter-spacing: .5px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  min-width: 200px;
+  justify-content: flex-start;
+}
+.dev-link:hover {
+  border-color: rgba(var(--accent-rgb),.35);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb),.04);
+  transform: translateX(-2px);
+}
+.dev-link:active { transform: scale(.98); }
+.dev-link-icon {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+.dev-link:hover .dev-link-icon {
+  background: rgba(var(--accent-rgb),.1);
+  border-color: rgba(var(--accent-rgb),.25);
+}
+.dev-link-text {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.dev-link-label {
+  font-size: .55rem;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+.dev-link-url {
+  font-size: .75rem;
+  color: inherit;
+}
+
 /* ── Footer ── */
 footer {
   position: relative; z-index: 5;
   margin-top: auto;
-  padding: var(--space-3) var(--space-2);
+  padding: var(--space-2) var(--space-2);
   border-top: 1px solid var(--border);
 }
 .footer-inner {
   max-width: 720px; margin: 0 auto;
-  display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: var(--space-2);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-1);
 }
 .footer-copy {
   font-size: .62rem;
@@ -614,55 +782,19 @@ footer {
   color: var(--text3);
   letter-spacing: 1px;
 }
-.footer-dev {
-  display: flex; flex-direction: column; gap: 4px;
-  align-items: flex-end;
-}
-.footer-dev-label {
-  font-size: .58rem;
-  font-family: 'DM Mono', monospace;
-  color: var(--text3);
-  letter-spacing: 2px; text-transform: uppercase;
-}
-.footer-dev-name {
-  font-size: .78rem;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600; color: var(--text2);
-}
-.footer-links {
-  display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
-}
-.footer-link {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 9px;
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--text3);
-  font-size: .65rem;
-  font-family: 'DM Mono', monospace;
-  text-decoration: none;
-  letter-spacing: .5px;
-  transition: all var(--transition-fast);
-}
-.footer-link:hover {
-  border-color: rgba(var(--accent-rgb),.3);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-.footer-link svg { flex-shrink: 0; }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
   header { padding: var(--space-2) var(--space-2) var(--space-1); }
-  .container { padding: var(--space-2) var(--space-1) 72px; gap: var(--space-1); }
+  .container { padding: var(--space-2) var(--space-1) var(--space-1); gap: var(--space-1); }
   .card { padding: var(--space-2); }
   .logo { font-size: 1.8rem; }
   .btns.triple { grid-template-columns: 1fr 1fr; }
   .btns.triple .btn:first-child { grid-column: 1/-1; }
-  .footer-inner { flex-direction: column; align-items: flex-start; }
-  .footer-dev { align-items: flex-start; }
-  .footer-links { justify-content: flex-start; }
+  .dev-card { flex-direction: column; align-items: flex-start; }
+  .dev-links { align-items: flex-start; width: 100%; }
+  .dev-link { min-width: unset; width: 100%; }
+  .dev-name { font-size: 2rem; }
 }
 </style>
 </head>
@@ -680,7 +812,6 @@ footer {
 </header>
 
 <div class="container">
-  <!-- Rule -->
   <div class="card">
     <div class="section-title">ルール設定</div>
     <div class="rule-select-wrap">
@@ -691,7 +822,6 @@ footer {
     </div>
   </div>
 
-  <!-- Score -->
   <div class="card">
     <div class="section-title">現在のスコア</div>
     <div class="scoreboard" id="scoreboard"></div>
@@ -699,37 +829,52 @@ footer {
     <div class="info-row" id="infoRow"></div>
   </div>
 
-  <!-- Actions -->
   <div class="card" id="actionCard">
     <div class="section-title">操作</div>
     <div id="actionBtns"></div>
   </div>
 
-  <!-- Log -->
   <div class="card">
     <div class="section-title">アクションログ</div>
     <div class="log-area" id="logArea"></div>
   </div>
 </div>
 
-<!-- Footer -->
+<!-- Developer Section -->
+<div class="dev-section">
+  <div class="dev-card">
+    <div class="dev-identity">
+      <div class="dev-eyebrow">Developer</div>
+      <div class="dev-name">R<span>oo</span>t</div>
+      <div class="dev-tagline">Quiz Score Manager · Q-Cumber</div>
+    </div>
+    <div class="dev-links">
+      <a class="dev-link" href="https://astro-root.com/" target="_blank" rel="noopener noreferrer">
+        <div class="dev-link-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="dev-link-text">
+          <span class="dev-link-label">Official Site</span>
+          <span class="dev-link-url">astro-root.com</span>
+        </div>
+      </a>
+      <a class="dev-link" href="https://x.com/root_qscore" target="_blank" rel="noopener noreferrer">
+        <div class="dev-link-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </div>
+        <div class="dev-link-text">
+          <span class="dev-link-label">Official Twitter</span>
+          <span class="dev-link-url">@root_qscore</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-inner">
     <div class="footer-copy">Q-Cumber &mdash; 1-Player Quiz Score Manager</div>
-    <div class="footer-dev">
-      <div class="footer-dev-label">Developer</div>
-      <div class="footer-dev-name">Root</div>
-      <div class="footer-links">
-        <a class="footer-link" href="https://astro-root.com/" target="_blank" rel="noopener noreferrer">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          astro-root.com
-        </a>
-        <a class="footer-link" href="https://x.com/root_qscore" target="_blank" rel="noopener noreferrer">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          @root_qscore
-        </a>
-      </div>
-    </div>
+    <div class="footer-copy">© Root</div>
   </div>
 </footer>
 
@@ -751,10 +896,10 @@ const RULES = [
   {
     id:'free',name:'Free',
     params:[],
-    desc:()=>'正解数と誤答数のみを記録します。勝ち抜け・失格条件なし。',
+    desc:()=>'正解数と誤答数のみを記録します。<br>勝ち抜け・失格条件なし。',
     initState:()=>({correct:0,wrong:0}),
     onCorrect(s){s.correct++;return{log:'正解 +1'}},
-    onWrong(s){s.wrong++;return{log:'誤答 +1'}},
+    onWrong(s){s.wrong++;return{log:'誤答 +1',type:'wrong'}},
     getStatus(){return'ACTIVE'},
     getDisplay(s){return[
       {val:s.correct,lbl:'正解数',cls:'accent'},
@@ -764,10 +909,10 @@ const RULES = [
   {
     id:'mon',name:'m◯n×',
     params:[{key:'m',label:'勝ち抜け正解数',def:5},{key:'n',label:'失格誤答数',def:2}],
-    desc:(p)=>`${p.m}問正解で勝ち抜け、${p.n}問誤答で失格。`,
+    desc:(p)=>`<strong>${p.m}問正解</strong>で勝ち抜け、<strong>${p.n}問誤答</strong>で失格。`,
     initState:()=>({correct:0,wrong:0}),
     onCorrect(s,p){s.correct++;return{log:`正解 ${s.correct}/${p.m}`}},
-    onWrong(s,p){s.wrong++;return{log:`誤答 ${s.wrong}/${p.n}`}},
+    onWrong(s,p){s.wrong++;return{log:`誤答 ${s.wrong}/${p.n}`,type:'wrong'}},
     getStatus(s,p){
       if(s.correct>=p.m)return'WIN';
       if(s.wrong>=p.n)return'LOSE';
@@ -781,7 +926,7 @@ const RULES = [
   {
     id:'newyork',name:'NewYork',
     params:[{key:'m',label:'正解加点',def:1},{key:'n',label:'誤答減点',def:1},{key:'x',label:'勝ち抜けポイント',def:10},{key:'y',label:'失格ポイント',def:-10}],
-    desc:(p)=>`正解で+${p.m}点、誤答で−${p.n}点。${p.x}点で勝ち抜け、${p.y}点で失格。`,
+    desc:(p)=>`正解で<strong>+${p.m}点</strong>、誤答で<strong>−${p.n}点</strong>。<br>${p.x}点で勝ち抜け、${p.y}点で失格。`,
     initState:()=>({score:0,correct:0,wrong:0}),
     onCorrect(s,p){s.score+=p.m;s.correct++;return{log:`正解 +${p.m} → ${s.score}点`}},
     onWrong(s,p){s.score-=p.n;s.wrong++;return{log:`誤答 −${p.n} → ${s.score}点`,type:'wrong'}},
@@ -791,15 +936,15 @@ const RULES = [
       return'ACTIVE';
     },
     getDisplay(s,p){return[
-      {val:s.score,lbl:`点数 (勝:${p.x}/負:${p.y})`,cls:s.score>=0?'accent':'danger'},
-      {val:s.correct,lbl:'正解',cls:'accent'},
-      {val:s.wrong,lbl:'誤答',cls:'danger'},
+      {val:s.score,lbl:`Score (勝:${p.x}/負:${p.y})`,cls:s.score>=0?'accent':'danger',rank:'primary'},
+      {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
+      {val:s.wrong,lbl:'Wrong',cls:'danger',rank:'secondary'},
     ]}
   },
   {
     id:'updown',name:'Up-Down',
     params:[{key:'m',label:'勝ち抜けポイント',def:5},{key:'n',label:'失格誤答数',def:2}],
-    desc:(p)=>`正解で+1点、誤答で得点を0にリセット。誤答${p.n}回で失格、${p.m}点で勝ち抜け。`,
+    desc:(p)=>`正解で+1点、誤答で得点を<strong>0にリセット</strong>。<br>誤答${p.n}回で失格、${p.m}点で勝ち抜け。`,
     initState:()=>({score:0,correct:0,wrong:0}),
     onCorrect(s,p){s.score++;s.correct++;return{log:`正解 +1 → ${s.score}点`}},
     onWrong(s,p){s.wrong++;const old=s.score;s.score=0;return{log:`誤答 得点0リセット (${old}→0) 誤答${s.wrong}/${p.n}`,type:'wrong'}},
@@ -817,7 +962,7 @@ const RULES = [
   {
     id:'by',name:'by',
     params:[{key:'m',label:'基準値',def:5}],
-    desc:(p)=>`正解ポイント=正解数、誤答ポイント=${p.m}−誤答数。(正解ポイント×誤答ポイント)≧${p.m}²(=${p.m*p.m})で勝ち抜け。誤答ポイントが0以下で失格。`,
+    desc:(p)=>`正解ポイント＝正解数、誤答ポイント＝${p.m}−誤答数。<br>(正解P × 誤答P) ≥ ${p.m}²（＝${p.m*p.m}）で勝ち抜け。<br>誤答ポイントが<strong>0以下</strong>で失格。`,
     initState:()=>({correct:0,wrong:0}),
     onCorrect(s,p){s.correct++;const cp=s.correct,dp=p.m-s.wrong;return{log:`正解 正解P=${cp} 誤答P=${dp} 積=${cp*dp}`}},
     onWrong(s,p){s.wrong++;const cp=s.correct,dp=p.m-s.wrong;return{log:`誤答 正解P=${cp} 誤答P=${dp} 積=${cp*dp}`,type:'wrong'}},
@@ -830,16 +975,16 @@ const RULES = [
     getDisplay(s,p){
       const cp=s.correct,dp=p.m-s.wrong;
       return[
-        {val:cp*dp,lbl:`積 (目標:${p.m*p.m})`,cls:'accent'},
-        {val:cp,lbl:'正解P',cls:'accent'},
-        {val:dp,lbl:'誤答P',cls:dp<=0?'danger':'warn'},
+        {val:cp*dp,lbl:`Score (目標:${p.m*p.m})`,cls:'accent',rank:'primary'},
+        {val:cp,lbl:'Correct P',cls:'accent',rank:'secondary'},
+        {val:dp,lbl:'Wrong P',cls:dp<=0?'danger':'warn',rank:'secondary'},
       ]
     }
   },
   {
     id:'freeze',name:'Freeze',
     params:[{key:'m',label:'勝ち抜け正解数',def:5}],
-    desc:(p)=>`正解で+1点。誤答すると「通算誤答数」回の休みが発生。${p.m}点で勝ち抜け。休み消化にはスルーボタンを使用。`,
+    desc:(p)=>`正解で+1点。誤答すると<strong>「通算誤答数」回の休み</strong>が発生。<br>${p.m}点で勝ち抜け。<br>休みの消化にはスルーボタンを使用。`,
     initState:()=>({score:0,correct:0,wrong:0,rest:0}),
     onCorrect(s,p){s.score++;s.correct++;return{log:`正解 +1 → ${s.score}点`}},
     onWrong(s,p){s.wrong++;s.rest+=s.wrong;return{log:`誤答 通算${s.wrong}回目 → 休み${s.wrong}回追加 (残休み${s.rest})`,type:'wrong'}},
@@ -856,7 +1001,7 @@ const RULES = [
   {
     id:'mon_rest',name:'m◯n休',
     params:[{key:'m',label:'勝ち抜け正解数',def:5},{key:'n',label:'誤答休み数',def:3}],
-    desc:(p)=>`正解で+1点、誤答で${p.n}回休み。${p.m}点で勝ち抜け。スルーで休みを消化。`,
+    desc:(p)=>`正解で+1点、誤答で<strong>${p.n}回休み</strong>。<br>${p.m}点で勝ち抜け。<br>スルーで休みを消化。`,
     initState:()=>({score:0,correct:0,wrong:0,rest:0}),
     onCorrect(s,p){s.score++;s.correct++;return{log:`正解 +1 → ${s.score}点`}},
     onWrong(s,p){s.wrong++;s.rest+=p.n;return{log:`誤答 → 休み${p.n}回追加 (残休み${s.rest})`,type:'wrong'}},
@@ -873,7 +1018,7 @@ const RULES = [
   {
     id:'swedish',name:'Swedish',
     params:[{key:'m',label:'勝ち抜け/失格基準',def:10}],
-    desc:(p)=>`正解${p.m}問で勝ち抜け、累計ペナルティ${p.m}回で失格。誤答ペナルティは正解数に依存：0問目→1、1-2問目→2、3-5問目→3、6-9問目→4…`,
+    desc:(p)=>`正解<strong>${p.m}問</strong>で勝ち抜け、累計ペナルティ<strong>${p.m}回</strong>で失格。<br>誤答ペナルティは正解数に依存：<br>0問目→1、1〜2問目→2、3〜5問目→3、6〜9問目→4…`,
     initState:()=>({correct:0,wrong:0,penalty:0}),
     onCorrect(s,p){s.correct++;return{log:`正解 累計${s.correct}問`}},
     onWrong(s,p){
@@ -890,31 +1035,31 @@ const RULES = [
       {val:s.correct,lbl:`正解 /${p.m}`,cls:'accent'},
       {val:s.wrong,lbl:'誤答',cls:'danger'},
       {val:s.penalty,lbl:`累計ペナルティ /${p.m}`,cls:s.penalty>0?'danger':''},
-      {val:getSwedishPenalty(s.correct),lbl:'次の誤答ペナルティ',cls:'warn'},
+      {val:`×${getSwedishPenalty(s.correct)}`,lbl:'Next Penalty',cls:'warn'},
     ]}
   },
   {
     id:'divide',name:'Divide',
     params:[{key:'m',label:'初期ポイント',def:10},{key:'n',label:'正解加点',def:10},{key:'x',label:'勝ち抜けポイント',def:100}],
-    desc:(p)=>`初期${p.m}点から開始。正解で+${p.n}点。誤答ごとに「現在得点÷通算誤答数」で得点更新（小数切り捨て）。得点が1未満で失格、${p.x}点で勝ち抜け。`,
+    desc:(p)=>`初期<strong>${p.m}点</strong>から開始。正解で<strong>+${p.n}点</strong>。<br>誤答ごとに「現在得点 ÷ 通算誤答数」で得点更新（小数切り上げ）。<br>得点が<strong>1未満</strong>で失格、<strong>${p.x}点</strong>で勝ち抜け。`,
     initState:(p)=>({score:p.m,correct:0,wrong:0}),
     onCorrect(s,p){s.score+=p.n;s.correct++;return{log:`正解 +${p.n} → ${s.score}点`}},
-    onWrong(s,p){s.wrong++;const old=s.score;s.score=Math.floor(s.score/s.wrong);return{log:`誤答 ${old}÷${s.wrong}=${s.score}点`,type:'wrong'}},
+    onWrong(s,p){s.wrong++;const old=s.score;s.score=Math.ceil(s.score/s.wrong);return{log:`誤答 ${old}÷${s.wrong}=↑${s.score}点`,type:'wrong'}},
     getStatus(s,p){
       if(s.score>=p.x)return'WIN';
       if(s.score<1)return'LOSE';
       return'ACTIVE';
     },
     getDisplay(s,p){return[
-      {val:s.score,lbl:`点数 /${p.x}`,cls:s.score<1?'danger':'accent'},
-      {val:s.correct,lbl:'正解',cls:'accent'},
-      {val:s.wrong,lbl:'誤答',cls:'danger'},
+      {val:s.score,lbl:`Score /${p.x}`,cls:s.score<1?'danger':'accent',rank:'primary'},
+      {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
+      {val:s.wrong,lbl:'Wrong',cls:'danger',rank:'secondary'},
     ]}
   },
   {
     id:'lucky',name:'Lucky Shot',
     params:[{key:'m',label:'正解最大加点',def:10},{key:'n',label:'誤答最大減点',def:10},{key:'x',label:'勝ち抜けポイント',def:100},{key:'y',label:'失格ポイント',def:-20}],
-    desc:(p)=>`正解で0〜${p.m}のランダム加点、誤答で0〜${p.n}のランダム減点。${p.x}点で勝ち抜け、${p.y}点で失格。`,
+    desc:(p)=>`正解で<strong>0〜${p.m}のランダム加点</strong>、誤答で<strong>0〜${p.n}のランダム減点</strong>。<br>${p.x}点で勝ち抜け、${p.y}点で失格。`,
     initState:()=>({score:0,correct:0,wrong:0,lastAdd:0}),
     onCorrect(s,p){const add=Math.floor(Math.random()*(p.m+1));s.score+=add;s.correct++;s.lastAdd=add;return{log:`正解 +${add} → ${s.score}点`}},
     onWrong(s,p){const sub=Math.floor(Math.random()*(p.n+1));s.score-=sub;s.wrong++;return{log:`誤答 −${sub} → ${s.score}点`,type:'wrong'}},
@@ -924,15 +1069,16 @@ const RULES = [
       return'ACTIVE';
     },
     getDisplay(s,p){return[
-      {val:s.score,lbl:`点数 (勝:${p.x}/負:${p.y})`,cls:s.score>=0?'accent':'danger'},
-      {val:s.correct,lbl:'正解',cls:'accent'},
-      {val:s.wrong,lbl:'誤答',cls:'danger'},
-    ]}
+      {val:s.score,lbl:`Score (勝:${p.x}/負:${p.y})`,cls:s.score>=0?'accent':'danger',rank:'primary'},
+      {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
+      {val:s.wrong,lbl:'Wrong',cls:'danger',rank:'secondary'},
+    ]},
+    noReach:true
   },
   {
     id:'rensei',name:'連答付き',
     params:[{key:'m',label:'勝ち抜け正解数',def:5},{key:'n',label:'失格誤答数',def:2}],
-    desc:(p)=>`正解で+1点+連答権獲得。連答権保持中の正解は+2点。等速：連答ボーナス後に連答権消失。加速：連続正解中は常に+2点。誤答で連答権消失。${p.m}点で勝ち抜け、${p.n}誤答で失格。`,
+    desc:(p)=>`正解で+1点＋連答権獲得。連答権保持中の正解は<strong>+2点</strong>。<br>等速：連答ボーナス後に連答権消失。<br>加速：連続正解中は常に+2点。<br>誤答で連答権消失。<br>${p.m}点で勝ち抜け、${p.n}誤答で失格。`,
     initState:()=>({score:0,correct:0,wrong:0,hasRight:false,mode:'even'}),
     modes:[{key:'even',label:'等速'},{key:'accel',label:'加速'}],
     onCorrect(s,p){
@@ -955,21 +1101,29 @@ const RULES = [
       return'ACTIVE';
     },
     getDisplay(s,p){return[
-      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
-      {val:s.correct,lbl:'正解',cls:'accent'},
-      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+      {val:s.score,lbl:`Score /${p.m}`,cls:'accent',rank:'primary'},
+      {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger',rank:'secondary'},
     ]},
     hasRelease:true
   },
   {
     id:'rengou',name:'連誤答付き',
-    params:[{key:'m',label:'勝ち抜け正解数',def:5},{key:'n',label:'失格誤答数',def:2}],
-    desc:(p)=>`正解でディスアド獲得。ディスアド保持中の誤答は2回分として扱う。自分の正解でディスアド消失。${p.m}正解で勝ち抜け、${p.n}誤答で失格。`,
+    params:[{key:'m',label:'勝ち抜け正解数',def:5},{key:'n',label:'失格誤答数',def:4}],
+    desc:(p)=>`誤答でディスアド獲得。ディスアド保持中の誤答は<strong>2回分</strong>として扱う。<br>正解でディスアド消失。<br>${p.m}正解で勝ち抜け、${p.n}誤答で失格。`,
     initState:()=>({correct:0,wrong:0,disadv:false}),
-    onCorrect(s,p){s.correct++;const had=s.disadv;s.disadv=true;return{log:`正解 累計${s.correct}問 ${had?'ディスアド消失→再取得':'[ディスアド取得]'}`}},
+    onCorrect(s,p){
+      s.correct++;
+      const had=s.disadv;
+      s.disadv=false;
+      return{log:`正解 累計${s.correct}問${had?' [ディスアド消失]':''}`}
+    },
     onWrong(s,p){
-      if(s.disadv){s.wrong+=2;s.disadv=false;return{log:`誤答 ディスアド発動 −2回分 累計誤答${s.wrong}/${p.n}`,type:'wrong'}}
-      else{s.wrong+=1;return{log:`誤答 累計${s.wrong}/${p.n}`,type:'wrong'}}
+      const wasDis=s.disadv;
+      const add=wasDis?2:1;
+      s.wrong+=add;
+      s.disadv=true;
+      return{log:`誤答 ${wasDis?'ディスアド発動 ':''}−${add}回分 累計誤答${s.wrong}/${p.n}`,type:'wrong'}
     },
     getStatus(s,p){
       if(s.correct>=p.m)return'WIN';
@@ -984,7 +1138,7 @@ const RULES = [
   {
     id:'combo',name:'m hits Combo',
     params:[{key:'m',label:'勝ち抜けポイント',def:6},{key:'n',label:'失格誤答数',def:2}],
-    desc:(p)=>`連続正解数=コンボ数。1連答→+1、2連答→+2、3連答→+3…誤答でコンボリセット。${p.m}点で勝ち抜け、${p.n}誤答で失格。`,
+    desc:(p)=>`連続正解数＝コンボ数。1連答→+1、2連答→+2、3連答→+3…<br>誤答でコンボリセット。<br>${p.m}点で勝ち抜け、${p.n}誤答で失格。`,
     initState:()=>({score:0,correct:0,wrong:0,combo:0}),
     onCorrect(s,p){s.combo++;s.score+=s.combo;s.correct++;return{log:`正解 コンボ${s.combo} +${s.combo} → ${s.score}点`,combo:s.combo}},
     onWrong(s,p){s.wrong++;s.combo=0;return{log:`誤答 コンボリセット 誤答${s.wrong}/${p.n}`,type:'wrong'}},
@@ -994,10 +1148,10 @@ const RULES = [
       return'ACTIVE';
     },
     getDisplay(s,p){return[
-      {val:s.score,lbl:`点数 /${p.m}`,cls:'accent'},
-      {val:s.combo,lbl:'現在コンボ',cls:'warn'},
-      {val:s.correct,lbl:'正解',cls:'accent'},
-      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger'},
+      {val:s.score,lbl:`Score /${p.m}`,cls:'accent',rank:'primary'},
+      {val:s.combo,lbl:'Combo',cls:'warn',rank:'secondary'},
+      {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
+      {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger',rank:'secondary'},
     ]}
   },
 ];
@@ -1009,6 +1163,22 @@ function getSwedishPenalty(correct){
   if(correct<=9)return 4;
   const tier=Math.floor((correct-10)/5)+5;
   return Math.min(tier+1,20);
+}
+
+function checkReach(rule,state,params){
+  if(rule.noReach)return{win:false,lose:false};
+  const sWin=JSON.parse(JSON.stringify(state));
+  const sLose=JSON.parse(JSON.stringify(state));
+  let win=false,lose=false;
+  try{
+    if(rule.onCorrect)rule.onCorrect(sWin,params);
+    win=rule.getStatus(sWin,params)==='WIN';
+  }catch(e){}
+  try{
+    if(rule.onWrong)rule.onWrong(sLose,params);
+    lose=rule.getStatus(sLose,params)==='LOSE';
+  }catch(e){}
+  return{win,lose};
 }
 
 let currentRule=RULES[0];
@@ -1078,7 +1248,7 @@ function renderAll(){
 }
 
 function renderDesc(){
-  ruleDesc.textContent=currentRule.desc(params);
+  ruleDesc.innerHTML=currentRule.desc(params);
 }
 
 function renderParams(){
@@ -1132,6 +1302,10 @@ function renderScoreboard(){
   cells.forEach(c=>{
     const cell=document.createElement('div');
     cell.className='score-cell';
+    if(c.rank)cell.classList.add('rank-'+c.rank);
+    if(c.rank==='primary'&&(c.cls==='danger'||String(c.val).includes('-'))){
+      cell.classList.add('danger-primary');
+    }
     const val=document.createElement('div');
     val.className='val'+(c.cls?' '+c.cls:'');
     val.textContent=c.val;
@@ -1190,6 +1364,22 @@ function renderInfo(){
     b.className='disadv-badge';
     b.innerHTML=`⚠ ディスアド 保持中`;
     badgesArea.appendChild(b);
+  }
+
+  if(!ended){
+    const reach=checkReach(currentRule,state,params);
+    if(reach.win){
+      const b=document.createElement('div');
+      b.className='win-reach-badge';
+      b.innerHTML=`🎯 勝ち抜けリーチ`;
+      badgesArea.appendChild(b);
+    }
+    if(reach.lose){
+      const b=document.createElement('div');
+      b.className='lose-reach-badge';
+      b.innerHTML=`⚡ 失格リーチ`;
+      badgesArea.appendChild(b);
+    }
   }
 
   infoRow.appendChild(badgesArea);
