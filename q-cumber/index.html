@@ -339,6 +339,11 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   position: relative; z-index: 1;
 }
 
+/* ① 修正: score-bump のみ残し、flash系アニメーションは削除。
+   点滅の原因は CSS の score-flash / score-flash-pink キーフレームと
+   .score-cell.flash-correct / .flash-wrong クラスの組み合わせ。
+   bumpScoreCells() 側で flash クラスを付与しないことで対応済み。
+   代替フィードバックとして score-bump (スケールバウンス) のみ使用。 */
 @keyframes score-bump {
   0%  { transform: scale(1); }
   30% { transform: scale(1.18); filter: brightness(1.6); }
@@ -346,6 +351,18 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   100%{ transform: scale(1); filter: brightness(1); }
 }
 .val.bump { animation: score-bump 260ms cubic-bezier(.34,1.4,.64,1); }
+
+/* 代替フィードバック: セルの border-color が瞬間的に光る */
+@keyframes cell-correct-glow {
+  0%   { box-shadow: 0 0 0 2px rgba(var(--cyan-rgb),.7), 0 0 16px rgba(var(--cyan-rgb),.35); }
+  100% { box-shadow: none; }
+}
+@keyframes cell-wrong-glow {
+  0%   { box-shadow: 0 0 0 2px rgba(var(--pink-rgb),.7), 0 0 16px rgba(var(--pink-rgb),.35); }
+  100% { box-shadow: none; }
+}
+.score-cell.glow-correct { animation: cell-correct-glow 380ms ease-out forwards; }
+.score-cell.glow-wrong   { animation: cell-wrong-glow 380ms ease-out forwards; }
 
 .status-bar {
   text-align: center;
@@ -521,6 +538,7 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   letter-spacing: 1.5px;
   -webkit-tap-highlight-color: transparent;
   clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+  position: relative;
 }
 .btn-undo:hover:not(:disabled) {
   border-color: rgba(var(--cyan-rgb),.4);
@@ -529,6 +547,19 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
 }
 .btn-undo:active:not(:disabled) { transform: scale(.97); }
 .btn-undo:disabled { opacity: .18; cursor: not-allowed; }
+
+/* ② Undo残回数バッジ */
+.undo-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px;
+  background: rgba(var(--cyan-rgb),.18);
+  border: 1px solid rgba(var(--cyan-rgb),.4);
+  color: var(--cyan);
+  font-size: .5rem;
+  font-family: 'Share Tech Mono', monospace;
+  padding: 0 3px;
+  clip-path: polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 3px 100%, 0 calc(100% - 3px));
+}
 
 .btn-reset {
   display: inline-flex; align-items: center; gap: 5px;
@@ -553,6 +584,31 @@ input[type=number]::-webkit-inner-spin-button { opacity: .3; }
   text-shadow: 0 0 6px rgba(var(--pink-rgb),.5);
 }
 .btn-reset:active { transform: scale(.97); }
+
+/* ③ コンボリセットボタン */
+.btn-combo-reset {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(var(--yellow-rgb),.28);
+  color: var(--yellow);
+  font-size: .6rem;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  padding: 7px 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  -webkit-tap-highlight-color: transparent;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+}
+.btn-combo-reset:hover:not(:disabled) {
+  border-color: rgba(var(--yellow-rgb),.6);
+  background: rgba(var(--yellow-rgb),.07);
+  text-shadow: 0 0 6px rgba(var(--yellow-rgb),.6);
+}
+.btn-combo-reset:active:not(:disabled) { transform: scale(.97); }
+.btn-combo-reset:disabled { opacity: .18; cursor: not-allowed; }
 
 .combo-badge, .rest-badge, .disadv-badge,
 .win-reach-badge, .lose-reach-badge {
@@ -851,22 +907,10 @@ footer {
   0%,100%{ box-shadow: 0 0 0 0 rgba(var(--pink-rgb),0); }
   50%    { box-shadow: 0 0 22px 4px rgba(var(--pink-rgb),.18); }
 }
-@keyframes score-flash {
-  0%  { background: rgba(var(--cyan-rgb),.18); }
-  100%{ background: transparent; }
-}
-@keyframes score-flash-pink {
-  0%  { background: rgba(var(--pink-rgb),.15); }
-  100%{ background: transparent; }
-}
 @keyframes win-sweep {
   0%  { opacity:0; transform: scaleX(0); }
   60% { opacity:1; transform: scaleX(1.04); }
   100%{ opacity:1; transform: scaleX(1); }
-}
-@keyframes border-glow-run {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
 }
 @keyframes header-slide {
   0%  { opacity:0; transform: translateY(-20px); }
@@ -890,9 +934,6 @@ header { animation: header-slide 400ms cubic-bezier(.34,1.2,.64,1) both; }
 .score-cell:nth-child(2){ animation-delay: 240ms; }
 .score-cell:nth-child(3){ animation-delay: 300ms; }
 .score-cell:nth-child(4){ animation-delay: 360ms; }
-
-.score-cell.flash-correct { animation: score-flash .5s ease forwards; }
-.score-cell.flash-wrong   { animation: score-flash-pink .5s ease forwards; }
 
 .score-cell.rank-primary { animation: glow-pulse 3s ease-in-out 600ms infinite; }
 .score-cell.rank-primary.danger-primary { animation: glow-pulse-pink 3s ease-in-out 600ms infinite; }
@@ -1248,8 +1289,6 @@ const RULES = [
     },
     onWrong(s,p){s.wrong++;s.hasRight=false;return{log:`誤答 連答権消失 誤答${s.wrong}/${p.n}`,type:'wrong'}},
     onRelease(s){s.hasRight=false;return{log:'連答権手動解除',type:'skip'}},
-    releaseLabel:'⊘ 連答権解除',
-    canRelease:(s)=>s.hasRight,
     getStatus(s,p){
       if(s.score>=p.m)return'WIN';
       if(s.wrong>=p.n)return'LOSE';
@@ -1297,9 +1336,6 @@ const RULES = [
     initState:()=>({score:0,correct:0,wrong:0,combo:0}),
     onCorrect(s,p){s.combo++;s.score+=s.combo;s.correct++;return{log:`正解 コンボ${s.combo} +${s.combo} → ${s.score}点`,combo:s.combo}},
     onWrong(s,p){s.wrong++;s.combo=0;return{log:`誤答 コンボリセット 誤答${s.wrong}/${p.n}`,type:'wrong'}},
-    onRelease(s){s.combo=0;return{log:'コンボ手動リセット',type:'skip'}},
-    releaseLabel:'⊘ コンボリセット',
-    canRelease:(s)=>s.combo>0,
     getStatus(s,p){
       if(s.score>=p.m)return'WIN';
       if(s.wrong>=p.n)return'LOSE';
@@ -1310,8 +1346,7 @@ const RULES = [
       {val:s.combo,lbl:'Combo',cls:'warn',rank:'secondary'},
       {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
       {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger',rank:'secondary'},
-    ]},
-    hasRelease:true
+    ]}
   },
 ];
 
@@ -1345,7 +1380,10 @@ let params={};
 let state={};
 let logs=[];
 let ended=false;
-let undoStack=[];
+
+// ② Undo: 1件スナップショットから最大10件のスタック管理に変更
+const UNDO_MAX=10;
+let undoHistory=[];
 
 const ruleSelect=document.getElementById('ruleSelect');
 const ruleDesc=document.getElementById('ruleDesc');
@@ -1393,7 +1431,10 @@ function resetGame(){
   }
   logs=[];
   ended=false;
-  undoStack=[];
+  undoHistory=[];
+}
+
+function renderAll(){
   renderDesc();
   renderParams();
   renderScoreboard();
@@ -1543,11 +1584,24 @@ function renderInfo(){
   const controlsArea=document.createElement('div');
   controlsArea.className='controls-area';
 
+  // ③ コンボ解除ボタン（combo ルールかつコンボ中のみ表示）
+  if(currentRule.id==='combo'){
+    const comboResetBtn=document.createElement('button');
+    comboResetBtn.className='btn-combo-reset';
+    comboResetBtn.innerHTML='⊘ コンボ解除';
+    comboResetBtn.disabled=ended||state.combo===0;
+    comboResetBtn.title='コンボを手動でリセットする';
+    comboResetBtn.addEventListener('click',doComboReset);
+    controlsArea.appendChild(comboResetBtn);
+  }
+
+  // ② Undo: 残り回数バッジ付きボタン
   const undoBtn=document.createElement('button');
   undoBtn.className='btn-undo';
-  undoBtn.innerHTML=`↩ Undo${undoStack.length>0?' ('+undoStack.length+')':''}`;
-  undoBtn.disabled=!undoStack.length;
-  undoBtn.title=`操作を取り消す（最大10回）`;
+  const undoCount=undoHistory.length;
+  undoBtn.innerHTML=`↩ Undo${undoCount>0?` <span class="undo-count">${undoCount}</span>`:''}`;
+  undoBtn.disabled=undoCount===0;
+  undoBtn.title=`直前の操作を取り消す（残り${undoCount}/${UNDO_MAX}回）`;
   undoBtn.addEventListener('click',doUndo);
   controlsArea.appendChild(undoBtn);
 
@@ -1592,23 +1646,26 @@ function renderButtons(){
   }
   if(hasRelease){
     const rel=document.createElement('button');
-    const label=currentRule.releaseLabel||'⊘ 連答権解除';
-    const relEnabled=currentRule.canRelease?currentRule.canRelease(state):state.hasRight;
-    rel.className='btn btn-neutral';rel.textContent=label;rel.disabled=disabled||!relEnabled;
+    rel.className='btn btn-neutral';rel.textContent='⊘ 連答権解除';rel.disabled=disabled||!state.hasRight;
     rel.addEventListener('click',()=>doAction('release'));
     grid.appendChild(rel);
   }
   actionBtns.appendChild(grid);
 }
 
-function doAction(type){
-  if(ended)return;
-  undoStack.push({
+// ② 操作前に現在の状態をスタックに積む（最大 UNDO_MAX 件）
+function pushUndoSnapshot(){
+  undoHistory.unshift({
     state:JSON.parse(JSON.stringify(state)),
     logs:[...logs],
     ended:ended
   });
-  if(undoStack.length>10)undoStack.shift();
+  if(undoHistory.length>UNDO_MAX) undoHistory.pop();
+}
+
+function doAction(type){
+  if(ended)return;
+  pushUndoSnapshot();
   let result=null;
   if(type==='correct'&&currentRule.onCorrect)result=currentRule.onCorrect(state,params);
   else if(type==='wrong'&&currentRule.onWrong)result=currentRule.onWrong(state,params);
@@ -1626,9 +1683,25 @@ function doAction(type){
   renderLog();
 }
 
+// ③ コンボ解除アクション（スコアには影響しない。Undo 対象に含める）
+function doComboReset(){
+  if(ended||state.combo===0)return;
+  pushUndoSnapshot();
+  const prev=state.combo;
+  state.combo=0;
+  logs.unshift({text:`コンボ手動解除 (${prev}コンボ → 0)`,tag:'skip',type:'skip'});
+  if(logs.length>50)logs.pop();
+  renderScoreboard();
+  renderStatus();
+  renderInfo();
+  renderButtons();
+  renderLog();
+}
+
+// ② Undo: スタックから1件 pop して状態を復元
 function doUndo(){
-  if(!undoStack.length)return;
-  const snap=undoStack.pop();
+  if(undoHistory.length===0)return;
+  const snap=undoHistory.shift();
   state=snap.state;
   logs=snap.logs;
   ended=snap.ended;
@@ -1639,8 +1712,21 @@ function doUndo(){
   renderLog();
 }
 
+// ① 修正箇所: flash-correct / flash-wrong クラス付与を廃止。
+//   点滅の原因: CSS の score-flash / score-flash-pink キーフレームが
+//   bumpScoreCells() から .score-cell に対して add されていた（JavaScript 起因）。
+//   代替として glow-correct / glow-wrong（border glow）を使用。
+//   .val.bump のスケールバウンスは引き続き利用。
 function bumpScoreCells(type){
+  const cells=scoreboard.querySelectorAll('.score-cell');
   const vals=scoreboard.querySelectorAll('.val');
+  const glowClass=(type==='wrong')?'glow-wrong':'glow-correct';
+  cells.forEach(c=>{
+    c.classList.remove('glow-correct','glow-wrong');
+    void c.offsetWidth;
+    c.classList.add(glowClass);
+    c.addEventListener('animationend',()=>c.classList.remove(glowClass),{once:true});
+  });
   vals.forEach(v=>{
     v.classList.remove('bump');
     void v.offsetWidth;
