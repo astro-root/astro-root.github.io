@@ -12,20 +12,22 @@
   <meta property="og:title" content="Privacy Policy | るーとの研究室" />
   <meta property="og:description" content="るーとの研究室のプライバシーポリシー。個人情報の取り扱い、Cookie、広告配信に関する方針を記載しています。" />
   <meta property="og:url" content="https://astro-root.com/privacy" />
-  <meta property="og:image" content="https://raw.githubusercontent.com/astro-root/astro-root.com/main/ogp-image.png" />
+  <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@astro_root" />
   <meta name="twitter:title" content="Privacy Policy | るーとの研究室" />
   <meta name="twitter:description" content="るーとの研究室のプライバシーポリシー。個人情報の取り扱い、Cookie、広告配信に関する方針。" />
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/astro-root/astro-root.com/main/ogp-image.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/astro-root/astro-root.com/main/favicon-32.png" />
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" />
+  <meta name="twitter:image" content="https://astro-root.com/ogp-image.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/icon.png" />
   <link rel="canonical" href="https://astro-root.com/privacy" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" /></noscript>
   <style>
     :root {
       --bg-0:#020b18; --bg-1:#040f20; --bg-2:#071628;
@@ -45,14 +47,14 @@
     }
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     html { scroll-behavior:smooth; font-size:16px; -webkit-text-size-adjust:100%; }
-    body { background:var(--bg-0); color:var(--text-0); font-family:var(--font-body); line-height:1.8; overflow-x:hidden; -webkit-font-smoothing:antialiased; cursor:none; }
+    body { background:var(--bg-0); color:var(--text-0); font-family:var(--font-body); line-height:1.8; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
     @media (hover:none) { body { cursor:auto; } }
-    a { color:var(--accent-blue); text-decoration:none; transition:color var(--t); cursor:none; }
+    a { color:var(--accent-blue); text-decoration:none; transition:color var(--t); }
     @media (hover:none) { a { cursor:pointer; } }
     a:hover { color:var(--accent-teal); }
     img { max-width:100%; display:block; }
     ul, ol { list-style:none; }
-    button { font-family:inherit; cursor:none; }
+    button { font-family:inherit; }
     @media (hover:none) { button { cursor:pointer; } }
     ::-webkit-scrollbar { width:4px; }
     ::-webkit-scrollbar-track { background:var(--bg-0); }
@@ -62,7 +64,7 @@
     .skip-link { position:fixed; top:-100%; left:16px; z-index:9999; background:var(--accent-blue); color:var(--bg-0); padding:10px 20px; border-radius:0 0 var(--r-md) var(--r-md); font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.08em; font-weight:600; transition:top 0.2s var(--ease); }
     .skip-link:focus { top:0; outline:none; }
 
-    #cursor-dot { position:fixed; pointer-events:none; z-index:10000; width:6px; height:6px; border-radius:50%; background:var(--accent-blue); box-shadow:0 0 10px var(--accent-blue),0 0 20px rgba(59,158,255,0.4); transform:translate(-50%,-50%); transition:width var(--t-fast) var(--ease),height var(--t-fast) var(--ease),background var(--t-fast); will-change:left,top; }
+    #cursor-dot { opacity:0;  position:fixed; pointer-events:none; z-index:10000; width:6px; height:6px; border-radius:50%; background:var(--accent-blue); box-shadow:0 0 10px var(--accent-blue),0 0 20px rgba(59,158,255,0.4); transform:translate(-50%,-50%); transition:width var(--t-fast) var(--ease),height var(--t-fast) var(--ease),background var(--t-fast); will-change:left,top; }
     #cursor-ring { position:fixed; pointer-events:none; z-index:9999; width:36px; height:36px; border-radius:50%; border:1px solid rgba(59,158,255,0.45); transform:translate(-50%,-50%); transition:width 0.22s var(--ease),height 0.22s var(--ease),border-color 0.22s,opacity 0.22s; will-change:left,top; }
     #cursor-dot.hover { width:10px; height:10px; background:var(--accent-teal); }
     #cursor-ring.hover { width:54px; height:54px; border-color:rgba(0,229,184,0.5); }
@@ -72,7 +74,7 @@
 
     #star-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; display:block; }
     .aurora-bg { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-    .aurora-orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0; animation:orbDrift 28s ease-in-out infinite alternate,orbIn 3s ease forwards; will-change:transform,opacity; }
+    .aurora-orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0; animation:orbDrift 28s ease-in-out infinite alternate,orbIn 3s ease forwards; }
     .aurora-orb:nth-child(1) { width:600px; height:600px; background:radial-gradient(circle,rgba(59,158,255,0.18) 0%,transparent 65%); top:-200px; right:-150px; animation-duration:22s; animation-delay:0.3s; }
     .aurora-orb:nth-child(2) { width:400px; height:400px; background:radial-gradient(circle,rgba(139,114,255,0.13) 0%,transparent 65%); bottom:10%; left:-100px; animation-duration:30s; animation-delay:-8s; }
     @keyframes orbDrift { 0%{transform:translate(0,0) scale(1) rotate(0deg);} 33%{transform:translate(30px,-20px) scale(1.08) rotate(2deg);} 66%{transform:translate(-20px,15px) scale(0.95) rotate(-1deg);} 100%{transform:translate(50px,40px) scale(1.14) rotate(3deg);} }
@@ -124,7 +126,8 @@
     .page-meta { font-family:var(--font-mono); font-size:0.68rem; color:var(--text-2); margin-top:14px; letter-spacing:0.08em; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.6s; }
     @keyframes heroUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
 
-    .reveal { opacity:0; transform:translateY(28px); transition:opacity 0.7s var(--ease),transform 0.7s var(--ease); }
+    .reveal { opacity:1; transform:none; transition:opacity 0.7s var(--ease),transform 0.7s var(--ease); }
+    .reveal[data-pending] { opacity:0; transform:translateY(28px); }
     .reveal.visible { opacity:1; transform:translateY(0); }
     .d1{transition-delay:0.08s;} .d2{transition-delay:0.16s;} .d3{transition-delay:0.24s;}
 
@@ -184,7 +187,7 @@
       <div class="container-wide">
         <div class="nav-inner">
           <a href="/" class="nav-logo" aria-label="るーとの研究室 TOPへ">
-            <div class="nav-logo-img"><img src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" alt="" aria-hidden="true" /></div>
+            <div class="nav-logo-img"><img src="/icon.png" alt="" aria-hidden="true" /></div>
             <span>るーとの研究室</span>
           </a>
           <ul class="nav-links" role="list">
@@ -318,7 +321,7 @@
     <div class="container-wide">
       <div class="footer-inner">
         <a href="/" class="footer-brand" aria-label="るーとの研究室 TOPへ">
-          <div class="footer-brand-icon"><img src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" alt="" aria-hidden="true" /></div>
+          <div class="footer-brand-icon"><img src="/icon.png" alt="" aria-hidden="true" /></div>
           <span class="footer-brand-name">るーとの研究室</span>
         </a>
         <nav class="footer-nav" aria-label="フッターナビゲーション">
@@ -336,11 +339,11 @@
   (function(){
     var nav=document.getElementById('nav'),toggle=document.getElementById('nav-toggle'),mob=document.getElementById('nav-mobile');
     window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>20);},{passive:true});
-    toggle.addEventListener('click',function(){var o=toggle.classList.toggle('open');mob.classList.toggle('open',o);toggle.setAttribute('aria-expanded',String(o));});
+    toggle.addEventListener('click',function(){var o=toggle.classList.toggle('open');mob.classList.toggle('open',o);toggle.setAttribute('aria-expanded',String(o));if(o){var fs=mob.querySelectorAll('a,button');var f=fs[0],l=fs[fs.length-1];if(f)f.focus();function tf(e){if(e.key==='Escape'){toggle.click();toggle.focus();return;}if(e.key!=='Tab')return;if(e.shiftKey){if(document.activeElement===f){e.preventDefault();l.focus();}}else{if(document.activeElement===l){e.preventDefault();f.focus();}}}mob.addEventListener('keydown',tf);mob._tf=tf;}else{if(mob._tf){mob.removeEventListener('keydown',mob._tf);delete mob._tf;}}});
     mob.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){toggle.classList.remove('open');mob.classList.remove('open');toggle.setAttribute('aria-expanded','false');});});
   })();
   (function(){
-    if(window.matchMedia('(hover:none)').matches)return;
+    if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches)return;
     var dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
     if(!dot||!ring)return;
     var mx=0,my=0,rx=0,ry=0,rafId=null,active=true;
@@ -358,8 +361,7 @@
   })();
   (function(){var bar=document.getElementById('scroll-progress');if(!bar)return;window.addEventListener('scroll',function(){var max=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(max>0?(window.scrollY/max)*100:0)+'%';},{passive:true});})();
   (function(){
-    var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
-    document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+    var revealEls2=document.querySelectorAll('.reveal');revealEls2.forEach(function(el){el.dataset.pending='';});var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');delete e.target.dataset.pending;obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});revealEls2.forEach(function(el){obs.observe(el);});
   })();
   (function(){
     var canvas=document.getElementById('star-canvas');if(!canvas)return;
