@@ -13,7 +13,7 @@
   <meta property="og:title" content="るーとの研究室" />
   <meta property="og:description" content="高校生/Webエンジニア/クイズプレイヤー るーと のポートフォリオ。クイズツール開発・天文学探求・AstroHigh運営。" />
   <meta property="og:url" content="https://astro-root.com/" />
-  <meta property="og:image" content="https://raw.githubusercontent.com/astro-root/astro-root.com/main/ogp-image.png" />
+  <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -21,14 +21,16 @@
   <meta name="twitter:creator" content="@astro_root" />
   <meta name="twitter:title" content="るーとの研究室" />
   <meta name="twitter:description" content="高校生/Webエンジニア/クイズプレイヤー るーと のポートフォリオ。" />
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/astro-root/astro-root.com/main/ogp-image.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/astro-root/astro-root.com/main/favicon-32.png" />
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" />
+  <meta name="twitter:image" content="https://astro-root.com/ogp-image.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/icon.png" />
   <link rel="canonical" href="https://astro-root.com/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" /></noscript>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -36,7 +38,7 @@
     "name": "るーと",
     "alternateName": "astro_root",
     "url": "https://astro-root.com/",
-    "image": "https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png",
+    "image": "/icon.png",
     "description": "高校生 / Web エンジニア / クイズプレイヤー。クイズ大会支援ツールの開発と天文学研究を行う。",
     "jobTitle": "Web Engineer",
     "knowsAbout": ["Web Development", "Quiz", "Astronomy", "Physics"],
@@ -95,17 +97,16 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      cursor: none;
     }
     @media (hover: none) { body { cursor: auto; } }
-    a { color: inherit; text-decoration: none; cursor: none; }
+    a { color: inherit; text-decoration: none; }
     @media (hover: none) { a { cursor: pointer; } }
     img { max-width: 100%; display: block; }
     ul, ol { list-style: none; }
-    button { font-family: inherit; cursor: none; }
+    button { font-family: inherit; }
     @media (hover: none) { button { cursor: pointer; } }
     input, textarea { font-family: inherit; }
-    ::-webkit-scrollbar { width: 4px; }
+    #cursor-dot, #cursor-ring { opacity: 0; }
     ::-webkit-scrollbar-track { background: var(--bg-0); }
     ::-webkit-scrollbar-thumb { background: var(--border-m); border-radius: 99px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
@@ -198,7 +199,6 @@
       position: absolute; border-radius: 50%;
       filter: blur(100px); opacity: 0;
       animation: orbDrift 28s ease-in-out infinite alternate, orbIn 3s ease forwards;
-      will-change: transform, opacity;
     }
     .aurora-orb:nth-child(1) {
       width: 700px; height: 700px;
@@ -376,13 +376,11 @@
       position: absolute; inset: -20px; border-radius: 50%;
       border: 1px dashed rgba(59,158,255,0.20);
       animation: orbitSpin 18s linear infinite;
-      will-change: transform;
     }
     .hero-orbit-2 {
       position: absolute; inset: -36px; border-radius: 50%;
       border: 1px dashed rgba(0,229,184,0.12);
       animation: orbitSpin 28s linear infinite reverse;
-      will-change: transform;
     }
     @keyframes orbitSpin { to { transform: rotate(360deg); } }
     .hero-eyebrow {
@@ -455,7 +453,8 @@
     }
     @keyframes heroUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
 
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+    .reveal { opacity: 1; transform: none; transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+    .reveal[data-pending] { opacity: 0; transform: translateY(28px); }
     .reveal.visible { opacity: 1; transform: translateY(0); }
     .d1 { transition-delay: 0.08s; }
     .d2 { transition-delay: 0.16s; }
@@ -498,7 +497,6 @@
       position: absolute; inset: -12px; border-radius: 50%;
       border: 1px dashed rgba(59,158,255,0.15);
       animation: orbitSpin 22s linear infinite;
-      will-change: transform;
     }
     .about-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
     .about-role { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-2); letter-spacing: 0.08em; line-height: 2; }
@@ -658,7 +656,7 @@
       color: var(--text-1); letter-spacing: 0.05em;
       transition: border-color var(--t), color var(--t), background var(--t), transform var(--t) var(--ease-spring);
     }
-    a.badge { cursor: none; border-color: var(--border-m); min-height: 44px; }
+    a.badge { border-color: var(--border-m); min-height: 44px; }
     a.badge:hover { border-color: var(--accent-teal); color: var(--accent-teal); background: rgba(0, 229, 184, 0.06); transform: translateX(5px); }
     a.badge::after { content: '↗'; margin-left: auto; font-size: 0.66rem; color: var(--accent-teal); opacity: 0.45; flex-shrink: 0; transition: opacity var(--t), transform var(--t) var(--ease-spring); }
     a.badge:hover::after { opacity: 1; transform: translate(2px, -2px); }
@@ -797,7 +795,7 @@
         <div class="nav-inner">
           <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
             <div class="nav-logo-img">
-              <img src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" alt="" aria-hidden="true" />
+              <img src="/icon.png" alt="" aria-hidden="true" />
             </div>
             <span>るーとの研究室</span>
           </a>
@@ -830,7 +828,7 @@
     <section class="hero" aria-label="ヒーロー">
       <div class="hero-avatar-wrap">
         <div class="hero-avatar">
-          <img src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" alt="るーと" />
+          <img src="/icon.png" alt="るーと" />
         </div>
         <div class="hero-orbit" aria-hidden="true"></div>
         <div class="hero-orbit-2" aria-hidden="true"></div>
@@ -864,7 +862,7 @@
           <aside class="about-profile reveal">
             <div class="about-avatar-wrap">
               <div class="about-avatar">
-                <img src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" alt="るーとのアバター" />
+                <img src="/icon.png" alt="るーとのアバター" />
               </div>
               <div class="about-avatar-ring" aria-hidden="true"></div>
             </div>
@@ -947,7 +945,7 @@
             <div class="project-head">
               <div class="project-icon">
                 <img
-                  src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/quiz_icon.png"
+                  src="/quiz_icon.png"
                   alt="Q-Score アイコン"
                   onerror="this.style.display='none'; this.closest('.project-icon').textContent='📊';"
                 />
@@ -1164,7 +1162,7 @@
       <div class="footer-inner">
         <a href="/" class="footer-brand" aria-label="るーとの研究室 トップへ">
           <div class="footer-brand-icon">
-            <img src="https://raw.githubusercontent.com/astro-root/astro-root.com/main/icon.png" alt="" aria-hidden="true" />
+            <img src="/icon.png" alt="" aria-hidden="true" />
           </div>
           <span class="footer-brand-name">るーとの研究室</span>
         </a>
@@ -1228,10 +1226,14 @@
     }
 
     (function () {
-      if (window.matchMedia('(hover: none)').matches) return;
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
       var dot  = document.getElementById('cursor-dot');
       var ring = document.getElementById('cursor-ring');
       if (!dot || !ring) return;
+      document.body.style.cursor = 'none';
+      document.querySelectorAll('a, button').forEach(function(el) { el.style.cursor = 'none'; });
+      dot.style.opacity  = '1';
+      ring.style.opacity = '1';
       var mx = 0, my = 0, rx = 0, ry = 0, rafId = null, active = true;
       document.addEventListener('mousemove', function (e) {
         mx = e.clientX; my = e.clientY;
@@ -1357,6 +1359,25 @@
       var open = toggle.classList.toggle('open');
       mob.classList.toggle('open', open);
       toggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        var focusables = mob.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
+        var first = focusables[0];
+        var last  = focusables[focusables.length - 1];
+        if (first) first.focus();
+        function trapFocus(e) {
+          if (e.key === 'Escape') { toggle.click(); toggle.focus(); return; }
+          if (e.key !== 'Tab') return;
+          if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+          } else {
+            if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+          }
+        }
+        mob.addEventListener('keydown', trapFocus);
+        mob._trapFocus = trapFocus;
+      } else {
+        if (mob._trapFocus) { mob.removeEventListener('keydown', mob._trapFocus); delete mob._trapFocus; }
+      }
     });
     mob.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('click', function () {
@@ -1367,9 +1388,14 @@
     });
 
     var revealEls = document.querySelectorAll('.reveal');
+    revealEls.forEach(function(el) { el.dataset.pending = ''; });
     var obs = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          delete e.target.dataset.pending;
+          obs.unobserve(e.target);
+        }
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -48px 0px' });
     revealEls.forEach(function (el) { obs.observe(el); });
