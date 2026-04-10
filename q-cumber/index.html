@@ -1248,6 +1248,8 @@ const RULES = [
     },
     onWrong(s,p){s.wrong++;s.hasRight=false;return{log:`誤答 連答権消失 誤答${s.wrong}/${p.n}`,type:'wrong'}},
     onRelease(s){s.hasRight=false;return{log:'連答権手動解除',type:'skip'}},
+    releaseLabel:'⊘ 連答権解除',
+    canRelease:(s)=>s.hasRight,
     getStatus(s,p){
       if(s.score>=p.m)return'WIN';
       if(s.wrong>=p.n)return'LOSE';
@@ -1295,6 +1297,9 @@ const RULES = [
     initState:()=>({score:0,correct:0,wrong:0,combo:0}),
     onCorrect(s,p){s.combo++;s.score+=s.combo;s.correct++;return{log:`正解 コンボ${s.combo} +${s.combo} → ${s.score}点`,combo:s.combo}},
     onWrong(s,p){s.wrong++;s.combo=0;return{log:`誤答 コンボリセット 誤答${s.wrong}/${p.n}`,type:'wrong'}},
+    onRelease(s){s.combo=0;return{log:'コンボ手動リセット',type:'skip'}},
+    releaseLabel:'⊘ コンボリセット',
+    canRelease:(s)=>s.combo>0,
     getStatus(s,p){
       if(s.score>=p.m)return'WIN';
       if(s.wrong>=p.n)return'LOSE';
@@ -1305,7 +1310,8 @@ const RULES = [
       {val:s.combo,lbl:'Combo',cls:'warn',rank:'secondary'},
       {val:s.correct,lbl:'Correct',cls:'',rank:'secondary'},
       {val:s.wrong,lbl:`誤答 /${p.n}`,cls:'danger',rank:'secondary'},
-    ]}
+    ]},
+    hasRelease:true
   },
 ];
 
@@ -1339,7 +1345,7 @@ let params={};
 let state={};
 let logs=[];
 let ended=false;
-let undoSnapshot=null;
+let undoStack=[];
 
 const ruleSelect=document.getElementById('ruleSelect');
 const ruleDesc=document.getElementById('ruleDesc');
@@ -1387,10 +1393,7 @@ function resetGame(){
   }
   logs=[];
   ended=false;
-  undoSnapshot=null;
-}
-
-function renderAll(){
+  undoStack=[];
   renderDesc();
   renderParams();
   renderScoreboard();
@@ -1542,9 +1545,9 @@ function renderInfo(){
 
   const undoBtn=document.createElement('button');
   undoBtn.className='btn-undo';
-  undoBtn.innerHTML='↩ Undo';
-  undoBtn.disabled=!undoSnapshot;
-  undoBtn.title='直前の操作を取り消す';
+  undoBtn.innerHTML=`↩ Undo${undoStack.length>0?' ('+undoStack.length+')':''}`;
+  undoBtn.disabled=!undoStack.length;
+  undoBtn.title=`操作を取り消す（最大10回）`;
   undoBtn.addEventListener('click',doUndo);
   controlsArea.appendChild(undoBtn);
 
@@ -1589,7 +1592,9 @@ function renderButtons(){
   }
   if(hasRelease){
     const rel=document.createElement('button');
-    rel.className='btn btn-neutral';rel.textContent='⊘ 連答権解除';rel.disabled=disabled||!state.hasRight;
+    const label=currentRule.releaseLabel||'⊘ 連答権解除';
+    const relEnabled=currentRule.canRelease?currentRule.canRelease(state):state.hasRight;
+    rel.className='btn btn-neutral';rel.textContent=label;rel.disabled=disabled||!relEnabled;
     rel.addEventListener('click',()=>doAction('release'));
     grid.appendChild(rel);
   }
@@ -1598,11 +1603,12 @@ function renderButtons(){
 
 function doAction(type){
   if(ended)return;
-  undoSnapshot={
+  undoStack.push({
     state:JSON.parse(JSON.stringify(state)),
     logs:[...logs],
     ended:ended
-  };
+  });
+  if(undoStack.length>10)undoStack.shift();
   let result=null;
   if(type==='correct'&&currentRule.onCorrect)result=currentRule.onCorrect(state,params);
   else if(type==='wrong'&&currentRule.onWrong)result=currentRule.onWrong(state,params);
@@ -1621,11 +1627,11 @@ function doAction(type){
 }
 
 function doUndo(){
-  if(!undoSnapshot)return;
-  state=undoSnapshot.state;
-  logs=undoSnapshot.logs;
-  ended=undoSnapshot.ended;
-  undoSnapshot=null;
+  if(!undoStack.length)return;
+  const snap=undoStack.pop();
+  state=snap.state;
+  logs=snap.logs;
+  ended=snap.ended;
   renderScoreboard();
   renderStatus();
   renderInfo();
@@ -1634,15 +1640,7 @@ function doUndo(){
 }
 
 function bumpScoreCells(type){
-  const cells=scoreboard.querySelectorAll('.score-cell');
   const vals=scoreboard.querySelectorAll('.val');
-  const flashClass=(type==='wrong')?'flash-wrong':'flash-correct';
-  cells.forEach(c=>{
-    c.classList.remove('flash-correct','flash-wrong');
-    void c.offsetWidth;
-    c.classList.add(flashClass);
-    c.addEventListener('animationend',()=>c.classList.remove(flashClass),{once:true});
-  });
   vals.forEach(v=>{
     v.classList.remove('bump');
     void v.offsetWidth;
