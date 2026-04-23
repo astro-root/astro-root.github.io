@@ -91,6 +91,12 @@ body::after{content:'';position:fixed;inset:0;
   cursor:pointer;transition:all .2s;z-index:100;}
 .btn-back:hover{border-color:var(--accent);color:var(--accent)}
 
+/* ホームボタン（常時表示） */
+#btn-home{position:fixed;top:16px;right:16px;background:transparent;border:1px solid var(--border);
+  color:var(--text-dim);padding:8px 14px;font-family:var(--font-mono);font-size:11px;letter-spacing:2px;
+  cursor:pointer;transition:all .2s;z-index:200;display:none;}
+#btn-home:hover{border-color:var(--accent);color:var(--accent)}
+
 /* GAME */
 .hud{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;
   border-bottom:1px solid var(--border2);background:rgba(5,11,26,.9);backdrop-filter:blur(8px);
@@ -205,6 +211,18 @@ body::after{content:'';position:fixed;inset:0;
 .rbtn:hover{background:rgba(0,220,190,.08);border-color:var(--accent);color:var(--accent)}
 .rbtn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700}
 .rbtn.primary:hover{background:var(--accent2)}
+/* Xシェアボタン */
+.rbtn.tweet{background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.2);color:var(--text);
+  display:flex;align-items:center;gap:8px;}
+.rbtn.tweet:hover{background:#000;border-color:var(--text);color:#fff}
+.rbtn.tweet svg{width:16px;height:16px;fill:currentColor;flex-shrink:0}
+/* ハイスコアバッジ */
+.hs-badge{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);
+  padding:10px 20px;text-align:center;width:100%;}
+.hs-badge-lbl{font-family:var(--font-mono);font-size:9px;color:var(--gold);letter-spacing:3px;
+  text-transform:uppercase;display:block;margin-bottom:4px}
+.hs-badge-val{font-family:var(--font-mono);font-size:22px;color:var(--gold)}
+.hs-badge-val.new{color:var(--accent2);animation:glow 1s ease-in-out infinite}
 
 /* Practice */
 .practice-overlay{position:fixed;inset:0;background:rgba(5,11,26,.96);z-index:200;
@@ -225,30 +243,43 @@ body::after{content:'';position:fixed;inset:0;
   font-family:var(--font-ja);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
 .pc-next:hover{background:var(--accent2)}
 
-/* Highscore */
+/* Highscore Modal */
 .hs-modal{position:fixed;inset:0;background:rgba(5,11,26,.97);z-index:300;
   display:flex;align-items:center;justify-content:center;}
-.hs-inner{background:var(--bg2);border:1px solid var(--border);padding:28px;max-width:420px;width:90%;}
+.hs-inner{background:var(--bg2);border:1px solid var(--border);padding:28px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;}
 .hs-title{font-family:var(--font-mono);font-size:14px;color:var(--accent);letter-spacing:4px;margin-bottom:20px;text-align:center}
 .hs-table{width:100%;border-collapse:collapse}
 .hs-table th{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);letter-spacing:2px;
   text-align:left;padding-bottom:8px;border-bottom:1px solid var(--border2)}
 .hs-table td{font-family:var(--font-mono);font-size:14px;padding:6px 0;color:var(--text-mid);border-bottom:1px solid var(--border2)}
 .hs-table td:last-child{color:var(--gold);text-align:right}
+.hs-table tr.hs-section td{font-size:10px;color:var(--accent);letter-spacing:2px;padding-top:14px;padding-bottom:4px;border-bottom:1px solid var(--border)}
 .hs-close{margin-top:20px;display:block;width:100%;padding:12px;background:transparent;
   border:1px solid var(--border);color:var(--text-dim);font-family:var(--font-mono);
   font-size:12px;cursor:pointer;letter-spacing:2px;transition:all .2s}
 .hs-close:hover{border-color:var(--accent);color:var(--accent)}
+/* サウンドトグル */
+#sound-toggle{position:fixed;bottom:16px;right:16px;background:transparent;
+  border:1px solid var(--border2);color:var(--text-dim);width:36px;height:36px;
+  font-size:16px;cursor:pointer;transition:all .2s;z-index:200;display:flex;
+  align-items:center;justify-content:center;}
+#sound-toggle:hover{border-color:var(--accent);color:var(--accent)}
 
 @media(max-width:600px){
   .hud{padding:8px 12px;gap:4px}.hud-val{font-size:18px}.hud-grp{gap:10px}
   .title-btns{grid-template-columns:1fr}
   .result-stats{grid-template-columns:repeat(3,1fr)}.pt-cell{font-size:5px}
+  .result-actions{flex-direction:column;align-items:center}
 }
 </style>
 </head>
 <body>
 <div class="bg-grid"></div>
+
+<!-- 常時ホームボタン -->
+<button id="btn-home" onclick="goHome()">&#x2302; HOME</button>
+<!-- サウンドトグル -->
+<button id="sound-toggle" title="サウンドON/OFF" onclick="toggleSound()">🔊</button>
 
 <!-- LOADING -->
 <div id="scr-loading">
@@ -367,6 +398,10 @@ body::after{content:'';position:fixed;inset:0;
     <div class="result-title" id="r-title">RESULT</div>
     <div class="result-mode" id="r-mode"></div>
     <div class="result-score" id="r-score">0</div>
+    <div id="r-hs-badge" class="hs-badge" style="display:none">
+      <span class="hs-badge-lbl">HIGH SCORE</span>
+      <span class="hs-badge-val" id="r-hs-val">0</span>
+    </div>
     <div class="result-stats">
       <div class="stat-box"><span class="stat-lbl">CORRECT</span><span class="stat-val" id="r-correct">0</span></div>
       <div class="stat-box"><span class="stat-lbl">MISSES</span><span class="stat-val" id="r-miss">0</span></div>
@@ -383,7 +418,12 @@ body::after{content:'';position:fixed;inset:0;
       </div>
     </div>
     <div class="result-actions">
-      <button class="rbtn" onclick="showScreen('title')">タイトルへ</button>
+      <button class="rbtn" onclick="goHome()">&#x2302; タイトルへ</button>
+      <button class="rbtn" onclick="showHighScore()">&#x1F3C6; ハイスコア</button>
+      <button class="rbtn tweet" onclick="tweetResult()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.736-8.847L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        結果をシェア
+      </button>
       <button class="rbtn primary" onclick="restartGame()">もう一度</button>
     </div>
   </div>
@@ -391,8 +431,90 @@ body::after{content:'';position:fixed;inset:0;
 
 <script>
 // ============================================================
+// SOUND ENGINE (Web Audio API)
+// ============================================================
+const SFX = {
+  ctx: null,
+  enabled: true,
+  _init() {
+    if (!this.ctx) {
+      try {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e) {
+        this.enabled = false;
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  play(type) {
+    if (!this.enabled) return;
+    this._init();
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    if (type === 'correct') {
+      const freqs = [880, 1100];
+      freqs.forEach((freq, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.setValueAtTime(freq, now + i * 0.05);
+        g.gain.setValueAtTime(0, now + i * 0.05);
+        g.gain.linearRampToValueAtTime(0.18, now + i * 0.05 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.18);
+        o.start(now + i * 0.05);
+        o.stop(now + i * 0.05 + 0.2);
+      });
+    } else if (type === 'miss') {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.setValueAtTime(220, now);
+      o.frequency.exponentialRampToValueAtTime(110, now + 0.1);
+      g.gain.setValueAtTime(0.12, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      o.start(now);
+      o.stop(now + 0.15);
+    } else if (type === 'end') {
+      [523, 415, 330, 262].forEach((freq, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.connect(g); g.connect(ctx.destination);
+        const t = now + i * 0.16;
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.22, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        o.start(t);
+        o.stop(t + 0.25);
+      });
+    } else if (type === 'combo') {
+      [660, 880, 1100].forEach((freq, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.connect(g); g.connect(ctx.destination);
+        const t = now + i * 0.07;
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.15, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        o.start(t);
+        o.stop(t + 0.18);
+      });
+    }
+  }
+};
+
+function toggleSound() {
+  SFX.enabled = !SFX.enabled;
+  document.getElementById('sound-toggle').textContent = SFX.enabled ? '🔊' : '🔇';
+}
+
+// ============================================================
 // CSV PARSER
-// シンプルなCSVパーサー。ダブルクォート対応。
 // ============================================================
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -417,8 +539,6 @@ function parseCSV(text) {
   return rows;
 }
 
-// CSVの各行をゲーム用オブジェクトに変換
-// alts列はパイプ(|)区切りで複数入力パターンを指定できる
 function buildElementsFromCSV(rows) {
   return rows.map(r => ({
     no:     parseInt(r.no),
@@ -439,8 +559,6 @@ function buildElementsFromCSV(rows) {
 // ============================================================
 let ELEMENTS = [];
 
-// 周期表グリッド配置 [原子番号, 族番号]
-// 0=空白セル  -1=ランタノイドプレースホルダー  -2=アクチノイドプレースホルダー
 const PT_GRID = [
   [1,1],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[2,18],
   [3,1],[4,2],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[5,13],[6,14],[7,15],[8,16],[9,17],[10,18],
@@ -564,6 +682,8 @@ function pickQType(diff, elDiff) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('scr-' + id).classList.add('active');
+  const homeBtn = document.getElementById('btn-home');
+  homeBtn.style.display = (id === 'title' || id === 'loading') ? 'none' : 'flex';
 }
 function trigger(el, cls, dur) {
   el.classList.add(cls);
@@ -573,6 +693,14 @@ function trigger(el, cls, dur) {
 // ============================================================
 // NAVIGATION
 // ============================================================
+function goHome() {
+  if (G.running) {
+    if (!confirm('ゲームを終了してタイトルに戻りますか？')) return;
+    G.running = false;
+    clearInterval(G.timerID);
+  }
+  showScreen('title');
+}
 function openMode(mode) {
   G.mode = mode;
   document.getElementById('mode-title-txt').textContent = MODE_INFO[mode].label + ' -- 難易度選択';
@@ -597,6 +725,7 @@ function selDiff(d) {
 }
 function startGame() {
   if (G.diff === -1) { alert('難易度を選択してください'); return; }
+  SFX._init();
   initGame();
   showScreen('game');
 }
@@ -644,6 +773,7 @@ function nextQuestion() {
 function endGame() {
   G.running = false;
   clearInterval(G.timerID);
+  SFX.play('end');
   showResult();
 }
 
@@ -732,6 +862,7 @@ function wrongInput() {
   renderHints(G.missesOnEl);
   if (G.missesOnEl >= 1 && G.diff !== 1) document.getElementById('hint-kana').textContent = G.curEl.hira;
   if (G.mode === 'endless' && G.missesOnEl >= 7) { loseLife(); skipElement(false); }
+  SFX.play('miss');
 }
 function correctAnswer() {
   const el = G.curEl;
@@ -743,7 +874,12 @@ function correctAnswer() {
   if (G.missesOnEl > 3) G.combo = 0;
   updateHUD();
   spawnScorePopup(pts);
-  if (G.combo > 0 && G.combo % 5 === 0) spawnComboBurst();
+  if (G.combo > 0 && G.combo % 5 === 0) {
+    spawnComboBurst();
+    SFX.play('combo');
+  } else {
+    SFX.play('correct');
+  }
   trigger(document.getElementById('el-card'), 'flash', 400);
   if (G.mode === 'practice') { showPracticeCard(true); }
   else { setTimeout(nextQuestion, 120); }
@@ -824,7 +960,7 @@ function showPracticeCard(wasCorrect) {
       '<div class="pc-sym">' + el.sym + '</div>' +
       '<div class="pc-ja">' + el.ja + '</div>' +
       '<div class="pc-hira">' + el.hira + '</div>' +
-      '<div class="pc-romaji">' + el.romaji + '</div>' +
+      '<div class="pc-romaji">' + el.romaji + (el.alts.length ? ' / ' + el.alts.join(' / ') : '') + '</div>' +
       '<div class="pc-trivia">' + el.trivia + '</div>' +
       '<button class="pc-next" onclick="closePracticeCard()">次の問題へ →</button>' +
     '</div>';
@@ -852,7 +988,22 @@ function showResult() {
   document.getElementById('r-miss').textContent = G.totalMisses;
   document.getElementById('r-combo').textContent = G.maxCombo;
   buildPTGrid();
-  saveHighScore();
+  const isNew = saveHighScore();
+  const badge = document.getElementById('r-hs-badge');
+  const badgeVal = document.getElementById('r-hs-val');
+  const best = getHighScore();
+  if (best > 0) {
+    badge.style.display = '';
+    badgeVal.textContent = best.toLocaleString() + ' pt';
+    if (isNew) {
+      badgeVal.classList.add('new');
+      badgeVal.textContent = '🎉 NEW RECORD！ ' + best.toLocaleString() + ' pt';
+    } else {
+      badgeVal.classList.remove('new');
+    }
+  } else {
+    badge.style.display = 'none';
+  }
 }
 function animateCount(id, from, to, dur) {
   const el = document.getElementById(id);
@@ -893,36 +1044,93 @@ function buildPTGrid() {
 // ============================================================
 // HIGH SCORE
 // ============================================================
+function hsKey() { return 'hs_' + G.mode + '_' + G.diff; }
+function getHighScore() {
+  const saved = JSON.parse(localStorage.getItem(hsKey()) || '[]');
+  return saved.length > 0 ? saved[0].score : 0;
+}
 function saveHighScore() {
-  const key = 'hs_' + G.mode + '_' + G.diff;
+  const key = hsKey();
   const saved = JSON.parse(localStorage.getItem(key) || '[]');
-  saved.push({ score: G.score, correct: G.count, date: new Date().toLocaleDateString('ja-JP') });
+  const prevBest = saved.length > 0 ? saved[0].score : 0;
+  const isNew = G.score > prevBest;
+  saved.push({ score: G.score, correct: G.count, maxCombo: G.maxCombo, date: new Date().toLocaleDateString('ja-JP') });
   saved.sort((a, b) => b.score - a.score);
   localStorage.setItem(key, JSON.stringify(saved.slice(0, 5)));
+  return isNew;
 }
 function showHighScore() {
   const modal = document.createElement('div');
   modal.className = 'hs-modal';
+  const modeInfo = [
+    { key: 'timeattack', label: 'タイムアタック' },
+    { key: 'endless',    label: 'エンドレス' },
+    { key: 'practice',   label: '学習モード' },
+  ];
+  const diffInfo = [
+    { key: 1, label: '初級' },
+    { key: 2, label: '中級' },
+    { key: 3, label: '上級' },
+    { key: 0, label: 'ランダム' },
+  ];
   let rows = '';
-  const mL = { timeattack: 'TA', endless: 'END', practice: 'PRG' };
-  const dL = { 1: '初級', 2: '中級', 3: '上級', 0: 'RND' };
-  ['timeattack','endless','practice'].forEach(function(m) {
-    [1,2,3,0].forEach(function(d) {
-      const saved = JSON.parse(localStorage.getItem('hs_' + m + '_' + d) || '[]');
+  let hasAny = false;
+  modeInfo.forEach(function(m) {
+    let modeHasData = false;
+    let modeRows = '';
+    diffInfo.forEach(function(d) {
+      const saved = JSON.parse(localStorage.getItem('hs_' + m.key + '_' + d.key) || '[]');
       if (saved.length > 0) {
-        rows += '<tr><td>' + mL[m] + '-' + dL[d] + '</td><td>' + saved[0].date + '</td><td>' + saved[0].score.toLocaleString() + '</td></tr>';
+        modeHasData = true;
+        hasAny = true;
+        modeRows += '<tr><td>' + d.label + '</td><td>' + saved[0].date + '</td>' +
+          '<td>正解 ' + saved[0].correct + '</td>' +
+          '<td>' + saved[0].score.toLocaleString() + ' pt</td></tr>';
       }
     });
+    if (modeHasData) {
+      rows += '<tr class="hs-section"><td colspan="4">' + m.label + '</td></tr>';
+      rows += modeRows;
+    }
   });
-  if (!rows) rows = '<tr><td colspan="3" style="color:var(--text-dim);text-align:center">データなし</td></tr>';
+  if (!rows) rows = '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:16px">データなし</td></tr>';
   modal.innerHTML =
     '<div class="hs-inner">' +
-      '<div class="hs-title">HALL OF FAME</div>' +
-      '<table class="hs-table"><thead><tr><th>モード</th><th>日付</th><th>スコア</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table>' +
+      '<div class="hs-title">&#x1F3C6; HALL OF FAME</div>' +
+      '<table class="hs-table">' +
+        '<thead><tr><th>難易度</th><th>日付</th><th>正解数</th><th>スコア</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+      (hasAny ? '<button style="margin-top:12px;display:block;width:100%;padding:8px;background:transparent;border:1px solid rgba(244,63,94,.3);color:var(--error);font-family:var(--font-mono);font-size:10px;cursor:pointer;letter-spacing:2px" onclick="clearHighScores(this.closest(\'.hs-modal\'))">記録をすべてリセット</button>' : '') +
       '<button class="hs-close" onclick="this.closest(\'.hs-modal\').remove()">閉じる</button>' +
     '</div>';
   document.body.appendChild(modal);
+}
+function clearHighScores(modal) {
+  if (!confirm('すべての記録を削除しますか？')) return;
+  ['timeattack','endless','practice'].forEach(function(m) {
+    [1,2,3,0].forEach(function(d) {
+      localStorage.removeItem('hs_' + m + '_' + d);
+    });
+  });
+  if (modal) modal.remove();
+}
+
+// ============================================================
+// TWEET / X SHARE
+// ============================================================
+function tweetResult() {
+  const modeLabel = MODE_INFO[G.mode].label;
+  const diffLabel = DIFF_INFO[G.diff].label;
+  const lines = [
+    '【元素タイピング】',
+    modeLabel + ' / ' + diffLabel,
+    'スコア: ' + G.score.toLocaleString() + ' pt',
+    '正解: ' + G.count + '問　ベストコンボ: ' + G.maxCombo + 'x',
+    '#元素タイピング #化学 #PeriodicTyping',
+  ];
+  const text = lines.join('\n');
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
 }
 
 // ============================================================
