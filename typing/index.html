@@ -8,132 +8,93 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #050b1a;
-  --bg2: #0a1428;
-  --bg3: #0f1e38;
-  --panel: rgba(0,220,190,0.04);
-  --border: rgba(0,220,190,0.2);
-  --border2: rgba(0,220,190,0.08);
-  --text: #c8e0f8;
-  --text-dim: #3a5a7a;
-  --text-mid: #6a9ab8;
-  --accent: #00dcc0;
-  --accent2: #00ffcc;
-  --amber: #f59e0b;
-  --error: #f43f5e;
-  --success: #10b981;
-  --gold: #fbbf24;
-  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
-  --font-ja: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  --bg: #050b1a; --bg2: #0a1428; --panel: rgba(0,220,190,0.04);
+  --border: rgba(0,220,190,0.2); --border2: rgba(0,220,190,0.08);
+  --text: #c8e0f8; --text-dim: #3a5a7a; --text-mid: #6a9ab8;
+  --accent: #00dcc0; --accent2: #00ffcc; --amber: #f59e0b;
+  --error: #f43f5e; --success: #10b981; --gold: #fbbf24;
+  --font-mono: 'Share Tech Mono','Courier New',monospace;
+  --font-ja: 'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--font-ja);
-  position:relative;
-}
-/* Scanlines */
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);
-  pointer-events:none;z-index:9999;
-}
-/* Grid bg */
-.bg-grid{
-  position:fixed;inset:0;
-  background-image:linear-gradient(rgba(0,220,190,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,220,190,0.025) 1px,transparent 1px);
-  background-size:48px 48px;
-  pointer-events:none;z-index:0;
-}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ja);}
+body::after{content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);
+  pointer-events:none;z-index:9999;}
+.bg-grid{position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,220,190,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,220,190,.025) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0;}
+
+/* LOADING */
+#scr-loading{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;background:var(--bg);}
+.loading-logo{font-family:var(--font-mono);font-size:32px;color:var(--accent);letter-spacing:6px;
+  animation:glow 2s ease-in-out infinite;}
+.loading-bar-wrap{width:200px;height:2px;background:rgba(255,255,255,.05);}
+.loading-bar{height:100%;background:var(--accent);width:0%;transition:width .3s;box-shadow:0 0 8px rgba(0,220,190,.6);}
+.loading-msg{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);letter-spacing:3px;}
+.loading-err{font-size:13px;color:var(--error);max-width:460px;text-align:center;line-height:1.9;
+  padding:20px;border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.05);}
+.loading-err code{background:rgba(255,255,255,.06);padding:2px 6px;font-family:var(--font-mono);font-size:12px;}
+.loading-err a{color:var(--accent);}
+
 /* Screens */
 .screen{display:none;position:fixed;inset:0;z-index:10;flex-direction:column}
 .screen.active{display:flex}
 
-/* ===== TITLE SCREEN ===== */
+/* TITLE */
 #scr-title{align-items:center;justify-content:center;gap:24px;text-align:center}
 .title-eyebrow{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);letter-spacing:6px;text-transform:uppercase}
-.title-logo{
-  font-family:var(--font-mono);
-  font-size:clamp(32px,6vw,64px);
-  color:var(--accent);
-  letter-spacing:6px;
-  text-shadow:0 0 24px rgba(0,220,190,0.7),0 0 50px rgba(0,220,190,0.3);
-  animation:glow 3s ease-in-out infinite;
-}
-@keyframes glow{
-  0%,100%{text-shadow:0 0 24px rgba(0,220,190,0.7),0 0 50px rgba(0,220,190,0.3)}
-  50%{text-shadow:0 0 36px rgba(0,220,190,1),0 0 70px rgba(0,220,190,0.5),0 0 120px rgba(0,220,190,0.15)}
-}
+.title-logo{font-family:var(--font-mono);font-size:clamp(32px,6vw,64px);color:var(--accent);letter-spacing:6px;
+  text-shadow:0 0 24px rgba(0,220,190,.7),0 0 50px rgba(0,220,190,.3);animation:glow 3s ease-in-out infinite;}
+@keyframes glow{0%,100%{text-shadow:0 0 24px rgba(0,220,190,.7),0 0 50px rgba(0,220,190,.3)}
+  50%{text-shadow:0 0 36px rgba(0,220,190,1),0 0 70px rgba(0,220,190,.5),0 0 120px rgba(0,220,190,.15)}}
 .title-sub{font-family:var(--font-mono);font-size:13px;color:var(--text-mid);letter-spacing:4px}
 .title-meta{display:flex;gap:20px;font-family:var(--font-mono);font-size:11px;color:var(--text-dim)}
 .title-meta span::before{content:'[ ';color:var(--accent);opacity:.5}
 .title-meta span::after{content:' ]';color:var(--accent);opacity:.5}
 .title-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(480px,90vw)}
-.tbtn{
-  background:var(--panel);border:1px solid var(--border);
-  color:var(--text);padding:18px 16px;
-  cursor:pointer;transition:all .2s;text-align:left;
-  font-family:var(--font-ja);
-  position:relative;overflow:hidden;
-}
-.tbtn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(0,220,190,0) 0%,rgba(0,220,190,0.05) 100%);
-  opacity:0;transition:opacity .2s;
-}
-.tbtn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,220,190,0.15)}
+.tbtn{background:var(--panel);border:1px solid var(--border);color:var(--text);
+  padding:18px 16px;cursor:pointer;transition:all .2s;text-align:left;font-family:var(--font-ja);
+  position:relative;overflow:hidden;}
+.tbtn::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,220,190,0),rgba(0,220,190,.05));
+  opacity:0;transition:opacity .2s;}
+.tbtn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,220,190,.15)}
 .tbtn:hover::before{opacity:1}
 .tbtn-icon{font-size:22px;display:block;margin-bottom:6px}
 .tbtn-label{font-size:15px;font-weight:700;display:block;color:var(--accent)}
 .tbtn-desc{font-size:11px;color:var(--text-dim);margin-top:3px;display:block}
 
-/* ===== MODE SCREEN ===== */
+/* MODE */
 #scr-mode{align-items:center;justify-content:center;gap:28px}
 .mode-header{text-align:center}
-.mode-header h2{font-family:var(--font-mono);font-size:12px;letter-spacing:5px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
+.mode-header h2{font-family:var(--font-mono);font-size:12px;letter-spacing:5px;color:var(--text-dim);
+  text-transform:uppercase;margin-bottom:6px}
 .mode-header p{font-size:13px;color:var(--text-mid)}
 .diff-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.dbtn{
-  padding:12px 24px;border:1px solid var(--border);
-  background:transparent;color:var(--text-mid);
-  font-family:var(--font-ja);font-size:14px;
-  cursor:pointer;transition:all .2s;
-}
-.dbtn:hover,.dbtn.sel{background:rgba(0,220,190,0.08);border-color:var(--accent);color:var(--accent)}
-.dbtn[data-d="1"].sel{border-color:var(--success);color:var(--success);background:rgba(16,185,129,0.08)}
-.dbtn[data-d="2"].sel{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,0.08)}
-.dbtn[data-d="3"].sel{border-color:var(--error);color:var(--error);background:rgba(244,63,94,0.08)}
-.diff-info{
-  background:var(--panel);border:1px solid var(--border2);
-  padding:14px 20px;max-width:440px;width:90%;
-  font-size:13px;color:var(--text-mid);line-height:1.7;text-align:center;
-  min-height:60px;
-}
-.start-btn{
-  padding:16px 56px;background:var(--accent);border:none;
-  color:var(--bg);font-family:var(--font-ja);font-size:17px;font-weight:900;
-  cursor:pointer;letter-spacing:3px;transition:all .2s;
-}
-.start-btn:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,220,190,0.35)}
-.btn-back{
-  position:fixed;top:16px;left:16px;
-  background:transparent;border:1px solid var(--border);
-  color:var(--text-dim);padding:8px 16px;
-  font-family:var(--font-mono);font-size:11px;letter-spacing:2px;
-  cursor:pointer;transition:all .2s;z-index:100;
-}
+.dbtn{padding:12px 24px;border:1px solid var(--border);background:transparent;
+  color:var(--text-mid);font-family:var(--font-ja);font-size:14px;cursor:pointer;transition:all .2s;}
+.dbtn:hover,.dbtn.sel{background:rgba(0,220,190,.08);border-color:var(--accent);color:var(--accent)}
+.dbtn[data-d="1"].sel{border-color:var(--success);color:var(--success);background:rgba(16,185,129,.08)}
+.dbtn[data-d="2"].sel{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,.08)}
+.dbtn[data-d="3"].sel{border-color:var(--error);color:var(--error);background:rgba(244,63,94,.08)}
+.diff-info{background:var(--panel);border:1px solid var(--border2);padding:14px 20px;
+  max-width:440px;width:90%;font-size:13px;color:var(--text-mid);line-height:1.7;text-align:center;min-height:60px;}
+.start-btn{padding:16px 56px;background:var(--accent);border:none;color:var(--bg);
+  font-family:var(--font-ja);font-size:17px;font-weight:900;cursor:pointer;letter-spacing:3px;transition:all .2s;}
+.start-btn:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,220,190,.35)}
+.btn-back{position:fixed;top:16px;left:16px;background:transparent;border:1px solid var(--border);
+  color:var(--text-dim);padding:8px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:2px;
+  cursor:pointer;transition:all .2s;z-index:100;}
 .btn-back:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ===== GAME SCREEN ===== */
-.hud{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 20px;border-bottom:1px solid var(--border2);
-  background:rgba(5,11,26,0.9);backdrop-filter:blur(8px);
-  flex-shrink:0;gap:8px;
-}
+/* GAME */
+.hud{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;
+  border-bottom:1px solid var(--border2);background:rgba(5,11,26,.9);backdrop-filter:blur(8px);
+  flex-shrink:0;gap:8px;}
 .hud-grp{display:flex;align-items:center;gap:16px}
 .hud-it{text-align:center;min-width:60px}
 .hud-lbl{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase;display:block}
@@ -142,142 +103,90 @@ body::after{
 .hud-val.timer.warn{color:var(--amber)}
 .hud-val.timer.danger{color:var(--error);animation:pulse .5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.combo-wrap{}
-.combo-val{
-  font-family:var(--font-mono);font-size:24px;font-weight:bold;
-  transition:color .3s;
-}
-.combo-val.c0{color:var(--text-mid)}
-.combo-val.c1{color:var(--success)}
-.combo-val.c2{color:var(--amber)}
-.combo-val.c3{color:#f97316}
-.combo-val.c4{color:var(--error)}
+.combo-val{font-family:var(--font-mono);font-size:24px;font-weight:bold;transition:color .3s;}
+.combo-val.c0{color:var(--text-mid)}.combo-val.c1{color:var(--success)}
+.combo-val.c2{color:var(--amber)}.combo-val.c3{color:#f97316}.combo-val.c4{color:var(--error)}
 .combo-bump{animation:bump .15s ease-out}
 @keyframes bump{0%{transform:scale(1.6)}100%{transform:scale(1)}}
 .lives{display:flex;gap:4px;align-items:center}
-.life{font-size:18px;transition:all .3s}
-.life.lost{filter:grayscale(1);opacity:.25}
-.prog-wrap{height:2px;background:rgba(255,255,255,0.04);flex-shrink:0}
-.prog-bar{height:100%;background:var(--accent);transition:width .4s ease;box-shadow:0 0 8px rgba(0,220,190,0.6)}
-/* Game main */
-.game-main{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:16px;gap:20px;overflow:hidden;
-}
-/* Element card */
-.el-card{
-  background:var(--panel);
-  border:1px solid var(--border);
-  padding:20px 28px;width:100%;max-width:560px;
-  position:relative;transition:border-color .2s;
-}
-.el-card.diff1{border-left:3px solid rgba(16,185,129,0.5)}
-.el-card.diff2{border-left:3px solid rgba(245,158,11,0.5)}
-.el-card.diff3{border-left:3px solid rgba(244,63,94,0.5)}
+.life{font-size:18px;transition:all .3s}.life.lost{filter:grayscale(1);opacity:.25}
+.prog-wrap{height:2px;background:rgba(255,255,255,.04);flex-shrink:0}
+.prog-bar{height:100%;background:var(--accent);transition:width .4s ease;box-shadow:0 0 8px rgba(0,220,190,.6)}
+.game-main{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:16px;gap:20px;overflow:hidden;}
+.el-card{background:var(--panel);border:1px solid var(--border);padding:20px 28px;
+  width:100%;max-width:560px;position:relative;transition:border-color .2s;}
+.el-card.diff1{border-left:3px solid rgba(16,185,129,.5)}
+.el-card.diff2{border-left:3px solid rgba(245,158,11,.5)}
+.el-card.diff3{border-left:3px solid rgba(244,63,94,.5)}
 .el-card.shake{animation:shake .3s ease-out}
-@keyframes shake{
-  0%{transform:translateX(0)}20%{transform:translateX(-8px)}
-  40%{transform:translateX(8px)}60%{transform:translateX(-4px)}
-  80%{transform:translateX(4px)}100%{transform:translateX(0)}
-}
+@keyframes shake{0%{transform:translateX(0)}20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
 .el-card.flash{animation:flash .35s ease-out}
-@keyframes flash{
-  0%,100%{box-shadow:none}
-  50%{box-shadow:0 0 32px rgba(16,185,129,0.4);border-color:var(--success)}
-}
+@keyframes flash{0%,100%{box-shadow:none}50%{box-shadow:0 0 32px rgba(16,185,129,.4);border-color:var(--success)}}
 .card-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .card-no{font-family:var(--font-mono);font-size:11px;color:var(--text-dim)}
-.card-type{
-  font-family:var(--font-mono);font-size:9px;letter-spacing:3px;
-  text-transform:uppercase;padding:3px 8px;border:1px solid;
-}
-.card-type.t-name{color:var(--success);border-color:rgba(16,185,129,0.3)}
-.card-type.t-symbol{color:var(--amber);border-color:rgba(245,158,11,0.3)}
-.card-type.t-trivia{color:#a78bfa;border-color:rgba(167,139,250,0.3)}
-.q-content{text-align:center;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-.q-symbol{font-family:var(--font-mono);font-size:56px;color:var(--accent);text-shadow:0 0 20px rgba(0,220,190,0.4);line-height:1}
+.card-type{font-family:var(--font-mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;padding:3px 8px;border:1px solid;}
+.card-type.t-name{color:var(--success);border-color:rgba(16,185,129,.3)}
+.card-type.t-symbol{color:var(--amber);border-color:rgba(245,158,11,.3)}
+.card-type.t-trivia{color:#a78bfa;border-color:rgba(167,139,250,.3)}
+.q-content{text-align:center;min-height:70px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px}
+.q-symbol{font-family:var(--font-mono);font-size:56px;color:var(--accent);text-shadow:0 0 20px rgba(0,220,190,.4);line-height:1}
 .q-name{font-size:clamp(24px,4vw,36px);font-weight:900;color:var(--text)}
 .q-trivia{font-size:16px;color:var(--text);line-height:1.6;max-width:420px}
 .q-atno{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:2px}
-.hints{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border2)}
-.hint-pill{
-  font-size:12px;padding:3px 10px;
-  border:1px solid rgba(255,255,255,0.08);
-  color:var(--text-dim);transition:all .3s;
-}
+.hints{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--border2)}
+.hint-pill{font-size:12px;padding:3px 10px;border:1px solid rgba(255,255,255,.08);color:var(--text-dim);transition:all .3s;}
 .hint-pill.shown{color:var(--text-mid);border-color:var(--border)}
 .score-possible{font-family:var(--font-mono);font-size:11px;color:var(--gold);opacity:.8}
-/* Typing area */
 .typing-area{width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px}
-.romaji-guide{
-  font-family:var(--font-mono);font-size:clamp(24px,4vw,36px);
-  text-align:center;letter-spacing:4px;min-height:44px;
-  user-select:none;
-}
-.rt{color:var(--text-dim)}
-.rc{color:var(--accent);text-shadow:0 0 12px rgba(0,220,190,.8);animation:cblink 1s steps(1) infinite}
-.rr{color:var(--text)}
+.romaji-guide{font-family:var(--font-mono);font-size:clamp(24px,4vw,36px);
+  text-align:center;letter-spacing:4px;min-height:44px;user-select:none;}
+.rt{color:var(--text-dim)}.rc{color:var(--accent);text-shadow:0 0 12px rgba(0,220,190,.8);
+  animation:cblink 1s steps(1) infinite}.rr{color:var(--text)}
 @keyframes cblink{0%,100%{opacity:1}50%{opacity:0}}
 .romaji-guide.err .rc{color:var(--error);text-shadow:0 0 12px rgba(244,63,94,.8);animation:none}
 .inp-wrap{position:relative}
-.typing-inp{
-  width:100%;background:rgba(255,255,255,.02);
-  border:1px solid var(--border);
-  color:transparent;caret-color:transparent;
-  font-family:var(--font-mono);font-size:20px;
-  padding:14px 20px;outline:none;text-align:center;
-  letter-spacing:4px;
-}
+.typing-inp{width:100%;background:rgba(255,255,255,.02);border:1px solid var(--border);
+  color:transparent;caret-color:transparent;font-family:var(--font-mono);font-size:20px;
+  padding:14px 20px;outline:none;text-align:center;letter-spacing:4px;}
 .typing-inp:focus{border-color:var(--accent);box-shadow:0 0 16px rgba(0,220,190,.1)}
 .typing-inp.err{border-color:var(--error);box-shadow:0 0 16px rgba(244,63,94,.15)}
-.inp-overlay{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  pointer-events:none;font-family:var(--font-mono);font-size:20px;letter-spacing:4px;color:var(--accent);
-}
+.inp-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;font-family:var(--font-mono);font-size:20px;letter-spacing:4px;color:var(--accent);}
 .typing-hint{display:flex;justify-content:space-between;align-items:center;padding:0 2px}
 .hint-kana{font-size:16px;color:var(--text-dim);letter-spacing:3px}
 .hint-keys{font-family:var(--font-mono);font-size:10px;color:var(--text-dim)}
-/* Score popup */
-.score-pop{
-  position:fixed;font-family:var(--font-mono);font-size:22px;font-weight:bold;
-  color:var(--success);pointer-events:none;z-index:500;
-  animation:scoreup 0.9s ease-out forwards;
-}
+.score-pop{position:fixed;font-family:var(--font-mono);font-size:22px;font-weight:bold;
+  color:var(--success);pointer-events:none;z-index:500;animation:scoreup .9s ease-out forwards;}
 @keyframes scoreup{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-60px);opacity:0}}
-.combo-burst{
-  position:fixed;font-family:var(--font-mono);font-size:clamp(28px,5vw,48px);
-  font-weight:bold;pointer-events:none;z-index:500;
-  top:50%;left:50%;transform:translate(-50%,-50%);
-  text-shadow:0 0 24px currentColor;
-  animation:burst .7s ease-out forwards;
-}
-@keyframes burst{
-  0%{transform:translate(-50%,-50%) scale(.3);opacity:1}
+.combo-burst{position:fixed;font-family:var(--font-mono);font-size:clamp(28px,5vw,48px);font-weight:bold;
+  pointer-events:none;z-index:500;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-shadow:0 0 24px currentColor;animation:burst .7s ease-out forwards;}
+@keyframes burst{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}
   60%{transform:translate(-50%,-50%) scale(1.2);opacity:1}
-  100%{transform:translate(-50%,-50%) scale(1);opacity:0}
-}
+  100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
 
-/* ===== RESULT SCREEN ===== */
-#scr-result{align-items:center;justify-content:flex-start;gap:0;overflow-y:auto;padding:20px 16px}
-.result-inner{width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:20px;padding-bottom:24px}
-.result-title{font-family:var(--font-mono);font-size:clamp(24px,5vw,40px);color:var(--accent);letter-spacing:6px;text-align:center;text-shadow:0 0 20px rgba(0,220,190,.5)}
+/* RESULT */
+#scr-result{align-items:center;justify-content:flex-start;overflow-y:auto;padding:20px 16px}
+.result-inner{width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;
+  align-items:center;gap:20px;padding-bottom:24px}
+.result-title{font-family:var(--font-mono);font-size:clamp(24px,5vw,40px);color:var(--accent);
+  letter-spacing:6px;text-align:center;text-shadow:0 0 20px rgba(0,220,190,.5)}
 .result-mode{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);letter-spacing:3px;text-align:center}
-.result-score{font-family:var(--font-mono);font-size:clamp(48px,8vw,80px);font-weight:bold;color:var(--gold);text-shadow:0 0 30px rgba(251,191,36,.4);text-align:center}
+.result-score{font-family:var(--font-mono);font-size:clamp(48px,8vw,80px);font-weight:bold;color:var(--gold);
+  text-shadow:0 0 30px rgba(251,191,36,.4);text-align:center}
 .result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
 .stat-box{background:var(--panel);border:1px solid var(--border2);padding:14px;text-align:center}
 .stat-lbl{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;display:block}
 .stat-val{font-family:var(--font-mono);font-size:26px;color:var(--text)}
 .pt-section{width:100%}
 .pt-title{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);letter-spacing:3px;margin-bottom:10px}
-.pt-grid{
-  display:grid;grid-template-columns:repeat(18,1fr);
-  gap:2px;width:100%;
-}
-.pt-cell{
-  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-mono);font-size:clamp(5px,0.9vw,10px);
-  border:1px solid transparent;transition:all .2s;cursor:default;
-}
+.pt-grid{display:grid;grid-template-columns:repeat(18,1fr);gap:2px;width:100%;}
+.pt-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:clamp(5px,.9vw,10px);border:1px solid transparent;cursor:default;}
 .pt-cell.unseen{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.04);color:var(--text-dim);opacity:.5}
 .pt-cell.perfect{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:var(--success)}
 .pt-cell.good{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35);color:var(--amber)}
@@ -291,101 +200,91 @@ body::after{
 .legend-dot.s{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.3)}
 .legend-dot.u{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.04)}
 .result-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.rbtn{
-  padding:14px 28px;border:1px solid var(--border);
-  background:transparent;color:var(--text);
-  font-family:var(--font-ja);font-size:14px;cursor:pointer;transition:all .2s;
-}
+.rbtn{padding:14px 28px;border:1px solid var(--border);background:transparent;color:var(--text);
+  font-family:var(--font-ja);font-size:14px;cursor:pointer;transition:all .2s;}
 .rbtn:hover{background:rgba(0,220,190,.08);border-color:var(--accent);color:var(--accent)}
 .rbtn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700}
 .rbtn.primary:hover{background:var(--accent2)}
 
-/* Practice overlay */
-.practice-overlay{
-  position:fixed;inset:0;background:rgba(5,11,26,.96);
-  z-index:200;display:flex;align-items:center;justify-content:center;
-  animation:fadein .2s ease;
-}
+/* Practice */
+.practice-overlay{position:fixed;inset:0;background:rgba(5,11,26,.96);z-index:200;
+  display:flex;align-items:center;justify-content:center;animation:fadein .2s ease;}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
-.practice-card{
-  background:var(--bg2);border:1px solid var(--border);
-  padding:28px;max-width:440px;width:90%;text-align:center;
-}
+.practice-card{background:var(--bg2);border:1px solid var(--border);padding:28px;max-width:440px;width:90%;text-align:center;}
 .pc-status{font-family:var(--font-mono);font-size:14px;margin-bottom:14px}
-.pc-status.ok{color:var(--success)}
-.pc-status.skip{color:var(--text-dim)}
+.pc-status.ok{color:var(--success)}.pc-status.skip{color:var(--text-dim)}
 .pc-atno{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);letter-spacing:2px}
 .pc-sym{font-family:var(--font-mono);font-size:60px;color:var(--accent);text-shadow:0 0 20px rgba(0,220,190,.4);line-height:1;margin:6px 0}
 .pc-ja{font-size:26px;font-weight:900;color:var(--text)}
 .pc-en{font-family:var(--font-mono);font-size:12px;color:var(--text-dim);margin:4px 0}
 .pc-hira{font-size:16px;color:var(--text-mid);letter-spacing:2px;margin:4px 0}
 .pc-romaji{font-family:var(--font-mono);font-size:18px;color:var(--accent);letter-spacing:3px;margin:4px 0}
-.pc-trivia{font-size:13px;color:var(--text-dim);line-height:1.7;padding:10px;background:rgba(255,255,255,.02);border:1px solid var(--border2);margin:10px 0}
-.pc-next{
-  padding:12px 36px;background:var(--accent);border:none;
-  color:var(--bg);font-family:var(--font-ja);font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-}
+.pc-trivia{font-size:13px;color:var(--text-dim);line-height:1.7;padding:10px;
+  background:rgba(255,255,255,.02);border:1px solid var(--border2);margin:10px 0}
+.pc-next{padding:12px 36px;background:var(--accent);border:none;color:var(--bg);
+  font-family:var(--font-ja);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
 .pc-next:hover{background:var(--accent2)}
 
-/* Highscore modal */
-.hs-modal{
-  position:fixed;inset:0;background:rgba(5,11,26,.97);
-  z-index:300;display:flex;align-items:center;justify-content:center;
-}
-.hs-inner{
-  background:var(--bg2);border:1px solid var(--border);
-  padding:28px;max-width:420px;width:90%;
-}
+/* Highscore */
+.hs-modal{position:fixed;inset:0;background:rgba(5,11,26,.97);z-index:300;
+  display:flex;align-items:center;justify-content:center;}
+.hs-inner{background:var(--bg2);border:1px solid var(--border);padding:28px;max-width:420px;width:90%;}
 .hs-title{font-family:var(--font-mono);font-size:14px;color:var(--accent);letter-spacing:4px;margin-bottom:20px;text-align:center}
 .hs-table{width:100%;border-collapse:collapse}
-.hs-table th{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);letter-spacing:2px;text-align:left;padding-bottom:8px;border-bottom:1px solid var(--border2)}
+.hs-table th{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);letter-spacing:2px;
+  text-align:left;padding-bottom:8px;border-bottom:1px solid var(--border2)}
 .hs-table td{font-family:var(--font-mono);font-size:14px;padding:6px 0;color:var(--text-mid);border-bottom:1px solid var(--border2)}
 .hs-table td:last-child{color:var(--gold);text-align:right}
-.hs-close{margin-top:20px;display:block;width:100%;padding:12px;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--font-mono);font-size:12px;cursor:pointer;letter-spacing:2px;transition:all .2s}
+.hs-close{margin-top:20px;display:block;width:100%;padding:12px;background:transparent;
+  border:1px solid var(--border);color:var(--text-dim);font-family:var(--font-mono);
+  font-size:12px;cursor:pointer;letter-spacing:2px;transition:all .2s}
 .hs-close:hover{border-color:var(--accent);color:var(--accent)}
 
 @media(max-width:600px){
-  .hud{padding:8px 12px;gap:4px}
-  .hud-val{font-size:18px}
-  .hud-grp{gap:10px}
+  .hud{padding:8px 12px;gap:4px}.hud-val{font-size:18px}.hud-grp{gap:10px}
   .title-btns{grid-template-columns:1fr}
-  .result-stats{grid-template-columns:repeat(3,1fr)}
-  .pt-cell{font-size:5px}
+  .result-stats{grid-template-columns:repeat(3,1fr)}.pt-cell{font-size:5px}
 }
 </style>
 </head>
 <body>
 <div class="bg-grid"></div>
 
+<!-- LOADING -->
+<div id="scr-loading">
+  <div class="loading-logo">元素タイピング</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+  <div class="loading-msg" id="loading-msg">LOADING ELEMENTS.CSV...</div>
+</div>
+
 <!-- TITLE -->
-<div id="scr-title" class="screen active">
+<div id="scr-title" class="screen">
   <div class="title-eyebrow">CHEMISTRY TYPING GAME</div>
   <div class="title-logo">元素タイピング</div>
   <div class="title-sub">PERIODIC TYPING</div>
   <div class="title-meta">
-    <span>全118元素収録</span>
+    <span id="el-count-badge">118元素収録</span>
     <span>3モード</span>
     <span>4難易度</span>
   </div>
   <div class="title-btns">
     <button class="tbtn" onclick="openMode('timeattack')">
-      <span class="tbtn-icon">⏱</span>
+      <span class="tbtn-icon">&#x23F1;</span>
       <span class="tbtn-label">タイムアタック</span>
       <span class="tbtn-desc">60秒で高スコアを狙う</span>
     </button>
     <button class="tbtn" onclick="openMode('endless')">
-      <span class="tbtn-icon">♾</span>
+      <span class="tbtn-icon">&#x267E;</span>
       <span class="tbtn-label">エンドレス</span>
       <span class="tbtn-desc">ライフ制、どこまで続けられるか</span>
     </button>
     <button class="tbtn" onclick="openMode('practice')">
-      <span class="tbtn-icon">📚</span>
+      <span class="tbtn-icon">&#x1F4DA;</span>
       <span class="tbtn-label">学習モード</span>
       <span class="tbtn-desc">ペナルティなし、じっくり覚える</span>
     </button>
     <button class="tbtn" onclick="showHighScore()">
-      <span class="tbtn-icon">🏆</span>
+      <span class="tbtn-icon">&#x1F3C6;</span>
       <span class="tbtn-label">ハイスコア</span>
       <span class="tbtn-desc">過去のベストを確認</span>
     </button>
@@ -394,16 +293,16 @@ body::after{
 
 <!-- MODE SELECT -->
 <div id="scr-mode" class="screen">
-  <button class="btn-back" onclick="showScreen('title')">← 戻る</button>
+  <button class="btn-back" onclick="showScreen('title')">&#x2190; 戻る</button>
   <div class="mode-header">
     <h2 id="mode-title-txt">難易度を選択</h2>
     <p id="mode-subtitle-txt"></p>
   </div>
   <div class="diff-row">
-    <button class="dbtn" data-d="1" onclick="selDiff(1)">🟢 初級</button>
-    <button class="dbtn" data-d="2" onclick="selDiff(2)">🟡 中級</button>
-    <button class="dbtn" data-d="3" onclick="selDiff(3)">🔴 上級</button>
-    <button class="dbtn" data-d="0" onclick="selDiff(0)">⚡ ランダム</button>
+    <button class="dbtn" data-d="1" onclick="selDiff(1)">初級</button>
+    <button class="dbtn" data-d="2" onclick="selDiff(2)">中級</button>
+    <button class="dbtn" data-d="3" onclick="selDiff(3)">上級</button>
+    <button class="dbtn" data-d="0" onclick="selDiff(0)">ランダム</button>
   </div>
   <div class="diff-info" id="diff-info">難易度を選択してください</div>
   <button class="start-btn" onclick="startGame()">START</button>
@@ -419,7 +318,7 @@ body::after{
       </div>
       <div class="hud-it">
         <span class="hud-lbl">COMBO</span>
-        <span class="combo-val c0" id="h-combo">×1</span>
+        <span class="combo-val c0" id="h-combo">x1</span>
       </div>
     </div>
     <div class="hud-grp">
@@ -440,7 +339,7 @@ body::after{
   <div class="game-main">
     <div class="el-card" id="el-card">
       <div class="card-meta">
-        <span class="card-no" id="c-no">No.—</span>
+        <span class="card-no" id="c-no">No.--</span>
         <span class="card-type" id="c-type-badge">NAME</span>
       </div>
       <div class="q-content" id="q-content"></div>
@@ -474,7 +373,7 @@ body::after{
       <div class="stat-box"><span class="stat-lbl">MAX COMBO</span><span class="stat-val" id="r-combo">0</span></div>
     </div>
     <div class="pt-section">
-      <div class="pt-title">■ 元素チャート（出題した元素の結果）</div>
+      <div class="pt-title">ELEMENT CHART -- 出題した元素の結果</div>
       <div class="pt-grid" id="pt-grid"></div>
       <div class="pt-legend">
         <div class="legend-item"><div class="legend-dot p"></div>完璧(ノーミス)</div>
@@ -492,336 +391,258 @@ body::after{
 
 <script>
 // ============================================================
-// ELEMENT DATA — 全118元素
+// CSV PARSER
+// シンプルなCSVパーサー。ダブルクォート対応。
 // ============================================================
-const ELEMENTS = [
-  // 第1周期
-  {no:1,sym:'H',ja:'水素',en:'Hydrogen',hira:'すいそ',romaji:'suiso',alts:[],trivia:'宇宙で最も豊富な元素。太陽の主成分',diff:1,score:10},
-  {no:2,sym:'He',ja:'ヘリウム',en:'Helium',hira:'へりうむ',romaji:'heriumu',alts:[],trivia:'風船に使われる軽い気体。最初に宇宙で発見',diff:1,score:10},
-  // 第2周期
-  {no:3,sym:'Li',ja:'リチウム',en:'Lithium',hira:'りちうむ',romaji:'richiumu',alts:['ritiumu'],trivia:'充電池に使われる最も軽い金属',diff:1,score:10},
-  {no:4,sym:'Be',ja:'ベリリウム',en:'Beryllium',hira:'べりりうむ',romaji:'beririumu',alts:[],trivia:'エメラルドに含まれる。X線を通しやすい',diff:2,score:20},
-  {no:5,sym:'B',ja:'ホウ素',en:'Boron',hira:'ほうそ',romaji:'houso',alts:[],trivia:'ガラス強化・半導体材料として重要',diff:1,score:10},
-  {no:6,sym:'C',ja:'炭素',en:'Carbon',hira:'たんそ',romaji:'tanso',alts:[],trivia:'ダイヤモンドも黒鉛もこの元素でできている',diff:1,score:10},
-  {no:7,sym:'N',ja:'窒素',en:'Nitrogen',hira:'ちっそ',romaji:'chisso',alts:['tisso'],trivia:'空気の約78%を占める不活性な気体',diff:1,score:10},
-  {no:8,sym:'O',ja:'酸素',en:'Oxygen',hira:'さんそ',romaji:'sanso',alts:[],trivia:'呼吸と燃焼に不可欠な気体。空気の21%',diff:1,score:10},
-  {no:9,sym:'F',ja:'フッ素',en:'Fluorine',hira:'ふっそ',romaji:'fusso',alts:['husso'],trivia:'歯磨き粉に含まれ虫歯を防ぐ',diff:1,score:10},
-  {no:10,sym:'Ne',ja:'ネオン',en:'Neon',hira:'ねおん',romaji:'neon',alts:[],trivia:'ネオンサインに使われる希ガス',diff:1,score:10},
-  // 第3周期
-  {no:11,sym:'Na',ja:'ナトリウム',en:'Sodium',hira:'なとりうむ',romaji:'natoriumu',alts:[],trivia:'食塩の成分。炎色反応は鮮やかな黄色',diff:1,score:10},
-  {no:12,sym:'Mg',ja:'マグネシウム',en:'Magnesium',hira:'まぐねしうむ',romaji:'maguneshiumu',alts:['magunesiumu'],trivia:'花火の白い炎の原料。人体に必須のミネラル',diff:1,score:15},
-  {no:13,sym:'Al',ja:'アルミニウム',en:'Aluminium',hira:'あるみにうむ',romaji:'aruminiumu',alts:[],trivia:'軽くて錆びにくい。地殻中で最多の金属元素',diff:1,score:15},
-  {no:14,sym:'Si',ja:'ケイ素',en:'Silicon',hira:'けいそ',romaji:'keiso',alts:[],trivia:'半導体の材料。シリコンバレーの名の由来',diff:1,score:10},
-  {no:15,sym:'P',ja:'リン',en:'Phosphorus',hira:'りん',romaji:'rin',alts:[],trivia:'骨・歯・DNAの重要成分。マッチに使われる',diff:1,score:10},
-  {no:16,sym:'S',ja:'硫黄',en:'Sulfur',hira:'いおう',romaji:'iou',alts:[],trivia:'火山で産出する黄色い固体。温泉の香り成分',diff:1,score:10},
-  {no:17,sym:'Cl',ja:'塩素',en:'Chlorine',hira:'えんそ',romaji:'enso',alts:[],trivia:'プールの消毒に使われる黄緑色の気体',diff:1,score:10},
-  {no:18,sym:'Ar',ja:'アルゴン',en:'Argon',hira:'あるごん',romaji:'arugon',alts:[],trivia:'白熱電球内に封入される。空気の1%',diff:1,score:10},
-  // 第4周期
-  {no:19,sym:'K',ja:'カリウム',en:'Potassium',hira:'かりうむ',romaji:'kariumu',alts:[],trivia:'バナナに豊富。筋肉や神経に不可欠なミネラル',diff:1,score:10},
-  {no:20,sym:'Ca',ja:'カルシウム',en:'Calcium',hira:'かるしうむ',romaji:'karushiumu',alts:['karusiumu'],trivia:'骨・歯の主成分。牛乳に豊富',diff:1,score:15},
-  {no:21,sym:'Sc',ja:'スカンジウム',en:'Scandium',hira:'すかんじうむ',romaji:'sukanjiumu',alts:['sukanziumu'],trivia:'自転車フレームなどスポーツ用品の軽合金材料',diff:2,score:20},
-  {no:22,sym:'Ti',ja:'チタン',en:'Titanium',hira:'ちたん',romaji:'chitan',alts:['titan'],trivia:'軽くて強い。インプラントや航空機に使われる',diff:1,score:15},
-  {no:23,sym:'V',ja:'バナジウム',en:'Vanadium',hira:'ばなじうむ',romaji:'banajiumu',alts:['banaziumu'],trivia:'鉄鋼の強度向上に使われる遷移金属',diff:2,score:20},
-  {no:24,sym:'Cr',ja:'クロム',en:'Chromium',hira:'くろむ',romaji:'kuromu',alts:[],trivia:'ステンレス鋼の必須成分。クロームメッキの材料',diff:1,score:15},
-  {no:25,sym:'Mn',ja:'マンガン',en:'Manganese',hira:'まんがん',romaji:'mangan',alts:[],trivia:'乾電池の電極材料。鉄鋼の強化剤',diff:1,score:15},
-  {no:26,sym:'Fe',ja:'鉄',en:'Iron',hira:'てつ',romaji:'tetsu',alts:[],trivia:'地球の核の主成分。人類が最も多く使う金属',diff:1,score:10},
-  {no:27,sym:'Co',ja:'コバルト',en:'Cobalt',hira:'こばると',romaji:'kobaruto',alts:[],trivia:'青いコバルトブルー色の由来。磁石の材料',diff:1,score:15},
-  {no:28,sym:'Ni',ja:'ニッケル',en:'Nickel',hira:'にっける',romaji:'nikkeru',alts:[],trivia:'硬貨の材料。ニクロム線に使われる',diff:1,score:15},
-  {no:29,sym:'Cu',ja:'銅',en:'Copper',hira:'どう',romaji:'dou',alts:[],trivia:'電線に広く使われる。熱・電気の良導体',diff:1,score:10},
-  {no:30,sym:'Zn',ja:'亜鉛',en:'Zinc',hira:'あえん',romaji:'aen',alts:[],trivia:'鉄の防錆めっきに使われる。亜鉛華軟膏',diff:1,score:10},
-  {no:31,sym:'Ga',ja:'ガリウム',en:'Gallium',hira:'がりうむ',romaji:'gariumu',alts:[],trivia:'手の平の熱(30℃)で溶ける低融点金属',diff:2,score:20},
-  {no:32,sym:'Ge',ja:'ゲルマニウム',en:'Germanium',hira:'げるまにうむ',romaji:'gerumaniumu',alts:[],trivia:'メンデレーエフが発見を予言した元素',diff:2,score:20},
-  {no:33,sym:'As',ja:'ヒ素',en:'Arsenic',hira:'ひそ',romaji:'hiso',alts:[],trivia:'有名な毒。半導体にも使われる準金属',diff:1,score:15},
-  {no:34,sym:'Se',ja:'セレン',en:'Selenium',hira:'せれん',romaji:'seren',alts:[],trivia:'光で電気を通す光電効果がある。コピー機に利用',diff:2,score:20},
-  {no:35,sym:'Br',ja:'臭素',en:'Bromine',hira:'しゅうそ',romaji:'shuuso',alts:['syuuso'],trivia:'常温で液体の唯一の非金属元素',diff:2,score:20},
-  {no:36,sym:'Kr',ja:'クリプトン',en:'Krypton',hira:'くりぷとん',romaji:'kuriputon',alts:[],trivia:'スーパーマンの故郷"クリプトン星"の名の由来',diff:2,score:20},
-  {no:37,sym:'Rb',ja:'ルビジウム',en:'Rubidium',hira:'るびじうむ',romaji:'rubijiumu',alts:['rubiziumu'],trivia:'原子時計の材料。赤い炎色反応',diff:2,score:20},
-  {no:38,sym:'Sr',ja:'ストロンチウム',en:'Strontium',hira:'すとろんちうむ',romaji:'sutoronchiumu',alts:['sutorontiumu'],trivia:'花火の赤い炎の原料。炎色反応は深紅色',diff:2,score:25},
-  {no:39,sym:'Y',ja:'イットリウム',en:'Yttrium',hira:'いっとりうむ',romaji:'ittoriumu',alts:[],trivia:'LEDや蛍光灯の赤色蛍光体に使われる',diff:2,score:25},
-  {no:40,sym:'Zr',ja:'ジルコニウム',en:'Zirconium',hira:'じるこにうむ',romaji:'jirukoniumu',alts:['zirukoniumu'],trivia:'原子炉の燃料被覆管に使われる耐熱金属',diff:2,score:25},
-  {no:41,sym:'Nb',ja:'ニオブ',en:'Niobium',hira:'におぶ',romaji:'niobu',alts:[],trivia:'超電導体として使われるレアメタル',diff:2,score:20},
-  {no:42,sym:'Mo',ja:'モリブデン',en:'Molybdenum',hira:'もりぶでん',romaji:'moribuden',alts:[],trivia:'鋼鉄を硬くする添加剤。高温でも溶けにくい',diff:2,score:25},
-  {no:43,sym:'Tc',ja:'テクネチウム',en:'Technetium',hira:'てくねちうむ',romaji:'tekunechiumu',alts:['tekunetiumu'],trivia:'人工的に初めて作られた元素。医療用放射性同位体',diff:3,score:35},
-  {no:44,sym:'Ru',ja:'ルテニウム',en:'Ruthenium',hira:'るてにうむ',romaji:'ruteniumu',alts:[],trivia:'万年筆のペン先や電極の材料',diff:2,score:25},
-  {no:45,sym:'Rh',ja:'ロジウム',en:'Rhodium',hira:'ろじうむ',romaji:'rojiumu',alts:['roziumu'],trivia:'自動車触媒として使われる最高値の金属',diff:2,score:25},
-  {no:46,sym:'Pd',ja:'パラジウム',en:'Palladium',hira:'ぱらじうむ',romaji:'parajiumu',alts:['paraziumu'],trivia:'体積の900倍の水素を吸収できる金属',diff:2,score:25},
-  {no:47,sym:'Ag',ja:'銀',en:'Silver',hira:'ぎん',romaji:'gin',alts:[],trivia:'金属の中で電気・熱の伝導率が最も高い',diff:1,score:10},
-  {no:48,sym:'Cd',ja:'カドミウム',en:'Cadmium',hira:'かどみうむ',romaji:'kadomiumu',alts:[],trivia:'イタイイタイ病の原因物質。ニッカド電池の材料',diff:2,score:20},
-  {no:49,sym:'In',ja:'インジウム',en:'Indium',hira:'いんじうむ',romaji:'injiumu',alts:['inziumu'],trivia:'スマートフォンのタッチパネル電極の材料',diff:2,score:20},
-  {no:50,sym:'Sn',ja:'スズ',en:'Tin',hira:'すず',romaji:'suzu',alts:[],trivia:'ハンダの主要成分。ブリキはスズめっきの鉄',diff:1,score:10},
-  {no:51,sym:'Sb',ja:'アンチモン',en:'Antimony',hira:'あんちもん',romaji:'anchimon',alts:['antimon'],trivia:'古代エジプトのアイメイクに使用された',diff:2,score:20},
-  {no:52,sym:'Te',ja:'テルル',en:'Tellurium',hira:'てるる',romaji:'teruru',alts:[],trivia:'太陽に比べ地球では非常に希少な元素',diff:2,score:20},
-  {no:53,sym:'I',ja:'ヨウ素',en:'Iodine',hira:'ようそ',romaji:'youso',alts:[],trivia:'消毒薬・甲状腺ホルモンの材料。昆布に豊富',diff:1,score:15},
-  {no:54,sym:'Xe',ja:'キセノン',en:'Xenon',hira:'きせのん',romaji:'kisenon',alts:[],trivia:'HIDヘッドライトに使われる希ガス',diff:2,score:20},
-  {no:55,sym:'Cs',ja:'セシウム',en:'Cesium',hira:'せしうむ',romaji:'seshiumu',alts:['sesiumu'],trivia:'原子時計の基準に使われる。最も電気陰性度が低い',diff:2,score:20},
-  {no:56,sym:'Ba',ja:'バリウム',en:'Barium',hira:'ばりうむ',romaji:'bariumu',alts:[],trivia:'X線検査の造影剤として使われる',diff:2,score:20},
-  // ランタノイド
-  {no:57,sym:'La',ja:'ランタン',en:'Lanthanum',hira:'らんたん',romaji:'rantan',alts:[],trivia:'カメラレンズの材料。ランタノイドの先頭',diff:2,score:20},
-  {no:58,sym:'Ce',ja:'セリウム',en:'Cerium',hira:'せりうむ',romaji:'seriumu',alts:[],trivia:'最も豊富な希土類元素。自動車の触媒に使われる',diff:2,score:20},
-  {no:59,sym:'Pr',ja:'プラセオジム',en:'Praseodymium',hira:'ぷらせおじむ',romaji:'puraseojumu',alts:['puraseozumu'],trivia:'強力な永久磁石ネオジム磁石の材料',diff:3,score:35},
-  {no:60,sym:'Nd',ja:'ネオジム',en:'Neodymium',hira:'ねおじむ',romaji:'neojumu',alts:['neozumu'],trivia:'世界最強クラスの永久磁石の主成分',diff:2,score:25},
-  {no:61,sym:'Pm',ja:'プロメチウム',en:'Promethium',hira:'ぷろめちうむ',romaji:'puromechiumu',alts:['purometiumu'],trivia:'自然界にほとんど存在しない放射性の希土類元素',diff:3,score:35},
-  {no:62,sym:'Sm',ja:'サマリウム',en:'Samarium',hira:'さまりうむ',romaji:'samariumu',alts:[],trivia:'コバルトとの合金で強力な永久磁石に',diff:2,score:25},
-  {no:63,sym:'Eu',ja:'ユウロピウム',en:'Europium',hira:'ゆうろぴうむ',romaji:'yuuropiumu',alts:[],trivia:'蛍光灯の赤い蛍光体。紙幣の偽造防止に使われる',diff:3,score:30},
-  {no:64,sym:'Gd',ja:'ガドリニウム',en:'Gadolinium',hira:'がどりにうむ',romaji:'gadoriниumu',alts:[],trivia:'MRIの造影剤に使われる希土類元素',diff:3,score:30},
-  {no:65,sym:'Tb',ja:'テルビウム',en:'Terbium',hira:'てるびうむ',romaji:'terubiumu',alts:[],trivia:'スマートフォンのスピーカー振動板の材料',diff:3,score:30},
-  {no:66,sym:'Dy',ja:'ジスプロシウム',en:'Dysprosium',hira:'じすぷろしうむ',romaji:'jisupuroshiumu',alts:['jisupurosiumu','zisupuroshiumu','zisupurosiumu'],trivia:'ネオジム磁石の耐熱性を大幅に向上させる',diff:3,score:35},
-  {no:67,sym:'Ho',ja:'ホルミウム',en:'Holmium',hira:'ほるみうむ',romaji:'horumiumu',alts:[],trivia:'元素の中で最も強い磁気モーメントを持つ',diff:3,score:30},
-  {no:68,sym:'Er',ja:'エルビウム',en:'Erbium',hira:'えるびうむ',romaji:'erubiumu',alts:[],trivia:'光ファイバー通信の増幅器に使われる',diff:3,score:30},
-  {no:69,sym:'Tm',ja:'ツリウム',en:'Thulium',hira:'つりうむ',romaji:'tsuriumu',alts:['turiumu'],trivia:'ポータブルX線装置の放射源として利用',diff:3,score:30},
-  {no:70,sym:'Yb',ja:'イッテルビウム',en:'Ytterbium',hira:'いってるびうむ',romaji:'itterubiumu',alts:[],trivia:'光格子時計に使われる超高精度の原子時計材料',diff:3,score:35},
-  {no:71,sym:'Lu',ja:'ルテチウム',en:'Lutetium',hira:'るてちうむ',romaji:'rutechiumu',alts:['rutetiumu'],trivia:'ランタノイドの中で最も重い元素',diff:3,score:35},
-  // 第6周期 遷移金属
-  {no:72,sym:'Hf',ja:'ハフニウム',en:'Hafnium',hira:'はふにうむ',romaji:'hafuniumu',alts:[],trivia:'原子炉の制御棒の材料。ジルコニウムと分離が難しい',diff:2,score:25},
-  {no:73,sym:'Ta',ja:'タンタル',en:'Tantalum',hira:'たんたる',romaji:'tantaru',alts:[],trivia:'スマートフォンのコンデンサーに不可欠なレアメタル',diff:2,score:25},
-  {no:74,sym:'W',ja:'タングステン',en:'Tungsten',hira:'たんぐすてん',romaji:'tangusuten',alts:[],trivia:'全金属元素の中で最も高い融点(3422℃)を持つ',diff:2,score:25},
-  {no:75,sym:'Re',ja:'レニウム',en:'Rhenium',hira:'れにうむ',romaji:'reniumu',alts:[],trivia:'最後に発見された安定元素の一つ(1925年発見)',diff:2,score:25},
-  {no:76,sym:'Os',ja:'オスミウム',en:'Osmium',hira:'おすみうむ',romaji:'osumiumu',alts:[],trivia:'全元素の中で最も高い密度(22.59 g/cm³)を持つ',diff:2,score:25},
-  {no:77,sym:'Ir',ja:'イリジウム',en:'Iridium',hira:'いりじうむ',romaji:'irijiumu',alts:['iriziumu'],trivia:'6600万年前の地層(K-Pg境界)に多く含まれる',diff:2,score:25},
-  {no:78,sym:'Pt',ja:'白金',en:'Platinum',hira:'はっきん',romaji:'hakkin',alts:[],trivia:'触媒・宝飾品に使われる貴金属。プラチナとも呼ぶ',diff:2,score:20},
-  {no:79,sym:'Au',ja:'金',en:'Gold',hira:'きん',romaji:'kin',alts:[],trivia:'腐食せず輝き続ける貴金属の代表',diff:1,score:10},
-  {no:80,sym:'Hg',ja:'水銀',en:'Mercury',hira:'すいぎん',romaji:'suigin',alts:[],trivia:'常温で液体の唯一の金属元素',diff:1,score:15},
-  {no:81,sym:'Tl',ja:'タリウム',en:'Thallium',hira:'たりうむ',romaji:'tariumu',alts:[],trivia:'強い毒性を持つ金属。ミステリー小説でお馴染み',diff:2,score:20},
-  {no:82,sym:'Pb',ja:'鉛',en:'Lead',hira:'なまり',romaji:'namari',alts:[],trivia:'重くて軟らかい。活版印刷の活字に使われた',diff:1,score:15},
-  {no:83,sym:'Bi',ja:'ビスマス',en:'Bismuth',hira:'びすます',romaji:'bisumasu',alts:[],trivia:'美しい虹色の階段状結晶を作る金属',diff:2,score:20},
-  {no:84,sym:'Po',ja:'ポロニウム',en:'Polonium',hira:'ぽろにうむ',romaji:'poroniumu',alts:[],trivia:'キュリー夫人が故国ポーランドにちなんで命名',diff:2,score:25},
-  {no:85,sym:'At',ja:'アスタチン',en:'Astatine',hira:'あすたちん',romaji:'asutachin',alts:['asutatin'],trivia:'自然界に極めて微量しか存在しない準金属',diff:3,score:30},
-  {no:86,sym:'Rn',ja:'ラドン',en:'Radon',hira:'らどん',romaji:'radon',alts:[],trivia:'放射性の希ガス。地下や建物に溜まることがある',diff:2,score:20},
-  // 第7周期
-  {no:87,sym:'Fr',ja:'フランシウム',en:'Francium',hira:'ふらんしうむ',romaji:'furanshiumu',alts:['furansiumu','huranshiumu','huransiumu'],trivia:'自然界に存在する最も不安定な元素',diff:3,score:35},
-  {no:88,sym:'Ra',ja:'ラジウム',en:'Radium',hira:'らじうむ',romaji:'rajiumu',alts:['raziumu'],trivia:'キュリー夫人が発見した放射性元素。暗闇で光る',diff:2,score:25},
-  // アクチノイド
-  {no:89,sym:'Ac',ja:'アクチニウム',en:'Actinium',hira:'あくちにうむ',romaji:'akuchiniumu',alts:['akutiniumu'],trivia:'暗闇で青白く光る強放射性元素',diff:3,score:30},
-  {no:90,sym:'Th',ja:'トリウム',en:'Thorium',hira:'とりうむ',romaji:'toriumu',alts:[],trivia:'次世代原子炉の燃料候補として注目される',diff:2,score:25},
-  {no:91,sym:'Pa',ja:'プロトアクチニウム',en:'Protactinium',hira:'ぷろとあくちにうむ',romaji:'purotoakuchiniumu',alts:['purotoakutiniumu'],trivia:'非常に強い放射性を持つ希少元素',diff:3,score:40},
-  {no:92,sym:'U',ja:'ウラン',en:'Uranium',hira:'うらん',romaji:'uran',alts:[],trivia:'原子力発電の燃料。天然に存在する最重元素',diff:1,score:15},
-  {no:93,sym:'Np',ja:'ネプツニウム',en:'Neptunium',hira:'ねぷつにうむ',romaji:'neputsuniumu',alts:['neputuniumu'],trivia:'人工合成された最初のトランスウラン元素',diff:3,score:35},
-  {no:94,sym:'Pu',ja:'プルトニウム',en:'Plutonium',hira:'ぷるとにうむ',romaji:'purutoniumu',alts:[],trivia:'核兵器・原子力発電の材料となる放射性元素',diff:2,score:30},
-  {no:95,sym:'Am',ja:'アメリシウム',en:'Americium',hira:'あめりしうむ',romaji:'amerishiumu',alts:['amerisiumu'],trivia:'煙感知器に放射線源として使われている',diff:3,score:30},
-  {no:96,sym:'Cm',ja:'キュリウム',en:'Curium',hira:'きゅりうむ',romaji:'kyuriumu',alts:[],trivia:'キュリー夫妻にちなんで命名された超ウラン元素',diff:3,score:30},
-  {no:97,sym:'Bk',ja:'バークリウム',en:'Berkelium',hira:'ばーくりうむ',romaji:'baakuriumu',alts:[],trivia:'カリフォルニア州バークレーで発見',diff:3,score:35},
-  {no:98,sym:'Cf',ja:'カリホルニウム',en:'Californium',hira:'かりほるにうむ',romaji:'karihoruniumu',alts:[],trivia:'強力な中性子源として金属探知などに使われる',diff:3,score:35},
-  {no:99,sym:'Es',ja:'アインスタイニウム',en:'Einsteinium',hira:'あいんすたいにうむ',romaji:'ainsutainiumu',alts:[],trivia:'アインシュタインにちなんで命名。水爆実験で発見',diff:3,score:40},
-  {no:100,sym:'Fm',ja:'フェルミウム',en:'Fermium',hira:'ふぇるみうむ',romaji:'fuerumiumu',alts:['ferumiumu'],trivia:'核物理学者フェルミにちなんで命名',diff:3,score:40},
-  {no:101,sym:'Md',ja:'メンデレビウム',en:'Mendelevium',hira:'めんでれびうむ',romaji:'menderebiumu',alts:[],trivia:'元素周期表を作ったメンデレーエフにちなんで命名',diff:3,score:40},
-  {no:102,sym:'No',ja:'ノーベリウム',en:'Nobelium',hira:'のーべりうむ',romaji:'nooberiumu',alts:['noberiumu'],trivia:'ノーベルにちなんで命名された超ウラン元素',diff:3,score:40},
-  {no:103,sym:'Lr',ja:'ローレンシウム',en:'Lawrencium',hira:'ろーれんしうむ',romaji:'roorenshiumu',alts:['roorensiumu'],trivia:'サイクロトロンを発明したローレンスにちなんで命名',diff:3,score:40},
-  // 第7周期 遷移金属・超重元素
-  {no:104,sym:'Rf',ja:'ラザホージウム',en:'Rutherfordium',hira:'らざほーじうむ',romaji:'razahoojiumu',alts:['razahooziumu'],trivia:'ラザフォードにちなんで命名。寿命は数秒',diff:3,score:40},
-  {no:105,sym:'Db',ja:'ドブニウム',en:'Dubnium',hira:'どぶにうむ',romaji:'dobuniumu',alts:[],trivia:'ロシアのドゥブナ研究所で発見',diff:3,score:40},
-  {no:106,sym:'Sg',ja:'シーボーギウム',en:'Seaborgium',hira:'しーぼーぎうむ',romaji:'shiiboogiumu',alts:['siiboogiumu'],trivia:'核化学者シーボーグにちなんで命名',diff:3,score:40},
-  {no:107,sym:'Bh',ja:'ボーリウム',en:'Bohrium',hira:'ぼーりうむ',romaji:'booriumu',alts:[],trivia:'物理学者ニールス・ボーアにちなんで命名',diff:3,score:40},
-  {no:108,sym:'Hs',ja:'ハッシウム',en:'Hassium',hira:'はっしうむ',romaji:'hasshiumu',alts:['hassiumu'],trivia:'ドイツのヘッセン州（ラテン語名Hassia）で発見',diff:3,score:40},
-  {no:109,sym:'Mt',ja:'マイトネリウム',en:'Meitnerium',hira:'まいとねりうむ',romaji:'maitoneriumu',alts:[],trivia:'核分裂を発見したリーゼ・マイトナーにちなんで命名',diff:3,score:40},
-  {no:110,sym:'Ds',ja:'ダームスタチウム',en:'Darmstadtium',hira:'だーむすたちうむ',romaji:'daamusutachiumu',alts:['daamusutatiumu'],trivia:'ドイツのダルムシュタットで発見',diff:3,score:40},
-  {no:111,sym:'Rg',ja:'レントゲニウム',en:'Roentgenium',hira:'れんとげにうむ',romaji:'rentogeniumu',alts:[],trivia:'X線を発見したレントゲンにちなんで命名',diff:3,score:40},
-  {no:112,sym:'Cn',ja:'コペルニシウム',en:'Copernicium',hira:'こぺるにしうむ',romaji:'koperunishiumu',alts:['koperunisiumu'],trivia:'天文学者コペルニクスにちなんで命名',diff:3,score:40},
-  {no:113,sym:'Nh',ja:'ニホニウム',en:'Nihonium',hira:'にほにうむ',romaji:'nihoniumu',alts:[],trivia:'日本の理化学研究所が発見した唯一の元素',diff:2,score:30},
-  {no:114,sym:'Fl',ja:'フレロビウム',en:'Flerovium',hira:'ふれろびうむ',romaji:'furerobiumu',alts:['hurerobiumu'],trivia:'フレロフ核反応研究所にちなんで命名',diff:3,score:40},
-  {no:115,sym:'Mc',ja:'モスコビウム',en:'Moscovium',hira:'もすこびうむ',romaji:'mosukobiumu',alts:[],trivia:'ロシアのモスクワ州にちなんで命名',diff:3,score:40},
-  {no:116,sym:'Lv',ja:'リバモリウム',en:'Livermorium',hira:'りばもりうむ',romaji:'ribamoriumu',alts:[],trivia:'米国リバモア国立研究所にちなんで命名',diff:3,score:40},
-  {no:117,sym:'Ts',ja:'テネシン',en:'Tennessine',hira:'てねしん',romaji:'teneshin',alts:['tenesin'],trivia:'米国テネシー州にちなんで命名。2010年初合成',diff:3,score:40},
-  {no:118,sym:'Og',ja:'オガネソン',en:'Oganesson',hira:'おがねそん',romaji:'oganeson',alts:[],trivia:'現在知られている最も原子番号が大きい元素',diff:3,score:40},
-];
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',').map(h => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const fields = [];
+    let cur = '', inQ = false;
+    for (let j = 0; j < line.length; j++) {
+      const c = line[j];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { fields.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    fields.push(cur);
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = (fields[idx] || '').trim(); });
+    rows.push(obj);
+  }
+  return rows;
+}
 
-// Ensure element 64 (Gd) romaji uses only ASCII
-(function(){const gd=ELEMENTS.find(e=>e.no===64);if(gd)gd.romaji=['g','a','d','o','r','i','n','i','u','m','u'].join('');})();
+// CSVの各行をゲーム用オブジェクトに変換
+// alts列はパイプ(|)区切りで複数入力パターンを指定できる
+function buildElementsFromCSV(rows) {
+  return rows.map(r => ({
+    no:     parseInt(r.no),
+    sym:    r.sym,
+    ja:     r.ja,
+    en:     r.en,
+    hira:   r.hira,
+    romaji: r.romaji,
+    alts:   r.alts ? r.alts.split('|').map(s => s.trim()).filter(Boolean) : [],
+    trivia: r.trivia,
+    diff:   parseInt(r.diff),
+    score:  parseInt(r.score),
+  }));
+}
 
-// Periodic table grid positions [period, group] (1-indexed)
-// Gap = placeholder cell; lanthanides = rows 9, actinides = row 10
+// ============================================================
+// DATA
+// ============================================================
+let ELEMENTS = [];
+
+// 周期表グリッド配置 [原子番号, 族番号]
+// 0=空白セル  -1=ランタノイドプレースホルダー  -2=アクチノイドプレースホルダー
 const PT_GRID = [
-  // row 1
   [1,1],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[2,18],
-  // row 2
   [3,1],[4,2],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[5,13],[6,14],[7,15],[8,16],[9,17],[10,18],
-  // row 3
   [11,1],[12,2],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[13,13],[14,14],[15,15],[16,16],[17,17],[18,18],
-  // row 4
   [19,1],[20,2],[21,3],[22,4],[23,5],[24,6],[25,7],[26,8],[27,9],[28,10],[29,11],[30,12],[31,13],[32,14],[33,15],[34,16],[35,17],[36,18],
-  // row 5
   [37,1],[38,2],[39,3],[40,4],[41,5],[42,6],[43,7],[44,8],[45,9],[46,10],[47,11],[48,12],[49,13],[50,14],[51,15],[52,16],[53,17],[54,18],
-  // row 6
   [55,1],[56,2],[-1,3],[72,4],[73,5],[74,6],[75,7],[76,8],[77,9],[78,10],[79,11],[80,12],[81,13],[82,14],[83,15],[84,16],[85,17],[86,18],
-  // row 7
   [87,1],[88,2],[-2,3],[104,4],[105,5],[106,6],[107,7],[108,8],[109,9],[110,10],[111,11],[112,12],[113,13],[114,14],[115,15],[116,16],[117,17],[118,18],
-  // gap row
   [0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],
-  // lanthanides row (La-Lu: 57-71)
   [0,0],[0,0],[57,3],[58,4],[59,5],[60,6],[61,7],[62,8],[63,9],[64,10],[65,11],[66,12],[67,13],[68,14],[69,15],[70,16],[71,17],[0,0],
-  // actinides row (Ac-Lr: 89-103)
   [0,0],[0,0],[89,3],[90,4],[91,5],[92,6],[93,7],[94,8],[95,9],[96,10],[97,11],[98,12],[99,13],[100,14],[101,15],[102,16],[103,17],[0,0],
 ];
 
 // ============================================================
-// GAME STATE
+// CSV LOADING
+// ============================================================
+async function loadElements() {
+  const bar = document.getElementById('loading-bar');
+  const msg = document.getElementById('loading-msg');
+  try {
+    bar.style.width = '20%';
+    msg.textContent = 'FETCHING elements.csv...';
+    const res = await fetch('./elements.csv');
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+    bar.style.width = '60%';
+    msg.textContent = 'PARSING DATA...';
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length === 0) throw new Error('CSVのパースに失敗しました(0行)');
+    ELEMENTS = buildElementsFromCSV(rows);
+    bar.style.width = '100%';
+    msg.textContent = 'OK -- ' + ELEMENTS.length + '元素読み込み完了';
+    document.getElementById('el-count-badge').textContent = '全' + ELEMENTS.length + '元素収録';
+    await new Promise(r => setTimeout(r, 500));
+    document.getElementById('scr-loading').style.display = 'none';
+    showScreen('title');
+  } catch(err) {
+    bar.style.background = 'var(--error)';
+    bar.style.width = '100%';
+    msg.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'loading-err';
+    div.innerHTML =
+      '<strong>&#x26A0; ロードエラー</strong><br><br>' +
+      err.message + '<br><br>' +
+      '<code>elements.csv</code> が同じフォルダに存在するか確認してください。<br><br>' +
+      'ローカルで開く場合は簡易サーバーが必要です：<br>' +
+      '<code>python3 -m http.server 8080</code><br>' +
+      'または VSCode の Live Server 拡張を使用してください。';
+    document.getElementById('scr-loading').appendChild(div);
+    console.error('[元素タイピング] load error:', err);
+  }
+}
+
+// ============================================================
+// GAME CONFIG
 // ============================================================
 const DIFF_INFO = {
-  1:{label:'初級',desc:'有名な元素30種から出題。まずはここから！',color:'var(--success)'},
-  2:{label:'中級',desc:'初級＋中程度の難度の元素70種から出題。',color:'var(--amber)'},
-  3:{label:'上級',desc:'全118元素から出題。豆知識問題も多め。',color:'var(--error)'},
-  0:{label:'ランダム',desc:'全118元素からランダムで出題。難易度混在。',color:'var(--accent)'},
+  1: { label: '初級',    desc: '有名な元素から出題。まずはここから！' },
+  2: { label: '中級',    desc: '初級＋中程度の難度の元素から出題。' },
+  3: { label: '上級',    desc: '全元素から出題。豆知識問題も多め。' },
+  0: { label: 'ランダム', desc: '全元素からランダムで出題。難易度混在。' },
 };
 const MODE_INFO = {
-  timeattack:{label:'タイムアタック',time:60},
-  endless:{label:'エンドレス',lives:5},
-  practice:{label:'学習モード'},
+  timeattack: { label: 'タイムアタック', time: 60 },
+  endless:    { label: 'エンドレス',     lives: 5 },
+  practice:   { label: '学習モード' },
 };
-const QTYPE_LABELS = {name:'名前',symbol:'記号',trivia:'豆知識'};
-const QTYPE_MULT = {name:1,symbol:1.5,trivia:2};
+const QTYPE_LABELS = { name: '名前', symbol: '記号', trivia: '豆知識' };
+const QTYPE_MULT   = { name: 1,     symbol: 1.5,    trivia: 2 };
 
 let G = {
-  mode:'timeattack', diff:1,
-  score:0, combo:0, maxCombo:0,
-  lives:5, count:0, totalMisses:0,
-  timeLeft:60, timerID:null, running:false,
-  pool:[], poolIdx:0,
-  curEl:null, curQType:'name',
-  targets:[], validTargets:[], typed:'',
-  missesOnEl:0,
-  elResults:{}, // no -> {correct, misses}
-  practicing:false,
+  mode: 'timeattack', diff: 1,
+  score: 0, combo: 0, maxCombo: 0,
+  lives: 5, count: 0, totalMisses: 0,
+  timeLeft: 60, timerID: null, running: false,
+  pool: [], poolIdx: 0,
+  curEl: null, curQType: 'name',
+  validTargets: [], typed: '',
+  missesOnEl: 0,
+  elResults: {},
+  practicing: false,
 };
 
 // ============================================================
 // UTILITIES
 // ============================================================
-function shuffle(arr){
-  const a=[...arr];
-  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
   return a;
 }
-function buildPool(diff){
-  if(diff===0) return shuffle(ELEMENTS);
-  if(diff===1) return shuffle(ELEMENTS.filter(e=>e.diff===1));
-  if(diff===2) return shuffle(ELEMENTS.filter(e=>e.diff<=2));
-  return shuffle(ELEMENTS); // diff===3
+function buildPool(diff) {
+  if (diff === 0) return shuffle(ELEMENTS);
+  if (diff === 1) return shuffle(ELEMENTS.filter(e => e.diff === 1));
+  if (diff === 2) return shuffle(ELEMENTS.filter(e => e.diff <= 2));
+  return shuffle(ELEMENTS);
 }
-function comboClass(c){
-  if(c>=20) return 'c4';
-  if(c>=10) return 'c3';
-  if(c>=5) return 'c2';
-  if(c>=3) return 'c1';
+function comboClass(c) {
+  if (c >= 20) return 'c4'; if (c >= 10) return 'c3';
+  if (c >= 5)  return 'c2'; if (c >= 3)  return 'c1';
   return 'c0';
 }
-function comboMult(c){
-  if(c>=20) return 4;
-  if(c>=10) return 3;
-  if(c>=5) return 2;
-  if(c>=3) return 1.5;
+function comboMult(c) {
+  if (c >= 20) return 4; if (c >= 10) return 3;
+  if (c >= 5)  return 2; if (c >= 3)  return 1.5;
   return 1;
 }
-function pickQType(diff, elDiff){
-  const r=Math.random();
-  // Weights: [name, symbol, trivia]
-  const w = {
-    1:[.80,.15,.05], 2:[.50,.35,.15], 3:[.25,.40,.35], 0:[.40,.35,.25]
-  }[diff] || [.80,.15,.05];
-  // Adjust for element difficulty: hard elements favor name type for accessibility
-  const adjName = w[0] + (elDiff===3 ? .15 : 0) - (elDiff===1 ? .1 : 0);
-  const adjSym = w[1];
-  const tot = adjName + adjSym + w[2];
-  const rn = r * tot;
-  if(rn < adjName) return 'name';
-  if(rn < adjName + adjSym) return 'symbol';
+function pickQType(diff, elDiff) {
+  const w = ({ 1:[.80,.15,.05], 2:[.50,.35,.15], 3:[.25,.40,.35], 0:[.40,.35,.25] })[diff] || [.80,.15,.05];
+  const adjName = Math.max(0, w[0] + (elDiff === 3 ? .15 : 0) - (elDiff === 1 ? .1 : 0));
+  const tot = adjName + w[1] + w[2];
+  const r = Math.random() * tot;
+  if (r < adjName) return 'name';
+  if (r < adjName + w[1]) return 'symbol';
   return 'trivia';
 }
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('scr-'+id).classList.add('active');
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-' + id).classList.add('active');
 }
-function trigger(el, cls, dur=400){
+function trigger(el, cls, dur) {
   el.classList.add(cls);
-  setTimeout(()=>el.classList.remove(cls), dur);
+  setTimeout(() => el.classList.remove(cls), dur || 400);
 }
-function fmtCombo(c){ return '×' + (c===0?1:c); }
 
 // ============================================================
-// SCREEN NAVIGATION
+// NAVIGATION
 // ============================================================
-function openMode(mode){
+function openMode(mode) {
   G.mode = mode;
-  const el = document.getElementById('mode-title-txt');
-  const sub = document.getElementById('mode-subtitle-txt');
-  el.textContent = MODE_INFO[mode].label + ' — 難易度選択';
-  const modeDescs = {
-    timeattack:'60秒でできるだけ多くの元素を入力！',
-    endless:'ライフが尽きるまで続けるサバイバル！',
-    practice:'解説カード付き。じっくり覚えよう。'
+  document.getElementById('mode-title-txt').textContent = MODE_INFO[mode].label + ' -- 難易度選択';
+  const descs = {
+    timeattack: '60秒でできるだけ多くの元素を入力！',
+    endless:    'ライフが尽きるまで続けるサバイバル！',
+    practice:   '解説カード付き。じっくり覚えよう。',
   };
-  sub.textContent = modeDescs[mode];
-  // Reset diff selection
-  document.querySelectorAll('.dbtn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('mode-subtitle-txt').textContent = descs[mode];
+  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('sel'));
   G.diff = -1;
   document.getElementById('diff-info').textContent = '難易度を選択してください';
   showScreen('mode');
 }
-function selDiff(d){
+function selDiff(d) {
   G.diff = d;
-  document.querySelectorAll('.dbtn').forEach(b=>b.classList.remove('sel'));
-  document.querySelector(`.dbtn[data-d="${d}"]`).classList.add('sel');
-  document.getElementById('diff-info').textContent = DIFF_INFO[d].desc;
+  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.dbtn[data-d="' + d + '"]').classList.add('sel');
+  const pool = buildPool(d);
+  document.getElementById('diff-info').textContent =
+    DIFF_INFO[d].label + ' -- ' + DIFF_INFO[d].desc + '（出題候補: ' + pool.length + '元素）';
 }
-function startGame(){
-  if(G.diff===-1){alert('難易度を選択してください');return;}
+function startGame() {
+  if (G.diff === -1) { alert('難易度を選択してください'); return; }
   initGame();
   showScreen('game');
 }
-function restartGame(){
-  openMode(G.mode);
-  showScreen('mode');
-}
+function restartGame() { openMode(G.mode); showScreen('mode'); }
 
 // ============================================================
-// GAME INIT & LOOP
+// GAME INIT
 // ============================================================
-function initGame(){
+function initGame() {
   clearInterval(G.timerID);
-  G.score=0; G.combo=0; G.maxCombo=0;
-  G.lives= G.mode==='endless'?5:0;
-  G.count=0; G.totalMisses=0;
-  G.timeLeft= G.mode==='timeattack'?60:0;
-  G.pool=buildPool(G.diff); G.poolIdx=0;
-  G.elResults={}; G.running=true; G.practicing=false;
-  // HUD setup
+  G.score = 0; G.combo = 0; G.maxCombo = 0;
+  G.lives = G.mode === 'endless' ? 5 : 0;
+  G.count = 0; G.totalMisses = 0;
+  G.timeLeft = G.mode === 'timeattack' ? 60 : 0;
+  G.pool = buildPool(G.diff); G.poolIdx = 0;
+  G.elResults = {}; G.running = true; G.practicing = false;
   updateHUD();
-  document.getElementById('timer-wrap').style.display = G.mode==='timeattack'?'':'none';
+  document.getElementById('timer-wrap').style.display = G.mode === 'timeattack' ? '' : 'none';
   renderLives();
-  if(G.mode==='timeattack'){
-    G.timerID=setInterval(tickTimer,1000);
-  }
+  if (G.mode === 'timeattack') G.timerID = setInterval(tickTimer, 1000);
   nextQuestion();
-  setTimeout(()=>document.getElementById('typing-inp').focus(),100);
+  setTimeout(() => document.getElementById('typing-inp').focus(), 100);
 }
-function tickTimer(){
-  if(!G.running) return;
+function tickTimer() {
+  if (!G.running) return;
   G.timeLeft--;
-  const tv=document.getElementById('h-timer');
-  tv.textContent=G.timeLeft;
-  tv.className='hud-val timer';
-  if(G.timeLeft<=10) tv.classList.add('danger');
-  else if(G.timeLeft<=20) tv.classList.add('warn');
-  if(G.timeLeft<=0) endGame();
+  const tv = document.getElementById('h-timer');
+  tv.textContent = G.timeLeft;
+  tv.className = 'hud-val timer' + (G.timeLeft <= 10 ? ' danger' : G.timeLeft <= 20 ? ' warn' : '');
+  if (G.timeLeft <= 0) endGame();
 }
-function nextQuestion(){
-  if(G.poolIdx>=G.pool.length){
-    // Cycle pool
-    G.pool=shuffle(G.pool); G.poolIdx=0;
-  }
-  const el=G.pool[G.poolIdx++];
-  G.curEl=el;
-  G.curQType=pickQType(G.diff,el.diff);
-  G.targets=[el.romaji,...el.alts];
-  G.validTargets=[...G.targets];
-  G.typed=''; G.missesOnEl=0;
-  // Init result tracking
-  if(!G.elResults[el.no]) G.elResults[el.no]={correct:false,misses:0};
+function nextQuestion() {
+  if (G.poolIdx >= G.pool.length) { G.pool = shuffle(G.pool); G.poolIdx = 0; }
+  const el = G.pool[G.poolIdx++];
+  G.curEl = el;
+  G.curQType = pickQType(G.diff, el.diff);
+  G.validTargets = [el.romaji].concat(el.alts);
+  G.typed = ''; G.missesOnEl = 0;
+  if (!G.elResults[el.no]) G.elResults[el.no] = { correct: false, misses: 0 };
   renderQuestion();
   updateRomajiGuide();
-  document.getElementById('typing-inp').value='';
+  document.getElementById('typing-inp').value = '';
   document.getElementById('typing-inp').focus();
 }
-function endGame(){
-  G.running=false;
+function endGame() {
+  G.running = false;
   clearInterval(G.timerID);
   showResult();
 }
@@ -829,275 +650,241 @@ function endGame(){
 // ============================================================
 // QUESTION RENDERING
 // ============================================================
-function renderQuestion(){
-  const el=G.curEl, qt=G.curQType;
-  const card=document.getElementById('el-card');
-  card.className='el-card diff'+el.diff;
-  document.getElementById('c-no').textContent='No.' + el.no + ' / ' + el.sym;
-  const badge=document.getElementById('c-type-badge');
-  badge.textContent=QTYPE_LABELS[qt];
-  badge.className='card-type t-'+qt;
-  const qc=document.getElementById('q-content');
-  if(qt==='name'){
-    qc.innerHTML=`<div class="q-name">${el.ja}</div><div class="q-atno">${el.en}</div>`;
-  } else if(qt==='symbol'){
-    qc.innerHTML=`<div class="q-symbol">${el.sym}</div><div class="q-atno">第${el.no}番元素</div>`;
+function renderQuestion() {
+  const el = G.curEl, qt = G.curQType;
+  const card = document.getElementById('el-card');
+  card.className = 'el-card diff' + el.diff;
+  document.getElementById('c-no').textContent = 'No.' + el.no + ' / ' + el.sym;
+  const badge = document.getElementById('c-type-badge');
+  badge.textContent = QTYPE_LABELS[qt];
+  badge.className = 'card-type t-' + qt;
+  const qc = document.getElementById('q-content');
+  if (qt === 'name') {
+    qc.innerHTML = '<div class="q-name">' + el.ja + '</div><div class="q-atno">' + el.en + '</div>';
+  } else if (qt === 'symbol') {
+    qc.innerHTML = '<div class="q-symbol">' + el.sym + '</div><div class="q-atno">&#x7B2C;' + el.no + '&#x756A;&#x5143;&#x7D20;</div>';
   } else {
-    qc.innerHTML=`<div class="q-trivia">${el.trivia}</div>`;
+    qc.innerHTML = '<div class="q-trivia">' + el.trivia + '</div>';
   }
   renderHints(0);
-  // Hint kana (always shown for diff1; shown after misses for others)
-  const showKana = G.diff===1 || G.mode==='practice';
+  const showKana = G.diff === 1 || G.mode === 'practice';
   document.getElementById('hint-kana').textContent = showKana ? el.hira : '';
-  // Score possible
-  const scoreNow = Math.round(el.score * QTYPE_MULT[qt] * comboMult(G.combo));
 }
-function renderHints(misses){
-  const el=G.curEl, qt=G.curQType;
-  const h=document.getElementById('hints');
-  const pills=[];
-  // Always show difficulty badge
-  const diffs=['','初級','中級','上級'];
-  pills.push(`<span class="hint-pill shown">${diffs[el.diff]}</span>`);
-  // Score hint
-  const sm=Math.round(el.score*QTYPE_MULT[qt]*comboMult(G.combo));
-  pills.push(`<span class="score-possible">+${sm}pt</span>`);
-  // Conditional hints based on question type and misses
-  if(qt==='symbol'){
-    if(misses>=2) pills.push(`<span class="hint-pill shown">${el.ja}</span>`);
-    else pills.push(`<span class="hint-pill">日本語名 (${misses>=1?'→あと1ミスで表示':'2ミスで表示'})</span>`);
-    if(misses>=1 && G.diff!==1) document.getElementById('hint-kana').textContent=el.hira;
-  } else if(qt==='trivia'){
-    if(misses>=2) pills.push(`<span class="hint-pill shown">${el.sym} / ${el.ja}</span>`);
-    else if(misses>=1) pills.push(`<span class="hint-pill shown">${el.sym}</span>`);
-    else pills.push(`<span class="hint-pill">元素記号 (1ミスで表示)</span>`);
-    if(misses>=2 && G.diff!==1) document.getElementById('hint-kana').textContent=el.hira;
-  } else { // name
-    if(misses>=3) pills.push(`<span class="hint-pill shown">${el.sym}</span>`);
-    else if(misses>0) pills.push(`<span class="hint-pill shown">${el.hira}</span>`);
+function renderHints(misses) {
+  const el = G.curEl, qt = G.curQType;
+  const diffs = ['', '初級', '中級', '上級'];
+  const sm = Math.round(el.score * QTYPE_MULT[qt] * comboMult(G.combo));
+  let html = '<span class="hint-pill shown">' + diffs[el.diff] + '</span>';
+  html += '<span class="score-possible">+' + sm + 'pt</span>';
+  if (qt === 'symbol') {
+    if (misses >= 2) html += '<span class="hint-pill shown">' + el.ja + '</span>';
+    else html += '<span class="hint-pill">' + (misses >= 1 ? 'あと1ミスで日本語名' : '2ミスで日本語名') + '</span>';
+    if (misses >= 1 && G.diff !== 1) document.getElementById('hint-kana').textContent = el.hira;
+  } else if (qt === 'trivia') {
+    if (misses >= 2) html += '<span class="hint-pill shown">' + el.sym + ' / ' + el.ja + '</span>';
+    else if (misses >= 1) html += '<span class="hint-pill shown">' + el.sym + '</span>';
+    else html += '<span class="hint-pill">1ミスで元素記号</span>';
+    if (misses >= 2 && G.diff !== 1) document.getElementById('hint-kana').textContent = el.hira;
+  } else {
+    if (misses >= 3) html += '<span class="hint-pill shown">' + el.sym + '</span>';
+    else if (misses > 0) html += '<span class="hint-pill shown">' + el.hira + '</span>';
   }
-  h.innerHTML=pills.join('');
+  document.getElementById('hints').innerHTML = html;
 }
 
 // ============================================================
-// ROMAJI MATCHING & INPUT
+// INPUT & MATCHING
 // ============================================================
-function updateRomajiGuide(){
-  const guide=G.validTargets[0]||G.targets[0];
-  const typed=G.typed;
-  const rem=guide.slice(typed.length);
-  const cursor=rem[0]||'';
-  const rest=rem.slice(1);
-  document.getElementById('romaji-guide').innerHTML=
-    `<span class="rt">${typed}</span><span class="rc">${cursor}</span><span class="rr">${rest}</span>`;
+function updateRomajiGuide() {
+  const guide = G.validTargets[0] || '';
+  const rem = guide.slice(G.typed.length);
+  const cursor = rem[0] || '';
+  const rest = rem.slice(1);
+  document.getElementById('romaji-guide').innerHTML =
+    '<span class="rt">' + G.typed + '</span>' +
+    '<span class="rc">' + cursor + '</span>' +
+    '<span class="rr">' + rest + '</span>';
   document.getElementById('romaji-guide').classList.remove('err');
-  // Overlay
-  document.getElementById('inp-overlay').textContent=typed+(cursor?'_':'');
+  document.getElementById('inp-overlay').textContent = G.typed + (cursor ? '_' : '');
 }
-function processInput(c){
-  if(!G.running||G.practicing) return;
-  const newTyped=G.typed+c;
-  const filtered=G.validTargets.filter(t=>t.startsWith(newTyped));
-  if(filtered.length===0){
-    // Wrong
+function processInput(c) {
+  if (!G.running || G.practicing) return;
+  const newTyped = G.typed + c;
+  const filtered = G.validTargets.filter(t => t.startsWith(newTyped));
+  if (filtered.length === 0) {
     wrongInput();
   } else {
-    G.typed=newTyped;
-    G.validTargets=filtered;
+    G.typed = newTyped;
+    G.validTargets = filtered;
     updateRomajiGuide();
-    const complete=filtered.some(t=>t===newTyped);
-    if(complete) correctAnswer();
+    if (filtered.some(t => t === newTyped)) correctAnswer();
   }
 }
-function wrongInput(){
-  G.totalMisses++;
-  G.missesOnEl++;
-  if(G.elResults[G.curEl.no]) G.elResults[G.curEl.no].misses++;
-  // Visual feedback
-  const card=document.getElementById('el-card');
-  const inp=document.getElementById('typing-inp');
-  const guide=document.getElementById('romaji-guide');
-  trigger(card,'shake',300);
-  inp.classList.add('err');
-  guide.classList.add('err');
-  setTimeout(()=>{inp.classList.remove('err');guide.classList.remove('err');},250);
-  // Update hints
+function wrongInput() {
+  G.totalMisses++; G.missesOnEl++;
+  G.elResults[G.curEl.no].misses++;
+  const card = document.getElementById('el-card');
+  const inp  = document.getElementById('typing-inp');
+  const guide = document.getElementById('romaji-guide');
+  trigger(card, 'shake', 300);
+  inp.classList.add('err'); guide.classList.add('err');
+  setTimeout(() => { inp.classList.remove('err'); guide.classList.remove('err'); }, 250);
   renderHints(G.missesOnEl);
-  // Show kana after first miss in non-初級
-  if(G.missesOnEl>=1 && G.diff!==1){
-    document.getElementById('hint-kana').textContent=G.curEl.hira;
-  }
-  // Endless: too many misses = auto-skip with life loss
-  if(G.mode==='endless' && G.missesOnEl>=7){
-    loseLife();
-    skipElement(false);
-  }
+  if (G.missesOnEl >= 1 && G.diff !== 1) document.getElementById('hint-kana').textContent = G.curEl.hira;
+  if (G.mode === 'endless' && G.missesOnEl >= 7) { loseLife(); skipElement(false); }
 }
-function correctAnswer(){
-  const el=G.curEl;
+function correctAnswer() {
+  const el = G.curEl;
   G.combo++;
-  if(G.combo>G.maxCombo) G.maxCombo=G.combo;
-  if(G.elResults[el.no]) G.elResults[el.no].correct=true;
-  const pts=Math.round(el.score*QTYPE_MULT[G.curQType]*comboMult(G.combo));
-  G.score+=pts; G.count++;
-  // Combo break on misses
-  if(G.missesOnEl>3) G.combo=0;
+  if (G.combo > G.maxCombo) G.maxCombo = G.combo;
+  G.elResults[el.no].correct = true;
+  const pts = Math.round(el.score * QTYPE_MULT[G.curQType] * comboMult(G.combo));
+  G.score += pts; G.count++;
+  if (G.missesOnEl > 3) G.combo = 0;
   updateHUD();
-  // Score popup
   spawnScorePopup(pts);
-  // Combo burst
-  if(G.combo>0 && G.combo%5===0) spawnComboBurst();
-  // Flash card
-  trigger(document.getElementById('el-card'),'flash',400);
-  if(G.mode==='practice'){
-    showPracticeCard(true);
-  } else {
-    setTimeout(nextQuestion, 120);
-  }
+  if (G.combo > 0 && G.combo % 5 === 0) spawnComboBurst();
+  trigger(document.getElementById('el-card'), 'flash', 400);
+  if (G.mode === 'practice') { showPracticeCard(true); }
+  else { setTimeout(nextQuestion, 120); }
 }
-function skipElement(userInitiated=true){
-  if(G.mode==='endless' && userInitiated) loseLife();
-  G.combo=0;
-  updateHUD();
-  if(G.mode==='practice'){
-    showPracticeCard(false);
-  } else {
-    nextQuestion();
-  }
+function skipElement(userInitiated) {
+  if (userInitiated === undefined) userInitiated = true;
+  if (G.mode === 'endless' && userInitiated) loseLife();
+  G.combo = 0; updateHUD();
+  if (G.mode === 'practice') { showPracticeCard(false); }
+  else { nextQuestion(); }
 }
-function loseLife(){
-  G.lives=Math.max(0,G.lives-1);
+function loseLife() {
+  G.lives = Math.max(0, G.lives - 1);
   renderLives();
-  if(G.lives<=0) endGame();
+  if (G.lives <= 0) endGame();
 }
 
 // ============================================================
-// HUD UPDATE
+// HUD
 // ============================================================
-function updateHUD(){
-  document.getElementById('h-score').textContent=G.score.toLocaleString();
-  const cv=document.getElementById('h-combo');
-  cv.textContent=fmtCombo(G.combo);
-  cv.className='combo-val '+comboClass(G.combo);
-  trigger(cv,'combo-bump',150);
-  document.getElementById('h-count').textContent=G.count;
-  // Progress bar
-  const poolSize=G.pool.length;
-  document.getElementById('prog').style.width=(G.poolIdx/poolSize*100)+'%';
+function updateHUD() {
+  document.getElementById('h-score').textContent = G.score.toLocaleString();
+  const cv = document.getElementById('h-combo');
+  cv.textContent = 'x' + (G.combo === 0 ? 1 : G.combo);
+  cv.className = 'combo-val ' + comboClass(G.combo);
+  trigger(cv, 'combo-bump', 150);
+  document.getElementById('h-count').textContent = G.count;
+  document.getElementById('prog').style.width = (G.poolIdx / G.pool.length * 100) + '%';
 }
-function renderLives(){
-  const lv=document.getElementById('h-lives');
-  if(G.mode!=='endless'){lv.innerHTML='';return;}
-  lv.innerHTML='';
-  for(let i=0;i<5;i++){
-    const sp=document.createElement('span');
-    sp.className='life'+(i>=G.lives?' lost':'');
-    sp.textContent='❤';
+function renderLives() {
+  const lv = document.getElementById('h-lives');
+  if (G.mode !== 'endless') { lv.innerHTML = ''; return; }
+  lv.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const sp = document.createElement('span');
+    sp.className = 'life' + (i >= G.lives ? ' lost' : '');
+    sp.textContent = '❤';
     lv.appendChild(sp);
   }
 }
 
 // ============================================================
-// VISUAL EFFECTS
+// EFFECTS
 // ============================================================
-function spawnScorePopup(pts){
-  const el=document.createElement('div');
-  el.className='score-pop';
-  el.textContent='+'+pts;
-  const card=document.getElementById('el-card').getBoundingClientRect();
-  el.style.left=(card.left+card.width/2-20)+'px';
-  el.style.top=(card.top)+'px';
+function spawnScorePopup(pts) {
+  const el = document.createElement('div');
+  el.className = 'score-pop'; el.textContent = '+' + pts;
+  const r = document.getElementById('el-card').getBoundingClientRect();
+  el.style.left = (r.left + r.width / 2 - 20) + 'px';
+  el.style.top  = r.top + 'px';
   document.body.appendChild(el);
-  setTimeout(()=>el.remove(),1000);
+  setTimeout(() => el.remove(), 1000);
 }
-function spawnComboBurst(){
-  const el=document.createElement('div');
-  el.className='combo-burst';
-  const cls=comboClass(G.combo);
-  el.style.color=cls==='c4'?'var(--error)':cls==='c3'?'#f97316':cls==='c2'?'var(--amber)':'var(--success)';
-  el.textContent=G.combo+'COMBO!';
+function spawnComboBurst() {
+  const el = document.createElement('div');
+  el.className = 'combo-burst';
+  const cls = comboClass(G.combo);
+  const colors = { c4: 'var(--error)', c3: '#f97316', c2: 'var(--amber)', c1: 'var(--success)' };
+  el.style.color = colors[cls] || 'var(--success)';
+  el.textContent = G.combo + 'COMBO!';
   document.body.appendChild(el);
-  setTimeout(()=>el.remove(),800);
+  setTimeout(() => el.remove(), 800);
 }
 
 // ============================================================
-// PRACTICE MODE CARD
+// PRACTICE CARD
 // ============================================================
-function showPracticeCard(wasCorrect){
-  G.practicing=true;
-  const el=G.curEl;
-  const ov=document.createElement('div');
-  ov.className='practice-overlay';
-  ov.innerHTML=`
-    <div class="practice-card">
-      <div class="pc-status ${wasCorrect?'ok':'skip'}">${wasCorrect?'✓ 正解！':'→ スキップ'}</div>
-      <div class="pc-atno">No.${el.no} — ${el.en}</div>
-      <div class="pc-sym">${el.sym}</div>
-      <div class="pc-ja">${el.ja}</div>
-      <div class="pc-hira">${el.hira}</div>
-      <div class="pc-romaji">${el.romaji}</div>
-      <div class="pc-trivia">${el.trivia}</div>
-      <button class="pc-next" onclick="closePracticeCard()">次の問題へ →</button>
-    </div>`;
+function showPracticeCard(wasCorrect) {
+  G.practicing = true;
+  const el = G.curEl;
+  const ov = document.createElement('div');
+  ov.id = 'practice-ov';
+  ov.className = 'practice-overlay';
+  ov.innerHTML =
+    '<div class="practice-card">' +
+      '<div class="pc-status ' + (wasCorrect ? 'ok' : 'skip') + '">' + (wasCorrect ? '&#x2713; 正解！' : '→ スキップ') + '</div>' +
+      '<div class="pc-atno">No.' + el.no + ' — ' + el.en + '</div>' +
+      '<div class="pc-sym">' + el.sym + '</div>' +
+      '<div class="pc-ja">' + el.ja + '</div>' +
+      '<div class="pc-hira">' + el.hira + '</div>' +
+      '<div class="pc-romaji">' + el.romaji + '</div>' +
+      '<div class="pc-trivia">' + el.trivia + '</div>' +
+      '<button class="pc-next" onclick="closePracticeCard()">次の問題へ →</button>' +
+    '</div>';
   document.body.appendChild(ov);
-  ov.id='practice-ov';
 }
-function closePracticeCard(){
-  const ov=document.getElementById('practice-ov');
-  if(ov) ov.remove();
-  G.practicing=false;
+function closePracticeCard() {
+  const ov = document.getElementById('practice-ov');
+  if (ov) ov.remove();
+  G.practicing = false;
   nextQuestion();
   document.getElementById('typing-inp').focus();
 }
 
 // ============================================================
-// RESULT SCREEN
+// RESULT
 // ============================================================
-function showResult(){
+function showResult() {
   showScreen('result');
-  const mLabel = MODE_INFO[G.mode].label + ' / ' + DIFF_INFO[G.diff].label;
   document.getElementById('r-title').textContent =
-    G.mode==='timeattack'?'TIME UP':G.mode==='endless'?'GAME OVER':'RESULT';
-  document.getElementById('r-mode').textContent=mLabel;
-  animateCount('r-score',0,G.score,1200);
-  document.getElementById('r-correct').textContent=G.count;
-  document.getElementById('r-miss').textContent=G.totalMisses;
-  document.getElementById('r-combo').textContent=G.maxCombo;
+    G.mode === 'timeattack' ? 'TIME UP' : G.mode === 'endless' ? 'GAME OVER' : 'RESULT';
+  document.getElementById('r-mode').textContent =
+    MODE_INFO[G.mode].label + ' / ' + DIFF_INFO[G.diff].label;
+  animateCount('r-score', 0, G.score, 1200);
+  document.getElementById('r-correct').textContent = G.count;
+  document.getElementById('r-miss').textContent = G.totalMisses;
+  document.getElementById('r-combo').textContent = G.maxCombo;
   buildPTGrid();
   saveHighScore();
 }
-function animateCount(id,from,to,dur){
-  const el=document.getElementById(id);
-  const start=performance.now();
-  function step(now){
-    const t=Math.min((now-start)/dur,1);
-    const ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-    el.textContent=Math.round(from+(to-from)*ease).toLocaleString();
-    if(t<1) requestAnimationFrame(step);
+function animateCount(id, from, to, dur) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / dur, 1);
+    const e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    el.textContent = Math.round(from + (to - from) * e).toLocaleString();
+    if (t < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
-function buildPTGrid(){
-  const grid=document.getElementById('pt-grid');
-  grid.innerHTML='';
-  // Map no -> element
-  const noMap={};
-  ELEMENTS.forEach(e=>noMap[e.no]=e);
-  PT_GRID.forEach(([no,grp])=>{
-    const cell=document.createElement('div');
-    if(no===0||no===-1||no===-2){
-      cell.className='pt-cell gap';
-      cell.textContent= no===-1?'La…':no===-2?'Ac…':'';
-      if(no!==0) cell.style.color='var(--text-dim)';
+function buildPTGrid() {
+  const grid = document.getElementById('pt-grid');
+  grid.innerHTML = '';
+  const noMap = {};
+  ELEMENTS.forEach(e => { noMap[e.no] = e; });
+  PT_GRID.forEach(function(entry) {
+    const no = entry[0];
+    const cell = document.createElement('div');
+    if (no === 0 || no === -1 || no === -2) {
+      cell.className = 'pt-cell gap';
+      if (no === -1) { cell.textContent = 'La'; cell.style.color = 'var(--text-dim)'; cell.style.fontSize = '7px'; }
+      if (no === -2) { cell.textContent = 'Ac'; cell.style.color = 'var(--text-dim)'; cell.style.fontSize = '7px'; }
     } else {
-      const r=G.elResults[no];
-      const sym=noMap[no]?noMap[no].sym:'?';
-      cell.textContent=sym;
-      if(!r) cell.className='pt-cell unseen';
-      else if(r.correct && r.misses===0) cell.className='pt-cell perfect';
-      else if(r.correct) cell.className='pt-cell good';
-      else cell.className='pt-cell struggle';
-      cell.title=noMap[no]?`${noMap[no].ja} (${sym})`:'';
+      const r = G.elResults[no];
+      const e = noMap[no];
+      cell.textContent = e ? e.sym : '?';
+      cell.className = !r ? 'pt-cell unseen' :
+        (r.correct && r.misses === 0 ? 'pt-cell perfect' :
+        r.correct ? 'pt-cell good' : 'pt-cell struggle');
+      if (e) cell.title = e.ja + ' (' + e.sym + ')';
     }
     grid.appendChild(cell);
   });
@@ -1106,85 +893,71 @@ function buildPTGrid(){
 // ============================================================
 // HIGH SCORE
 // ============================================================
-function getHSKey(){ return `hs_${G.mode}_${G.diff}`; }
-function saveHighScore(){
-  const key=getHSKey();
-  const saved=JSON.parse(localStorage.getItem(key)||'[]');
-  saved.push({score:G.score,correct:G.count,date:new Date().toLocaleDateString('ja-JP')});
-  saved.sort((a,b)=>b.score-a.score);
-  localStorage.setItem(key,JSON.stringify(saved.slice(0,5)));
+function saveHighScore() {
+  const key = 'hs_' + G.mode + '_' + G.diff;
+  const saved = JSON.parse(localStorage.getItem(key) || '[]');
+  saved.push({ score: G.score, correct: G.count, date: new Date().toLocaleDateString('ja-JP') });
+  saved.sort((a, b) => b.score - a.score);
+  localStorage.setItem(key, JSON.stringify(saved.slice(0, 5)));
 }
-function showHighScore(){
-  const modal=document.createElement('div');
-  modal.className='hs-modal';
-  const modes=['timeattack','endless','practice'];
-  const diffs=[1,2,3,0];
-  const mLabel={timeattack:'TA',endless:'END',practice:'PRG'};
-  const dLabel={1:'初級',2:'中級',3:'上級',0:'RND'};
-  let rows='';
-  for(const m of modes){
-    for(const d of diffs){
-      const key=`hs_${m}_${d}`;
-      const saved=JSON.parse(localStorage.getItem(key)||'[]');
-      if(saved.length>0){
-        const best=saved[0];
-        rows+=`<tr><td>${mLabel[m]}-${dLabel[d]}</td><td>${best.date}</td><td>${best.score.toLocaleString()}</td></tr>`;
+function showHighScore() {
+  const modal = document.createElement('div');
+  modal.className = 'hs-modal';
+  let rows = '';
+  const mL = { timeattack: 'TA', endless: 'END', practice: 'PRG' };
+  const dL = { 1: '初級', 2: '中級', 3: '上級', 0: 'RND' };
+  ['timeattack','endless','practice'].forEach(function(m) {
+    [1,2,3,0].forEach(function(d) {
+      const saved = JSON.parse(localStorage.getItem('hs_' + m + '_' + d) || '[]');
+      if (saved.length > 0) {
+        rows += '<tr><td>' + mL[m] + '-' + dL[d] + '</td><td>' + saved[0].date + '</td><td>' + saved[0].score.toLocaleString() + '</td></tr>';
       }
-    }
-  }
-  if(!rows) rows='<tr><td colspan="3" style="color:var(--text-dim);text-align:center">データなし</td></tr>';
-  modal.innerHTML=`
-    <div class="hs-inner">
-      <div class="hs-title">HALL OF FAME</div>
-      <table class="hs-table">
-        <thead><tr><th>モード</th><th>日付</th><th>スコア</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <button class="hs-close" onclick="this.closest('.hs-modal').remove()">閉じる</button>
-    </div>`;
+    });
+  });
+  if (!rows) rows = '<tr><td colspan="3" style="color:var(--text-dim);text-align:center">データなし</td></tr>';
+  modal.innerHTML =
+    '<div class="hs-inner">' +
+      '<div class="hs-title">HALL OF FAME</div>' +
+      '<table class="hs-table"><thead><tr><th>モード</th><th>日付</th><th>スコア</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
+      '<button class="hs-close" onclick="this.closest(\'.hs-modal\').remove()">閉じる</button>' +
+    '</div>';
   document.body.appendChild(modal);
 }
 
 // ============================================================
-// EVENT LISTENERS
+// INPUT EVENTS
 // ============================================================
-document.addEventListener('keydown', e=>{
-  if(!G.running || G.practicing) return;
-  if(e.key==='Tab'){e.preventDefault();skipElement(true);return;}
-  if(e.key==='Escape'){e.preventDefault();endGame();return;}
-  if(e.key.length===1 && /^[a-z\-]$/i.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey){
+document.addEventListener('keydown', function(e) {
+  if (!G.running || G.practicing) return;
+  if (e.key === 'Tab') { e.preventDefault(); skipElement(true); return; }
+  if (e.key === 'Escape') { e.preventDefault(); endGame(); return; }
+  if (e.key.length === 1 && /^[a-z\-]$/i.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
     e.preventDefault();
     processInput(e.key.toLowerCase());
-    // Sync visible input
-    const inp=document.getElementById('typing-inp');
-    inp.value=G.typed;
+    document.getElementById('typing-inp').value = G.typed;
   }
 });
-
-// Mobile: input event fallback
-document.getElementById('typing-inp').addEventListener('input', e=>{
-  if(!G.running || G.practicing) return;
-  const val=e.target.value.toLowerCase().replace(/[^a-z\-]/g,'');
-  // Process only new characters
-  if(val.length>G.typed.length){
-    const newChar=val.slice(G.typed.length);
-    for(const c of newChar) processInput(c);
+document.getElementById('typing-inp').addEventListener('input', function(e) {
+  if (!G.running || G.practicing) return;
+  const val = e.target.value.toLowerCase().replace(/[^a-z\-]/g, '');
+  if (val.length > G.typed.length) {
+    const newChars = val.slice(G.typed.length);
+    for (let i = 0; i < newChars.length; i++) processInput(newChars[i]);
   }
-  e.target.value=G.typed;
+  e.target.value = G.typed;
 });
-// Prevent form submit on mobile
-document.getElementById('typing-inp').addEventListener('keydown', e=>{
-  if(e.key==='Enter') e.preventDefault();
+document.getElementById('typing-inp').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') e.preventDefault();
 });
-// Keep input focused
-document.getElementById('scr-game').addEventListener('click', ()=>{
-  if(G.running) document.getElementById('typing-inp').focus();
+document.getElementById('scr-game').addEventListener('click', function() {
+  if (G.running) document.getElementById('typing-inp').focus();
 });
 
 // ============================================================
-// START
+// BOOT
 // ============================================================
-console.log('元素タイピング loaded. 全'+ELEMENTS.length+'元素収録。');
+loadElements();
 </script>
 </body>
 </html>
