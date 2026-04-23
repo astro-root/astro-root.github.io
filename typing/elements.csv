@@ -24,7 +24,7 @@ no,sym,ja,en,hira,romaji,alts,trivia,diff,score
 23,V,バナジウム,Vanadium,ばなじうむ,banajiumu,banaziumu,鉄鋼の強度向上に使われる遷移金属,2,20
 24,Cr,クロム,Chromium,くろむ,kuromu,,ステンレス鋼の必須成分。クロームメッキの材料,1,15
 25,Mn,マンガン,Manganese,まんがん,mangan,mangann|manngan|manngann,乾電池の電極材料。鉄鋼の強化剤,1,15
-26,Fe,鉄,Iron,てつ,tetsu,,地球の核の主成分。人類が最も多く使う金属,1,10
+26,Fe,鉄,Iron,てつ,tetsu,tetu,地球の核の主成分。人類が最も多く使う金属,1,10
 27,Co,コバルト,Cobalt,こばると,kobaruto,,青いコバルトブルー色の由来。磁石の材料,1,15
 28,Ni,ニッケル,Nickel,にっける,nikkeru,,硬貨の材料。ニクロム線に使われる,1,15
 29,Cu,銅,Copper,どう,dou,,電線に広く使われる。熱・電気の良導体,1,10
@@ -34,7 +34,7 @@ no,sym,ja,en,hira,romaji,alts,trivia,diff,score
 33,As,ヒ素,Arsenic,ひそ,hiso,,有名な毒。半導体にも使われる準金属,1,15
 34,Se,セレン,Selenium,せれん,seren,serenn,光で電気を通す光電効果がある。コピー機に利用,2,20
 35,Br,臭素,Bromine,しゅうそ,shuuso,syuuso,常温で液体の唯一の非金属元素,2,20
-36,Kr,クリプトン,Krypton,くりぷとん,kuriputon,,スーパーマンの故郷"クリプトン星"の名の由来,2,20
+36,Kr,クリプトン,Krypton,くりぷとん,kuriputon,,スーパーマンの故郷「クリプトン星」の名の由来,2,20
 37,Rb,ルビジウム,Rubidium,るびじうむ,rubijiumu,rubiziumu,原子時計の材料。赤い炎色反応,2,20
 38,Sr,ストロンチウム,Strontium,すとろんちうむ,sutoronchiumu,sutorontiumu,花火の赤い炎の原料。炎色反応は深紅色,2,25
 39,Y,イットリウム,Yttrium,いっとりうむ,ittoriumu,,LEDや蛍光灯の赤色蛍光体に使われる,2,25
