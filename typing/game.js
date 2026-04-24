@@ -330,21 +330,31 @@ function processChar(c) {
     }
 
     if (VOWELS.has(c) || c === 'y') {
-      // Vowel/y after 'n' → only "nn"-path targets survive.
-      // A target had 'nn' at this position if its prefix at (G.typed.length)
-      // starts with 'nn' — i.e. targets where [typed+'nn'] is a prefix.
-      const nnTyped = G.typed + 'nn';
-      const nnTargets = G.validTargets.filter(t => t.startsWith(nnTyped));
-      if (nnTargets.length === 0) {
-        // No valid path — wrong input, do NOT commit the 'n'
-        wrongInput();
+      // 母音/y が来た場合、2通りの可能性がある：
+      //
+      // [A] n が音節の子音である場合（ni→に, na→な, nu→ぬ, ne→ね, no→の, nya→にゃ ...）
+      //     → G.typed + 'n' + c が有効なプレフィックスとして存在する
+      //
+      // [B] n が「ん」を表す場合
+      //     → G.typed + 'nn' が有効なプレフィックスとして存在する（nn のみ許可）
+      //
+      // [A] を優先チェックする。存在すれば n を確定して c を処理する。
+      // [A] が存在せず [B] のみ存在 → 単独 n は誤り（wrongInput）。
+      // どちらも存在しない → wrongInput。
+
+      // [A] n が音節の子音かどうか確認（ni→に, na→な, nu→ぬ, nya→にゃ ...）
+      const nSyllableTargets = G.validTargets.filter(t => t.startsWith(G.typed + 'n' + c));
+      if (nSyllableTargets.length > 0) {
+        // n は音節の子音 → 確定して c も続けて処理
+        commitPendingN();
+        processChar(c);
         return;
       }
-      // Commit both 'n' chars, then process c
-      G.typed = nnTyped;
-      G.validTargets = nnTargets;
-      resetPendingN();
-      processChar(c);
+
+      // [B] n が「ん」を表す場合 → nn のみ有効
+      //     母音/y が来ても単独 n では進められない → wrongInput
+      //     pendingN をリセットして「最初の n からやり直し」状態にする
+      wrongInput();
       return;
     }
 
