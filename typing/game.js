@@ -1469,30 +1469,51 @@ async function joinRoom() {
   BATTLE.conns  = [];
   BATTLE.peer = new Peer(undefined, { debug: 1, config: peerConfig });
   BATTLE.peer.on('open', function() {
-    const conn = BATTLE.peer.connect(codeTopeerId(raw), { reliable: true, serialization: 'json' });
+    const conn = BATTLE.peer.connect(codeTopeerId(raw), { reliable: true });
     BATTLE.conns.push(conn);
-    setupGuestConn(conn);
+    setupGuestConn(conn, raw);
   });
   BATTLE.peer.on('error', function(err) {
     setBattleStatus('接続失敗: ' + err.type + '　コードを確認してください', 'err');
     $b('battle-create-btn').disabled = false;
     $b('battle-join-btn').disabled = false;
+    cleanupBattle(false);
   });
 }
 
-function setupGuestConn(conn) {
+function setupGuestConn(conn, raw) {
+  // ICE タイムアウト: 15秒で接続が開かなければ諦めてリセット
+  const openTimeout = setTimeout(function() {
+    if (!conn.open) {
+      setBattleStatus('接続タイムアウト。コードを確認するか、もう一度お試しください。', 'err');
+      $b('battle-create-btn').disabled = false;
+      $b('battle-join-btn').disabled = false;
+      cleanupBattle(false);
+    }
+  }, 15000);
+
   conn.on('open', function() {
+    clearTimeout(openTimeout);
     setBattleStatus('ホストに接続しました。開始を待っています...', 'ok');
   });
   conn.on('data', function(data) {
     onGuestReceive(data);
   });
   conn.on('close', function() {
+    clearTimeout(openTimeout);
     if (BATTLE.active) showBattleDisconnect();
-    else setBattleStatus('ホストとの接続が切れました。', 'err');
+    else {
+      setBattleStatus('ホストとの接続が切れました。', 'err');
+      $b('battle-create-btn').disabled = false;
+      $b('battle-join-btn').disabled = false;
+    }
   });
   conn.on('error', function(err) {
-    setBattleStatus('接続エラー: ' + err, 'err');
+    clearTimeout(openTimeout);
+    setBattleStatus('接続エラー: ' + err + '　コードを確認するか、もう一度お試しください。', 'err');
+    $b('battle-create-btn').disabled = false;
+    $b('battle-join-btn').disabled = false;
+    cleanupBattle(false);
   });
 }
 
