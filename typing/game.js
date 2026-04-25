@@ -1050,6 +1050,9 @@ document.addEventListener('keydown', function(e) {
   if (!G.running) return;
   if (e.isComposing || isComposing) return;
 
+  // 'Dead' = アクセント等の合成キー, 無視する
+  if (e.key === 'Dead' || e.key === 'Process') return;
+
   if (e.key === 'Tab') {
     e.preventDefault();
     skipElement(true);
@@ -1067,7 +1070,10 @@ document.addEventListener('keydown', function(e) {
     if (c) {
       e.preventDefault();
       processChar(c);
-      document.getElementById('typing-inp').value = G.typed;
+      // iPad Smart Keyboard: input event が後から発火するのを防ぐため
+      // フィールドを同期してから input イベントで差分が出ないようにする
+      const inp = document.getElementById('typing-inp');
+      inp.value = G.typed;
     }
   }
 });
@@ -1086,6 +1092,7 @@ document.getElementById('typing-inp').addEventListener('input', function(e) {
 
   const raw = e.target.value.normalize('NFKC').toLowerCase().replace(/[^a-z]/g, '');
   const base = G.typed + (pendingNState.active ? 'n' : '');
+  // base === raw のとき: keydown で既に処理済み → 何もしない
   if (raw.length > base.length) {
     const newChars = raw.slice(base.length);
     for (let i = 0; i < newChars.length; i++) {
@@ -1093,7 +1100,8 @@ document.getElementById('typing-inp').addEventListener('input', function(e) {
       if (c) processChar(c);
     }
   }
-  e.target.value = G.typed;
+  // 常にフィールドを確定済み入力に同期（iOS Safariのカーソル問題対策）
+  this.value = G.typed;
 });
 
 document.getElementById('typing-inp').addEventListener('keydown', function(e) {
