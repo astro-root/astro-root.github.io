@@ -468,6 +468,13 @@ function showScreen(id) {
   document.getElementById('scr-' + id).classList.add('active');
   const homeBtn = document.getElementById('btn-home');
   homeBtn.style.display = (id === 'title' || id === 'loading' || id === 'game') ? 'none' : 'flex';
+
+  // iPad/iOS Safari: typing-inp へのフォーカスは scr-game がアクティブな場合のみ許可する。
+  // 非ゲーム画面では display:none の親配下になるため focus() が失敗する。
+  if (id !== 'game') {
+    const inp = document.getElementById('typing-inp');
+    if (document.activeElement === inp) inp.blur();
+  }
 }
 
 function trigger(el, cls, dur) {
@@ -1221,28 +1228,60 @@ function shareRoomCode(code) {
 }
 
 // ---- ICE config (STUN + TURN for NAT traversal) ----
-// OpenRelay は無料の公開TURNサーバー。商用利用・帯域制限あり。
-// 本番でトラフィックが増えたら Metered.ca / Cloudflare TURN に移行推奨。
-const ICE_CONFIG = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
-    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-  ],
-  iceTransportPolicy: 'all',
-};
+// openrelay.metered.ca (OpenRelay) は2024年に廃止済み。旧認証情報は無効。
+// Metered.ca の無料アカウントで API キーを取得すると TURN の信頼性が上がる。
+// https://dashboard.metered.ca → TURN → API Key
+const METERED_API_KEY = ''; // ← Metered.ca の API キーを入力（空欄=フォールバック使用）
 
-// ---- PeerJS lazy load ----
-function getPeerJS(cb) {
-  if (typeof Peer !== 'undefined') { cb(); return; }
-  const s = document.createElement('script');
-  s.src = 'https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js';
-  s.onload = cb;
-  s.onerror = () => setBattleStatus('PeerJS読み込みエラー。ネット接続を確認してください。', 'err');
-  document.head.appendChild(s);
+// フォールバック ICE サーバーリスト（TURN: freeturn.net 無料公開サーバー）
+const ICE_SERVERS_FALLBACK = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  { urls: 'stun:stun3.l.google.com:19302' },
+  { urls: 'stun:stun4.l.google.com:19302' },
+  { urls: 'stun:stun.cloudflare.com:3478' },
+  // freeturn.net: 登録不要の無料 TURN サーバー
+  { urls: 'turn:freeturn.net:3478',  username: 'free', credential: 'free' },
+  { urls: 'turns:freeturn.net:5349', username: 'free', credential: 'free' },
+];
+
+let _cachedIceServers = null;
+
+// ICE サーバーリストを非同期取得（Metered.ca API キーがあれば動的取得、なければフォールバック）
+async function getIceServers() {
+  if (_cachedIceServers) return _cachedIceServers;
+  if (METERED_API_KEY) {
+    try {
+      const res = await fetch(
+        'https://global.metered.ca/api/v1/turn/credentials?apiKey=' + METERED_API_KEY,
+        { signal: AbortSignal.timeout(5000) }
+      );
+      if (res.ok) {
+        _cachedIceServers = await res.json();
+        return _cachedIceServers;
+      }
+    } catch (e) { /* API 失敗時はフォールバックへ */ }
+  }
+  _cachedIceServers = ICE_SERVERS_FALLBACK;
+  return _cachedIceServers;
 }
+
+// ---- PeerJS lazy load (Promise版) ----
+function loadPeerJS() {
+  return new Promise(function(resolve, reject) {
+    if (typeof Peer !== 'undefined') { resolve(); return; }
+    const s = document.createElement('script');
+    // 1.5.4: 1.5.2 の DataChannel 安定性バグを修正したバージョン
+    s.src = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
+    s.onload = resolve;
+    s.onerror = function() { reject(new Error('PeerJS の読み込みに失敗しました。ネット接続を確認してください。')); };
+    document.head.appendChild(s);
+  });
+}
+
+// 後方互換: コールバック形式も維持
+function getPeerJS(cb) { loadPeerJS().then(cb).catch(function(e) { setBattleStatus(e.message, 'err'); }); }
 
 // ---- Waiting room UI ----
 function updateWaitingRoom(players) {
@@ -1281,55 +1320,64 @@ function guestSend(msg) {
 }
 
 // ---- CREATE ROOM (Host) ----
-function createRoom() {
+async function createRoom() {
   if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
   $b('battle-create-btn').disabled = true;
   $b('battle-join-btn').disabled = true;
   setBattleStatus('接続中...', '');
-  getPeerJS(function() {
-    cleanupBattle(false);
-    BATTLE.isHost = true;
-    BATTLE.myId   = 0;
-    BATTLE.conns  = [];
-    BATTLE.seed   = Math.floor(Math.random() * 0x7fffffff);
-    const shortCode = generateShortCode();
-    BATTLE.roomId = shortCode;
-    BATTLE.peer = new Peer(codeTopeerId(shortCode), { debug: 0, config: ICE_CONFIG });
+  let iceServers;
+  try {
+    const results = await Promise.all([getIceServers(), loadPeerJS()]);
+    iceServers = results[0];
+  } catch (e) {
+    setBattleStatus(e.message, 'err');
+    $b('battle-create-btn').disabled = false;
+    $b('battle-join-btn').disabled = false;
+    return;
+  }
+  const peerConfig = { iceServers: iceServers, iceTransportPolicy: 'all' };
+  cleanupBattle(false);
+  BATTLE.isHost = true;
+  BATTLE.myId   = 0;
+  BATTLE.conns  = [];
+  BATTLE.seed   = Math.floor(Math.random() * 0x7fffffff);
+  const shortCode = generateShortCode();
+  BATTLE.roomId = shortCode;
+  BATTLE.peer = new Peer(codeTopeerId(shortCode), { debug: 1, config: peerConfig });
 
-    BATTLE.peer.on('open', function() {
-      $b('room-code-display').style.display = '';
-      $b('room-code-value').textContent = shortCode;
-      updateShareButtons(shortCode);
-      $b('host-start-wrap').style.display = '';
-      $b('host-start-btn').disabled = true; // need ≥2 players
-      $b('waiting-room').style.display = '';
-      initBattlePlayers(1);
-      updateWaitingRoom(BATTLE.players);
-      setBattleStatus('参加者を待っています... (1/' + MAX_PLAYERS + ')', 'wait');
-    });
+  BATTLE.peer.on('open', function() {
+    $b('room-code-display').style.display = '';
+    $b('room-code-value').textContent = shortCode;
+    updateShareButtons(shortCode);
+    $b('host-start-wrap').style.display = '';
+    $b('host-start-btn').disabled = true; // need ≥2 players
+    $b('waiting-room').style.display = '';
+    initBattlePlayers(1);
+    updateWaitingRoom(BATTLE.players);
+    setBattleStatus('参加者を待っています... (1/' + MAX_PLAYERS + ')', 'wait');
+  });
 
-    BATTLE.peer.on('connection', function(conn) {
-      const guestSlot = BATTLE.conns.length + 1; // 1,2,3
-      if (guestSlot >= MAX_PLAYERS || BATTLE.active) {
-        conn.close();
-        return;
-      }
-      BATTLE.conns.push(conn);
-      setupHostConn(conn, guestSlot);
-    });
+  BATTLE.peer.on('connection', function(conn) {
+    const guestSlot = BATTLE.conns.length + 1; // 1,2,3
+    if (guestSlot >= MAX_PLAYERS || BATTLE.active) {
+      conn.close();
+      return;
+    }
+    BATTLE.conns.push(conn);
+    setupHostConn(conn, guestSlot);
+  });
 
-    BATTLE.peer.on('error', function(err) {
-      if (err.type === 'unavailable-id') {
-        BATTLE.peer.destroy();
-        BATTLE.peer = null;
-        $b('battle-create-btn').disabled = false;
-        setBattleStatus('コードが使用中です。もう一度お試しください。', 'err');
-        return;
-      }
-      setBattleStatus('エラー: ' + err.type, 'err');
+  BATTLE.peer.on('error', function(err) {
+    if (err.type === 'unavailable-id') {
+      BATTLE.peer.destroy();
+      BATTLE.peer = null;
       $b('battle-create-btn').disabled = false;
-      $b('battle-join-btn').disabled = false;
-    });
+      setBattleStatus('コードが使用中です。もう一度お試しください。', 'err');
+      return;
+    }
+    setBattleStatus('エラー: ' + err.type, 'err');
+    $b('battle-create-btn').disabled = false;
+    $b('battle-join-btn').disabled = false;
   });
 }
 
@@ -1398,28 +1446,37 @@ function hostStartGame() {
 }
 
 // ---- JOIN ROOM (Guest) ----
-function joinRoom() {
+async function joinRoom() {
   const raw = ($b('room-code-input').value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (raw.length < 4) { setBattleStatus('ルームコードを入力してください', 'err'); return; }
   if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
   $b('battle-create-btn').disabled = true;
   $b('battle-join-btn').disabled = true;
   setBattleStatus('接続中...', '');
-  getPeerJS(function() {
-    cleanupBattle(false);
-    BATTLE.isHost = false;
-    BATTLE.conns  = [];
-    BATTLE.peer = new Peer(undefined, { debug: 0, config: ICE_CONFIG });
-    BATTLE.peer.on('open', function() {
-      const conn = BATTLE.peer.connect(codeTopeerId(raw), { reliable: true });
-      BATTLE.conns.push(conn);
-      setupGuestConn(conn);
-    });
-    BATTLE.peer.on('error', function(err) {
-      setBattleStatus('接続失敗: ' + err.type + '　コードを確認してください', 'err');
-      $b('battle-create-btn').disabled = false;
-      $b('battle-join-btn').disabled = false;
-    });
+  let iceServers;
+  try {
+    const results = await Promise.all([getIceServers(), loadPeerJS()]);
+    iceServers = results[0];
+  } catch (e) {
+    setBattleStatus(e.message, 'err');
+    $b('battle-create-btn').disabled = false;
+    $b('battle-join-btn').disabled = false;
+    return;
+  }
+  const peerConfig = { iceServers: iceServers, iceTransportPolicy: 'all' };
+  cleanupBattle(false);
+  BATTLE.isHost = false;
+  BATTLE.conns  = [];
+  BATTLE.peer = new Peer(undefined, { debug: 1, config: peerConfig });
+  BATTLE.peer.on('open', function() {
+    const conn = BATTLE.peer.connect(codeTopeerId(raw), { reliable: true, serialization: 'json' });
+    BATTLE.conns.push(conn);
+    setupGuestConn(conn);
+  });
+  BATTLE.peer.on('error', function(err) {
+    setBattleStatus('接続失敗: ' + err.type + '　コードを確認してください', 'err');
+    $b('battle-create-btn').disabled = false;
+    $b('battle-join-btn').disabled = false;
   });
 }
 
