@@ -244,10 +244,15 @@ let G = {
  */
 function normalizeChar(raw) {
   if (!raw || raw.length === 0) return '';
+  // 長音符（ー U+30FC）をハイフンとして扱う。
+  // JISキーボードのひらがなモードで「ー」キーを押すとこの文字が来る。
+  // また全角長音符（ｰ U+FF70）も同様に処理する。
+  if (raw === 'ー' || raw === 'ｰ') return '-';
   // NFKC normalization handles full-width characters
+  // (ａ→a, Ａ→A, １→1, 全角ハイフン－(U+FF0D)→'-' etc.)
   const normalized = raw.normalize('NFKC').toLowerCase();
-  // Accept only a-z (romaji only)
-  if (/^[a-z]$/.test(normalized)) return normalized;
+  // Accept a-z (romaji) and '-' (long vowel separator used in some element names)
+  if (/^[a-z-]$/.test(normalized)) return normalized;
   return '';
 }
 
@@ -368,15 +373,6 @@ function processChar(c) {
   const filtered = G.validTargets.filter(t => t.startsWith(newTyped));
 
   if (filtered.length === 0) {
-    // Special case: the character is 'n' and G.typed+'n' is a valid prefix
-    // for at least one target → don't reject yet; store as pending.
-    if (c === 'n') {
-      const nFiltered = G.validTargets.filter(t => t.startsWith(newTyped));
-      // nFiltered will be 0 here since filtered is already 0,
-      // but check anyway to be safe (logic is identical — this branch is dead).
-      wrongInput();
-      return;
-    }
     wrongInput();
     return;
   }
@@ -1034,10 +1030,19 @@ _inp.addEventListener('compositionstart', function() {
   this.value = '';
 });
 
-_inp.addEventListener('compositionend', function() {
+_inp.addEventListener('compositionend', function(e) {
   isComposing = false;
+  // IMEが「ー」を確定した場合（ひらがなモードで長音符キーを押したとき）、
+  // ハイフンとしてゲームに渡す。バークリウム等の元素名で必要。
+  const composed = (e.data || this.value || '').replace(G.typed, '');
   // Discard whatever the IME committed — we only accept direct key input
   this.value = G.typed;
+  if (G.running && !G.practicing && !G.locked) {
+    if (composed === 'ー' || composed === 'ｰ') {
+      processChar('-');
+      this.value = G.typed;
+    }
+  }
   this.focus();
 });
 
@@ -1097,7 +1102,7 @@ document.getElementById('typing-inp').addEventListener('input', function(e) {
     return;
   }
 
-  const raw = e.target.value.normalize('NFKC').toLowerCase().replace(/[^a-z]/g, '');
+  const raw = e.target.value.normalize('NFKC').toLowerCase().replace(/[^a-z-]/g, '');
   const base = G.typed + (pendingNState.active ? 'n' : '');
   // base === raw のとき: keydown で既に処理済み → 何もしない
   if (raw.length > base.length) {
@@ -1164,6 +1169,7 @@ const BATTLE = {
   myId: 0,             // 0 = host, 1-3 = guest slot
   diff: 1,
   seed: 0,
+  myNickname: 'Guest', // プレイヤーのニックネーム
   // players[i] = { id, score, combo, count, element, finished, name }
   players: [],
   myFinished: false,
@@ -1181,7 +1187,7 @@ function initBattlePlayers(count) {
     BATTLE.players.push({
       id: i, score: 0, combo: 0, count: 0,
       element: '---', finished: false,
-      name: i === 0 ? 'HOST' : 'P' + (i + 1),
+      name: i === 0 ? (BATTLE.myNickname || 'HOST') : 'P' + (i + 1),
     });
   }
 }
@@ -1198,6 +1204,12 @@ function setBattleStatus(msg, cls) {
 
 function openBattle() {
   cleanupBattle();
+  // ニックネームをlocalStorageから読み込む
+  const savedNick = localStorage.getItem('ptgame_nickname') || '';
+  BATTLE.myNickname = savedNick || 'Guest';
+  const nickInput = $b('battle-nickname');
+  if (nickInput) nickInput.value = savedNick;
+
   $b('battle-diff-row').querySelectorAll('.dbtn').forEach(b => b.classList.remove('sel'));
   BATTLE.diff = 1;
   $b('battle-diff-row').querySelector('[data-d="1"]').classList.add('sel');
@@ -1311,9 +1323,11 @@ function updateWaitingRoom(players) {
     return;
   }
   el.innerHTML = players.map(function(p, i) {
+    const isHost = i === 0;
+    const name = p.name || (isHost ? 'HOST' : ('P' + (i + 1)));
     return '<div class="wp-row">' +
-      '<span class="wp-icon">' + (i === 0 ? '👑' : '👤') + '</span>' +
-      '<span class="wp-name">' + (p.name || (i === 0 ? 'あなた (HOST)' : 'P' + (i + 1))) + '</span>' +
+      '<span class="wp-icon">' + (isHost ? '👑' : '👤') + '</span>' +
+      '<span class="wp-name">' + name + (isHost ? ' <span class="wp-host-tag">HOST</span>' : '') + '</span>' +
       '<span class="wp-status ok">✓ 準備完了</span>' +
     '</div>';
   }).join('');
@@ -1338,9 +1352,20 @@ function guestSend(msg) {
   if (c && c.open) { try { c.send(msg); } catch(e) {} }
 }
 
+// ---- ニックネーム保存 ----
+function saveNickname() {
+  const nickInput = $b('battle-nickname');
+  if (!nickInput) return;
+  const name = nickInput.value.trim().slice(0, 12) || 'Guest';
+  BATTLE.myNickname = name;
+  localStorage.setItem('ptgame_nickname', name);
+  return name;
+}
+
 // ---- CREATE ROOM (Host) ----
 async function createRoom() {
   if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
+  saveNickname();
   $b('battle-create-btn').disabled = true;
   $b('battle-join-btn').disabled = true;
   setBattleStatus('接続中...', '');
@@ -1411,15 +1436,15 @@ function setupHostConn(conn, guestSlot) {
     while (BATTLE.players.length <= guestSlot) {
       BATTLE.players.push({ id: BATTLE.players.length, score:0, combo:0, count:0, element:'---', finished:false, name:'P'+(BATTLE.players.length+1) });
     }
-    // Tell guest their slot + config
+    // Tell guest their slot + config + current player list
     conn.send({ type: 'welcome', playerId: guestSlot, seed: BATTLE.seed, diff: BATTLE.diff });
     const total = BATTLE.conns.length + 1;
     setBattleStatus('参加者を待っています... (' + total + '/' + MAX_PLAYERS + ')', 'wait');
     // Enable start when ≥2 players
     if (total >= 2) $b('host-start-btn').disabled = false;
     updateWaitingRoom(BATTLE.players);
-    // Notify other guests about new player count
-    hostBroadcast({ type: 'roomstate', count: total });
+    // Notify other guests about new player count + names
+    hostBroadcast({ type: 'roomstate', count: total, players: BATTLE.players });
   });
 
   conn.on('data', function(data) {
@@ -1446,7 +1471,13 @@ function setupHostConn(conn, guestSlot) {
 }
 
 function onHostReceive(data, fromSlot) {
-  if (data.type === 'update') {
+  if (data.type === 'hello') {
+    // ゲストからニックネームを受信
+    const p = BATTLE.players[fromSlot];
+    if (p && data.name) p.name = String(data.name).slice(0, 12) || ('P' + (fromSlot + 1));
+    updateWaitingRoom(BATTLE.players);
+    hostBroadcast({ type: 'roomstate', count: BATTLE.conns.length + 1, players: BATTLE.players });
+  } else if (data.type === 'update') {
     const p = BATTLE.players[fromSlot];
     if (p) { p.score = data.score; p.combo = data.combo; p.count = data.count; p.element = data.element || '---'; }
     // Broadcast all states to all guests
@@ -1475,6 +1506,7 @@ async function joinRoom() {
   const raw = ($b('room-code-input').value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (raw.length < 4) { setBattleStatus('ルームコードを入力してください', 'err'); return; }
   if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
+  saveNickname();
   $b('battle-create-btn').disabled = true;
   $b('battle-join-btn').disabled = true;
   setBattleStatus('接続中...', '');
@@ -1552,7 +1584,17 @@ function onGuestReceive(data) {
     BATTLE.seed   = data.seed;
     BATTLE.diff   = data.diff;
     setBattleStatus('ルーム参加OK！ホストの開始を待っています... (P' + (data.playerId + 1) + ')', 'wait');
+    // ホストにニックネームを送信
+    guestSend({ type: 'hello', name: BATTLE.myNickname });
   } else if (data.type === 'roomstate') {
+    // ホストから参加者リストを受信（名前付き）
+    if (data.players) {
+      // ゲスト側の自分の名前は変えない
+      const myName = BATTLE.myNickname;
+      BATTLE.players = data.players;
+      const me = BATTLE.players[BATTLE.myId];
+      if (me) me.name = myName;
+    }
     setBattleStatus('参加者: ' + data.count + '人。ホストの開始を待っています...', 'wait');
   } else if (data.type === 'start') {
     startBattleCountdown(data.playerCount); // ホストから受け取った実人数を渡す
@@ -1721,8 +1763,9 @@ function updateBattleOpponentHUD() {
   panel.innerHTML =
     '<span class="opp-label">&#x2694; 相手</span>' +
     opponents.map(function(p) {
+      const displayName = p.name || ('P' + (p.id + 1));
       return '<span class="opp-sep">|</span>' +
-        '<span class="opp-pname">P' + (p.id + 1) + '</span>' +
+        '<span class="opp-pname">' + displayName + '</span>' +
         '<span class="opp-element">' + (p.element || '---') + '</span>' +
         '<span class="opp-score">' + (p.score || 0).toLocaleString() + '</span>' +
         '<span class="opp-combo">x' + (p.combo || 1) + '</span>' +
@@ -1753,9 +1796,10 @@ function showBattleResult() {
 
   const scoresHtml = ranked.map(function(p, i) {
     const isMe = p.id === BATTLE.myId;
+    const displayName = isMe ? 'あなた' : (p.name || ('P' + (p.id + 1)));
     return '<div class="br-score-box' + (isMe ? ' mine' : '') + '">' +
       '<div class="br-rank">' + medals[i] + '</div>' +
-      '<div class="br-slabel">' + (isMe ? 'あなた' : 'P' + (p.id + 1)) + '</div>' +
+      '<div class="br-slabel">' + displayName + '</div>' +
       '<div class="br-sval">' + (p.score || 0).toLocaleString() + '</div>' +
       '<div class="br-smeta">正解 ' + (p.count || 0) + '問' + (isMe ? ' / COMBO ' + G.maxCombo + 'x' : '') + '</div>' +
     '</div>';
