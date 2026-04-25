@@ -1209,8 +1209,22 @@ function generateShortCode() {
 function codeTopeerId(code) { return PEER_PREFIX + code.toUpperCase(); }
 
 function shareRoomCode(code) {
-  return '元素タイピング対戦に招待！\nルームコード: ' + code + '\n\nブラウザで元素タイピングを開いて「オンライン対戦」→「ルームに参加」からコードを入力してね';
+  return '元素タイピング対戦に招待！\nルームコード: ' + code + '\nhttps://astro-root.com/typing/\n「オンライン対戦」→「ルームに参加」からコードを入力してね';
 }
+
+// ---- ICE config (STUN + TURN for NAT traversal) ----
+// OpenRelay は無料の公開TURNサーバー。商用利用・帯域制限あり。
+// 本番でトラフィックが増えたら Metered.ca / Cloudflare TURN に移行推奨。
+const ICE_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+  ],
+  iceTransportPolicy: 'all',
+};
 
 // ---- PeerJS lazy load ----
 function getPeerJS(cb) {
@@ -1272,7 +1286,7 @@ function createRoom() {
     BATTLE.seed   = Math.floor(Math.random() * 0x7fffffff);
     const shortCode = generateShortCode();
     BATTLE.roomId = shortCode;
-    BATTLE.peer = new Peer(codeTopeerId(shortCode), { debug: 0 });
+    BATTLE.peer = new Peer(codeTopeerId(shortCode), { debug: 0, config: ICE_CONFIG });
 
     BATTLE.peer.on('open', function() {
       $b('room-code-display').style.display = '';
@@ -1387,7 +1401,7 @@ function joinRoom() {
     cleanupBattle(false);
     BATTLE.isHost = false;
     BATTLE.conns  = [];
-    BATTLE.peer = new Peer(undefined, { debug: 0 });
+    BATTLE.peer = new Peer(undefined, { debug: 0, config: ICE_CONFIG });
     BATTLE.peer.on('open', function() {
       const conn = BATTLE.peer.connect(codeTopeerId(raw), { reliable: true });
       BATTLE.conns.push(conn);
