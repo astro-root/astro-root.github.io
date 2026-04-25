@@ -1021,10 +1021,42 @@ function tweetResult() {
 }
 
 // ============================================================
+// IME GUARD
+// ============================================================
+// Japanese IME intercepts keystrokes before our handlers.
+// We track composition state and ignore input events during composition.
+let isComposing = false;
+
+const _inp = document.getElementById('typing-inp');
+
+_inp.addEventListener('compositionstart', function() {
+  isComposing = true;
+  // Clear any partial IME text that snuck into the field
+  this.value = '';
+});
+
+_inp.addEventListener('compositionend', function() {
+  isComposing = false;
+  // Discard whatever the IME committed — we only accept direct key input
+  this.value = G.typed;
+  this.focus();
+});
+
+// ============================================================
 // INPUT EVENTS
 // ============================================================
 document.addEventListener('keydown', function(e) {
-  if (!G.running || G.practicing) return;
+  // Practice card: Enter / Arrow / Space → advance to next element
+  if (G.practicing) {
+    if (e.key === 'Enter' || e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      closePracticeCard();
+    }
+    return;
+  }
+
+  if (!G.running) return;
+  if (e.isComposing || isComposing) return;
 
   if (e.key === 'Tab') {
     e.preventDefault();
@@ -1043,23 +1075,24 @@ document.addEventListener('keydown', function(e) {
     if (c) {
       e.preventDefault();
       processChar(c);
-      // Keep the visible input field in sync
       document.getElementById('typing-inp').value = G.typed;
     }
   }
 });
 
 /**
- * Fallback for IME / virtual keyboards that fire 'input' events
- * without corresponding 'keydown' events with printable e.key.
- * We derive the new chars by diffing the input value against G.typed.
+ * Fallback for virtual keyboards (mobile) that fire 'input' events.
+ * Also handles full-width input via NFKC normalization.
  */
 document.getElementById('typing-inp').addEventListener('input', function(e) {
   if (!G.running || G.practicing) return;
+  // Skip during IME composition — compositionend handles cleanup
+  if (e.isComposing || isComposing) {
+    this.value = '';
+    return;
+  }
 
-  // Normalize the entire current value
   const raw = e.target.value.normalize('NFKC').toLowerCase().replace(/[^a-z]/g, '');
-  // Only process chars beyond what's already confirmed
   const base = G.typed + (pendingNState.active ? 'n' : '');
   if (raw.length > base.length) {
     const newChars = raw.slice(base.length);
@@ -1068,7 +1101,6 @@ document.getElementById('typing-inp').addEventListener('input', function(e) {
       if (c) processChar(c);
     }
   }
-  // Sync display
   e.target.value = G.typed;
 });
 
@@ -1079,6 +1111,398 @@ document.getElementById('typing-inp').addEventListener('keydown', function(e) {
 document.getElementById('scr-game').addEventListener('click', function() {
   if (G.running) document.getElementById('typing-inp').focus();
 });
+
+// ============================================================
+// ONLINE BATTLE — PeerJS P2P
+// ============================================================
+
+// Seeded PRNG (Mulberry32) for deterministic question pool
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  const rand = mulberry32(seed);
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const BATTLE = {
+  peer: null,
+  conn: null,
+  isHost: false,
+  roomId: null,
+  diff: 1,
+  seed: 0,
+  opponentScore: 0,
+  opponentCombo: 0,
+  opponentCount: 0,
+  opponentElement: '---',
+  opponentFinished: false,
+  myFinished: false,
+  countdownTimer: null,
+  active: false,
+};
+
+// ---- UI helpers ----
+function $b(id) { return document.getElementById(id); }
+
+function setBattleStatus(msg, cls) {
+  const el = $b('battle-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'battle-status ' + (cls || '');
+}
+
+function openBattle() {
+  cleanupBattle();
+  $b('battle-diff-row').querySelectorAll('.dbtn').forEach(b => b.classList.remove('sel'));
+  BATTLE.diff = 1;
+  $b('battle-diff-row').querySelector('[data-d="1"]').classList.add('sel');
+  $b('room-code-display').style.display = 'none';
+  $b('room-code-input').value = '';
+  setBattleStatus('');
+  $b('battle-join-btn').disabled = false;
+  $b('battle-create-btn').disabled = false;
+  showScreen('battle');
+}
+
+function selBattleDiff(d) {
+  BATTLE.diff = d;
+  $b('battle-diff-row').querySelectorAll('.dbtn').forEach(b => b.classList.remove('sel'));
+  $b('battle-diff-row').querySelector('[data-d="' + d + '"]').classList.add('sel');
+}
+
+// ---- PeerJS setup ----
+function getPeerJS(cb) {
+  if (typeof Peer !== 'undefined') { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js';
+  s.onload = cb;
+  s.onerror = () => setBattleStatus('PeerJS読み込みエラー。ネット接続を確認してください。', 'err');
+  document.head.appendChild(s);
+}
+
+// ---- Create Room (Host) ----
+function createRoom() {
+  if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
+  $b('battle-create-btn').disabled = true;
+  $b('battle-join-btn').disabled = true;
+  setBattleStatus('接続中...', '');
+  getPeerJS(function() {
+    cleanupBattle(false);
+    BATTLE.isHost = true;
+    BATTLE.seed = Math.floor(Math.random() * 0x7fffffff);
+    BATTLE.peer = new Peer(undefined, { debug: 0 });
+    BATTLE.peer.on('open', function(id) {
+      BATTLE.roomId = id;
+      $b('room-code-display').style.display = '';
+      $b('room-code-value').textContent = id;
+      setBattleStatus('相手の参加を待っています...', 'wait');
+    });
+    BATTLE.peer.on('connection', function(conn) {
+      if (BATTLE.conn) { conn.close(); return; } // already have one
+      BATTLE.conn = conn;
+      setupBattleConn();
+    });
+    BATTLE.peer.on('error', function(err) {
+      setBattleStatus('エラー: ' + err.type, 'err');
+      $b('battle-create-btn').disabled = false;
+      $b('battle-join-btn').disabled = false;
+    });
+  });
+}
+
+// ---- Join Room (Guest) ----
+function joinRoom() {
+  const code = ($b('room-code-input').value || '').trim();
+  if (!code) { setBattleStatus('ルームコードを入力してください', 'err'); return; }
+  if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
+  $b('battle-create-btn').disabled = true;
+  $b('battle-join-btn').disabled = true;
+  setBattleStatus('接続中...', '');
+  getPeerJS(function() {
+    cleanupBattle(false);
+    BATTLE.isHost = false;
+    BATTLE.peer = new Peer(undefined, { debug: 0 });
+    BATTLE.peer.on('open', function() {
+      const conn = BATTLE.peer.connect(code, { reliable: true });
+      BATTLE.conn = conn;
+      setupBattleConn();
+    });
+    BATTLE.peer.on('error', function(err) {
+      setBattleStatus('接続失敗: ' + err.type + '　コードを確認してください', 'err');
+      $b('battle-create-btn').disabled = false;
+      $b('battle-join-btn').disabled = false;
+    });
+  });
+}
+
+// ---- Connection setup (shared) ----
+function setupBattleConn() {
+  const conn = BATTLE.conn;
+  conn.on('open', function() {
+    setBattleStatus('接続成功！準備中...', 'ok');
+    if (BATTLE.isHost) {
+      // Host sends game config
+      conn.send({ type: 'config', seed: BATTLE.seed, diff: BATTLE.diff });
+      startBattleCountdown();
+    }
+  });
+  conn.on('data', function(data) {
+    onBattleMessage(data);
+  });
+  conn.on('close', function() {
+    if (BATTLE.active) {
+      showBattleDisconnect();
+    }
+  });
+  conn.on('error', function(err) {
+    setBattleStatus('接続エラー: ' + err, 'err');
+  });
+}
+
+// ---- Incoming messages ----
+function onBattleMessage(data) {
+  if (data.type === 'config') {
+    // Guest receives game config from host
+    BATTLE.seed = data.seed;
+    BATTLE.diff = data.diff;
+    BATTLE.conn.send({ type: 'ready' });
+    startBattleCountdown();
+  } else if (data.type === 'ready') {
+    // Host receives ready from guest — already counting down
+  } else if (data.type === 'update') {
+    BATTLE.opponentScore   = data.score;
+    BATTLE.opponentCombo   = data.combo;
+    BATTLE.opponentCount   = data.count;
+    BATTLE.opponentElement = data.element || '---';
+    updateBattleOpponentHUD();
+  } else if (data.type === 'finish') {
+    BATTLE.opponentScore     = data.score;
+    BATTLE.opponentCount     = data.count;
+    BATTLE.opponentFinished  = true;
+    if (BATTLE.myFinished) showBattleResult();
+  }
+}
+
+// ---- Countdown ----
+function startBattleCountdown() {
+  showScreen('battle');
+  $b('battle-lobby').style.display = 'none';
+  $b('battle-countdown').style.display = 'flex';
+  let count = 3;
+  $b('countdown-num').textContent = count;
+  BATTLE.countdownTimer = setInterval(function() {
+    count--;
+    if (count > 0) {
+      $b('countdown-num').textContent = count;
+      SFX.play('miss'); // tick sound
+    } else {
+      clearInterval(BATTLE.countdownTimer);
+      $b('countdown-num').textContent = 'GO!';
+      setTimeout(startBattleGame, 600);
+    }
+  }, 1000);
+}
+
+// ---- Start Battle Game ----
+function startBattleGame() {
+  BATTLE.active = true;
+  BATTLE.myFinished = false;
+  BATTLE.opponentFinished = false;
+  BATTLE.opponentScore = 0;
+  BATTLE.opponentCombo = 0;
+  BATTLE.opponentCount = 0;
+  BATTLE.opponentElement = '---';
+
+  // Set up game state (similar to initGame but with seeded pool)
+  clearInterval(G.timerID);
+  G.mode = 'battle';
+  G.diff = BATTLE.diff;
+  G.score = 0; G.combo = 0; G.maxCombo = 0;
+  G.lives = 0; G.count = 0; G.totalMisses = 0;
+  G.timeLeft = 60;
+  G.pool = seededShuffle(buildPool(BATTLE.diff), BATTLE.seed);
+  G.poolIdx = 0;
+  G.elResults = {};
+  G.running = true;
+  G.practicing = false;
+  G.locked = false;
+
+  // Add battle mode info
+  MODE_INFO['battle'] = { label: 'オンライン対戦' };
+
+  showScreen('game');
+  $b('battle-opp-panel').style.display = 'flex';
+  $b('timer-wrap').style.display = '';
+  renderLives();
+  updateBattleOpponentHUD();
+  G.timerID = setInterval(battleTick, 1000);
+  nextQuestion();
+  setTimeout(() => $b('typing-inp').focus(), 100);
+}
+
+function battleTick() {
+  if (!G.running) return;
+  G.timeLeft--;
+  const tv = $b('h-timer');
+  tv.textContent = G.timeLeft;
+  tv.className = 'hud-val timer' +
+    (G.timeLeft <= 10 ? ' danger' : G.timeLeft <= 20 ? ' warn' : '');
+  // Send periodic update
+  sendBattleUpdate();
+  if (G.timeLeft <= 0) {
+    G.running = false;
+    clearInterval(G.timerID);
+    BATTLE.myFinished = true;
+    if (BATTLE.conn && BATTLE.conn.open) {
+      BATTLE.conn.send({ type: 'finish', score: G.score, count: G.count });
+    }
+    SFX.play('end');
+    if (BATTLE.opponentFinished) {
+      showBattleResult();
+    } else {
+      // Wait for opponent to finish (max 10 seconds)
+      setTimeout(function() {
+        if (!BATTLE.opponentFinished) {
+          BATTLE.opponentFinished = true;
+        }
+        showBattleResult();
+      }, 10000);
+    }
+  }
+}
+
+function sendBattleUpdate() {
+  if (BATTLE.conn && BATTLE.conn.open) {
+    BATTLE.conn.send({
+      type: 'update',
+      score: G.score,
+      combo: G.combo,
+      count: G.count,
+      element: G.curEl ? G.curEl.sym : '---',
+    });
+  }
+}
+
+// Called on each correct answer in battle
+const _origCorrectAnswer = correctAnswer;
+// We hook into correctAnswer via sendBattleUpdate in the game loop.
+
+function updateBattleOpponentHUD() {
+  const p = $b('battle-opp-panel');
+  if (!p) return;
+  $b('opp-score').textContent = BATTLE.opponentScore.toLocaleString();
+  $b('opp-combo').textContent = 'x' + (BATTLE.opponentCombo || 1);
+  $b('opp-count').textContent = BATTLE.opponentCount;
+  $b('opp-element').textContent = BATTLE.opponentElement;
+}
+
+// ---- Battle Result ----
+function showBattleResult() {
+  BATTLE.active = false;
+  const myScore  = G.score;
+  const oppScore = BATTLE.opponentScore;
+  const iWon = myScore > oppScore;
+  const isDraw = myScore === oppScore;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'battle-result-overlay';
+  overlay.className = 'battle-result-overlay';
+  overlay.innerHTML =
+    '<div class="br-inner">' +
+      '<div class="br-verdict ' + (iWon ? 'win' : isDraw ? 'draw' : 'lose') + '">' +
+        (iWon ? '🏆 YOU WIN!' : isDraw ? '🤝 DRAW' : '💀 YOU LOSE') +
+      '</div>' +
+      '<div class="br-scores">' +
+        '<div class="br-score-box mine">' +
+          '<div class="br-slabel">あなた</div>' +
+          '<div class="br-sval">' + myScore.toLocaleString() + '</div>' +
+          '<div class="br-smeta">正解 ' + G.count + '問 / MAX COMBO ' + G.maxCombo + 'x</div>' +
+        '</div>' +
+        '<div class="br-vs">VS</div>' +
+        '<div class="br-score-box opp">' +
+          '<div class="br-slabel">相手</div>' +
+          '<div class="br-sval">' + oppScore.toLocaleString() + '</div>' +
+          '<div class="br-smeta">正解 ' + BATTLE.opponentCount + '問</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="br-actions">' +
+        '<button class="rbtn" onclick="goHome()">タイトルへ</button>' +
+        '<button class="rbtn primary" onclick="rematch()">リマッチ</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  $b('battle-opp-panel').style.display = 'none';
+  SFX.play(iWon ? 'combo' : 'end');
+}
+
+function rematch() {
+  const overlay = $b('battle-result-overlay');
+  if (overlay) overlay.remove();
+  openBattle();
+}
+
+function showBattleDisconnect() {
+  BATTLE.active = false;
+  G.running = false;
+  clearInterval(G.timerID);
+  const overlay = document.createElement('div');
+  overlay.className = 'battle-result-overlay';
+  overlay.innerHTML =
+    '<div class="br-inner">' +
+      '<div class="br-verdict lose">相手が切断しました</div>' +
+      '<div class="br-actions">' +
+        '<button class="rbtn" onclick="goHome()">タイトルへ</button>' +
+        '<button class="rbtn primary" onclick="this.closest(\'.battle-result-overlay\').remove(); openBattle()">再接続</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  const oppPanel = $b('battle-opp-panel');
+  if (oppPanel) oppPanel.style.display = 'none';
+}
+
+function cleanupBattle(fullClean) {
+  if (fullClean !== false) {
+    BATTLE.active = false;
+    BATTLE.myFinished = false;
+    BATTLE.opponentFinished = false;
+  }
+  clearInterval(BATTLE.countdownTimer);
+  if (BATTLE.conn) { try { BATTLE.conn.close(); } catch(e) {} BATTLE.conn = null; }
+  if (BATTLE.peer) { try { BATTLE.peer.destroy(); } catch(e) {} BATTLE.peer = null; }
+  // Reset lobby UI
+  const lobby = $b('battle-lobby');
+  const cd    = $b('battle-countdown');
+  if (lobby) lobby.style.display = '';
+  if (cd)    cd.style.display = 'none';
+  const oppPanel = $b('battle-opp-panel');
+  if (oppPanel) oppPanel.style.display = 'none';
+  // Remove any lingering result overlay
+  const ro = $b('battle-result-overlay');
+  if (ro) ro.remove();
+}
+
+// Override goHome to clean up battle state
+const _origGoHome = goHome;
+function goHome() {
+  cleanupBattle();
+  if (G.running) {
+    G.running = false;
+    clearInterval(G.timerID);
+  }
+  showScreen('title');
+}
 
 // ============================================================
 // BOOT
