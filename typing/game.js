@@ -467,7 +467,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('scr-' + id).classList.add('active');
   const homeBtn = document.getElementById('btn-home');
-  homeBtn.style.display = (id === 'title' || id === 'loading') ? 'none' : 'flex';
+  homeBtn.style.display = (id === 'title' || id === 'loading' || id === 'game') ? 'none' : 'flex';
 }
 
 function trigger(el, cls, dur) {
@@ -478,15 +478,7 @@ function trigger(el, cls, dur) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-function goHome() {
-  if (G.running) {
-    if (!confirm('ゲームを終了してタイトルに戻りますか？')) return;
-    G.running = false;
-    clearInterval(G.timerID);
-  }
-  showScreen('title');
-}
-
+// goHome is defined in the battle section below
 function openMode(mode) {
   G.mode = mode;
   document.getElementById('mode-title-txt').textContent = MODE_INFO[mode].label + ' -- 難易度選択';
@@ -1113,10 +1105,16 @@ document.getElementById('scr-game').addEventListener('click', function() {
 });
 
 // ============================================================
-// ONLINE BATTLE — PeerJS P2P
+// ONLINE BATTLE — PeerJS P2P  (最大4人スター型)
 // ============================================================
+// トポロジー: ホストが中継ハブ
+//   - ホスト: conns[] に最大3つのDataConnectionを保持
+//   - ゲスト: conns[0] がホストへの接続のみ
+//   - メッセージフロー:
+//       guest → host : join / update / finish
+//       host  → all  : welcome / start / broadcast / results
 
-// Seeded PRNG (Mulberry32) for deterministic question pool
+// ---- Seeded PRNG ----
 function mulberry32(seed) {
   return function() {
     seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -1125,7 +1123,6 @@ function mulberry32(seed) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
-
 function seededShuffle(arr, seed) {
   const a = [...arr];
   const rand = mulberry32(seed);
@@ -1136,22 +1133,38 @@ function seededShuffle(arr, seed) {
   return a;
 }
 
+// ---- Battle state ----
+const MAX_PLAYERS = 4;
+
 const BATTLE = {
   peer: null,
-  conn: null,
+  conns: [],           // host: DataConnection[] to guests; guest: [conn to host]
   isHost: false,
   roomId: null,
+  myId: 0,             // 0 = host, 1-3 = guest slot
   diff: 1,
   seed: 0,
-  opponentScore: 0,
-  opponentCombo: 0,
-  opponentCount: 0,
-  opponentElement: '---',
-  opponentFinished: false,
+  // players[i] = { id, score, combo, count, element, finished, name }
+  players: [],
   myFinished: false,
+  finishedCount: 0,
   countdownTimer: null,
   active: false,
+  resultShown: false,
 };
+
+function battleMyPlayer() { return BATTLE.players[BATTLE.myId]; }
+
+function initBattlePlayers(count) {
+  BATTLE.players = [];
+  for (let i = 0; i < count; i++) {
+    BATTLE.players.push({
+      id: i, score: 0, combo: 0, count: 0,
+      element: '---', finished: false,
+      name: i === 0 ? 'HOST' : 'P' + (i + 1),
+    });
+  }
+}
 
 // ---- UI helpers ----
 function $b(id) { return document.getElementById(id); }
@@ -1173,6 +1186,8 @@ function openBattle() {
   setBattleStatus('');
   $b('battle-join-btn').disabled = false;
   $b('battle-create-btn').disabled = false;
+  $b('host-start-wrap').style.display = 'none';
+  updateWaitingRoom([]);
   showScreen('battle');
 }
 
@@ -1182,7 +1197,22 @@ function selBattleDiff(d) {
   $b('battle-diff-row').querySelector('[data-d="' + d + '"]').classList.add('sel');
 }
 
-// ---- PeerJS setup ----
+// ---- Short code helpers ----
+const PEER_PREFIX = 'PTGAME-';
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function generateShortCode() {
+  let s = '';
+  for (let i = 0; i < 6; i++) s += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+  return s;
+}
+function codeTopeerId(code) { return PEER_PREFIX + code.toUpperCase(); }
+
+function shareRoomCode(code) {
+  return '元素タイピング対戦に招待！\nルームコード: ' + code + '\n\nブラウザで元素タイピングを開いて「オンライン対戦」→「ルームに参加」からコードを入力してね';
+}
+
+// ---- PeerJS lazy load ----
 function getPeerJS(cb) {
   if (typeof Peer !== 'undefined') { cb(); return; }
   const s = document.createElement('script');
@@ -1192,7 +1222,43 @@ function getPeerJS(cb) {
   document.head.appendChild(s);
 }
 
-// ---- Create Room (Host) ----
+// ---- Waiting room UI ----
+function updateWaitingRoom(players) {
+  const el = $b('waiting-players');
+  if (!el) return;
+  if (players.length === 0) {
+    el.innerHTML = '<div class="wp-empty">参加者がいません</div>';
+    return;
+  }
+  el.innerHTML = players.map(function(p, i) {
+    return '<div class="wp-row">' +
+      '<span class="wp-icon">' + (i === 0 ? '👑' : '👤') + '</span>' +
+      '<span class="wp-name">' + (p.name || (i === 0 ? 'あなた (HOST)' : 'P' + (i + 1))) + '</span>' +
+      '<span class="wp-status ok">✓ 準備完了</span>' +
+    '</div>';
+  }).join('');
+}
+
+// ---- HOST: broadcast room state to all guests ----
+function hostBroadcast(msg) {
+  BATTLE.conns.forEach(function(c) {
+    if (c && c.open) { try { c.send(msg); } catch(e) {} }
+  });
+}
+
+// ---- HOST: send to specific guest ----
+function hostSendTo(idx, msg) {
+  const c = BATTLE.conns[idx - 1]; // idx 1-3 → conns[0-2]
+  if (c && c.open) { try { c.send(msg); } catch(e) {} }
+}
+
+// ---- GUEST: send to host ----
+function guestSend(msg) {
+  const c = BATTLE.conns[0];
+  if (c && c.open) { try { c.send(msg); } catch(e) {} }
+}
+
+// ---- CREATE ROOM (Host) ----
 function createRoom() {
   if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
   $b('battle-create-btn').disabled = true;
@@ -1201,20 +1267,43 @@ function createRoom() {
   getPeerJS(function() {
     cleanupBattle(false);
     BATTLE.isHost = true;
-    BATTLE.seed = Math.floor(Math.random() * 0x7fffffff);
-    BATTLE.peer = new Peer(undefined, { debug: 0 });
-    BATTLE.peer.on('open', function(id) {
-      BATTLE.roomId = id;
+    BATTLE.myId   = 0;
+    BATTLE.conns  = [];
+    BATTLE.seed   = Math.floor(Math.random() * 0x7fffffff);
+    const shortCode = generateShortCode();
+    BATTLE.roomId = shortCode;
+    BATTLE.peer = new Peer(codeTopeerId(shortCode), { debug: 0 });
+
+    BATTLE.peer.on('open', function() {
       $b('room-code-display').style.display = '';
-      $b('room-code-value').textContent = id;
-      setBattleStatus('相手の参加を待っています...', 'wait');
+      $b('room-code-value').textContent = shortCode;
+      updateShareButtons(shortCode);
+      $b('host-start-wrap').style.display = '';
+      $b('host-start-btn').disabled = true; // need ≥2 players
+      $b('waiting-room').style.display = '';
+      initBattlePlayers(1);
+      updateWaitingRoom(BATTLE.players);
+      setBattleStatus('参加者を待っています... (1/' + MAX_PLAYERS + ')', 'wait');
     });
+
     BATTLE.peer.on('connection', function(conn) {
-      if (BATTLE.conn) { conn.close(); return; } // already have one
-      BATTLE.conn = conn;
-      setupBattleConn();
+      const guestSlot = BATTLE.conns.length + 1; // 1,2,3
+      if (guestSlot >= MAX_PLAYERS || BATTLE.active) {
+        conn.close();
+        return;
+      }
+      BATTLE.conns.push(conn);
+      setupHostConn(conn, guestSlot);
     });
+
     BATTLE.peer.on('error', function(err) {
+      if (err.type === 'unavailable-id') {
+        BATTLE.peer.destroy();
+        BATTLE.peer = null;
+        $b('battle-create-btn').disabled = false;
+        setBattleStatus('コードが使用中です。もう一度お試しください。', 'err');
+        return;
+      }
       setBattleStatus('エラー: ' + err.type, 'err');
       $b('battle-create-btn').disabled = false;
       $b('battle-join-btn').disabled = false;
@@ -1222,10 +1311,74 @@ function createRoom() {
   });
 }
 
-// ---- Join Room (Guest) ----
+function setupHostConn(conn, guestSlot) {
+  conn.on('open', function() {
+    // Extend players array
+    while (BATTLE.players.length <= guestSlot) {
+      BATTLE.players.push({ id: BATTLE.players.length, score:0, combo:0, count:0, element:'---', finished:false, name:'P'+(BATTLE.players.length+1) });
+    }
+    // Tell guest their slot + config
+    conn.send({ type: 'welcome', playerId: guestSlot, seed: BATTLE.seed, diff: BATTLE.diff });
+    const total = BATTLE.conns.length + 1;
+    setBattleStatus('参加者を待っています... (' + total + '/' + MAX_PLAYERS + ')', 'wait');
+    // Enable start when ≥2 players
+    if (total >= 2) $b('host-start-btn').disabled = false;
+    updateWaitingRoom(BATTLE.players);
+    // Notify other guests about new player count
+    hostBroadcast({ type: 'roomstate', count: total });
+  });
+
+  conn.on('data', function(data) {
+    onHostReceive(data, guestSlot);
+  });
+
+  conn.on('close', function() {
+    if (BATTLE.active) {
+      // Mark as finished with current score
+      if (BATTLE.players[guestSlot]) BATTLE.players[guestSlot].finished = true;
+      checkAllFinished();
+    } else {
+      // Remove from waiting room
+      BATTLE.conns = BATTLE.conns.filter(function(c) { return c !== conn; });
+      BATTLE.players.splice(guestSlot, 1);
+      // Re-index
+      BATTLE.players.forEach(function(p, i) { p.id = i; });
+      updateWaitingRoom(BATTLE.players);
+      const total = BATTLE.conns.length + 1;
+      setBattleStatus('参加者を待っています... (' + total + '/' + MAX_PLAYERS + ')', 'wait');
+      if (total < 2) $b('host-start-btn').disabled = true;
+    }
+  });
+}
+
+function onHostReceive(data, fromSlot) {
+  if (data.type === 'update') {
+    const p = BATTLE.players[fromSlot];
+    if (p) { p.score = data.score; p.combo = data.combo; p.count = data.count; p.element = data.element || '---'; }
+    // Broadcast all states to all guests
+    hostBroadcast({ type: 'broadcast', players: BATTLE.players });
+  } else if (data.type === 'finish') {
+    const p = BATTLE.players[fromSlot];
+    if (p) { p.score = data.score; p.count = data.count; p.finished = true; }
+    BATTLE.finishedCount++;
+    checkAllFinished();
+  }
+}
+
+// HOST: manually start game
+function hostStartGame() {
+  if (BATTLE.conns.length === 0) return;
+  $b('host-start-btn').disabled = true;
+  // Lock room — no new joins
+  BATTLE.active = true;
+  hostBroadcast({ type: 'start' });
+  startBattleCountdown();
+}
+
+// ---- JOIN ROOM (Guest) ----
 function joinRoom() {
-  const code = ($b('room-code-input').value || '').trim();
-  if (!code) { setBattleStatus('ルームコードを入力してください', 'err'); return; }
+  const raw = ($b('room-code-input').value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (raw.length < 4) { setBattleStatus('ルームコードを入力してください', 'err'); return; }
   if (ELEMENTS.length === 0) { setBattleStatus('元素データ未ロード', 'err'); return; }
   $b('battle-create-btn').disabled = true;
   $b('battle-join-btn').disabled = true;
@@ -1233,11 +1386,12 @@ function joinRoom() {
   getPeerJS(function() {
     cleanupBattle(false);
     BATTLE.isHost = false;
+    BATTLE.conns  = [];
     BATTLE.peer = new Peer(undefined, { debug: 0 });
     BATTLE.peer.on('open', function() {
-      const conn = BATTLE.peer.connect(code, { reliable: true });
-      BATTLE.conn = conn;
-      setupBattleConn();
+      const conn = BATTLE.peer.connect(codeTopeerId(raw), { reliable: true });
+      BATTLE.conns.push(conn);
+      setupGuestConn(conn);
     });
     BATTLE.peer.on('error', function(err) {
       setBattleStatus('接続失敗: ' + err.type + '　コードを確認してください', 'err');
@@ -1247,56 +1401,61 @@ function joinRoom() {
   });
 }
 
-// ---- Connection setup (shared) ----
-function setupBattleConn() {
-  const conn = BATTLE.conn;
+function setupGuestConn(conn) {
   conn.on('open', function() {
-    setBattleStatus('接続成功！準備中...', 'ok');
-    if (BATTLE.isHost) {
-      // Host sends game config
-      conn.send({ type: 'config', seed: BATTLE.seed, diff: BATTLE.diff });
-      startBattleCountdown();
-    }
+    setBattleStatus('ホストに接続しました。開始を待っています...', 'ok');
   });
   conn.on('data', function(data) {
-    onBattleMessage(data);
+    onGuestReceive(data);
   });
   conn.on('close', function() {
-    if (BATTLE.active) {
-      showBattleDisconnect();
-    }
+    if (BATTLE.active) showBattleDisconnect();
+    else setBattleStatus('ホストとの接続が切れました。', 'err');
   });
   conn.on('error', function(err) {
     setBattleStatus('接続エラー: ' + err, 'err');
   });
 }
 
-// ---- Incoming messages ----
-function onBattleMessage(data) {
-  if (data.type === 'config') {
-    // Guest receives game config from host
-    BATTLE.seed = data.seed;
-    BATTLE.diff = data.diff;
-    BATTLE.conn.send({ type: 'ready' });
+function onGuestReceive(data) {
+  if (data.type === 'welcome') {
+    BATTLE.myId   = data.playerId;
+    BATTLE.seed   = data.seed;
+    BATTLE.diff   = data.diff;
+    setBattleStatus('ルーム参加OK！ホストの開始を待っています... (P' + (data.playerId + 1) + ')', 'wait');
+  } else if (data.type === 'roomstate') {
+    setBattleStatus('参加者: ' + data.count + '人。ホストの開始を待っています...', 'wait');
+  } else if (data.type === 'start') {
     startBattleCountdown();
-  } else if (data.type === 'ready') {
-    // Host receives ready from guest — already counting down
-  } else if (data.type === 'update') {
-    BATTLE.opponentScore   = data.score;
-    BATTLE.opponentCombo   = data.combo;
-    BATTLE.opponentCount   = data.count;
-    BATTLE.opponentElement = data.element || '---';
-    updateBattleOpponentHUD();
-  } else if (data.type === 'finish') {
-    BATTLE.opponentScore     = data.score;
-    BATTLE.opponentCount     = data.count;
-    BATTLE.opponentFinished  = true;
-    if (BATTLE.myFinished) showBattleResult();
+  } else if (data.type === 'broadcast') {
+    if (data.players) {
+      // Merge into local players array
+      BATTLE.players = data.players;
+      updateBattleOpponentHUD();
+    }
+  } else if (data.type === 'results') {
+    BATTLE.players = data.players;
+    showBattleResult();
   }
+}
+
+// ---- Share buttons ----
+function updateShareButtons(code) {
+  const msg = shareRoomCode(code);
+  const lineBtn = $b('share-line');
+  const xBtn    = $b('share-x');
+  if (lineBtn) lineBtn.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(msg);
+  if (xBtn)    xBtn.href   = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(msg);
 }
 
 // ---- Countdown ----
 function startBattleCountdown() {
+  BATTLE.active = true;
+  BATTLE.myFinished = false;
+  BATTLE.finishedCount = 0;
+  BATTLE.resultShown = false;
+  // init players array for guests (host already has it)
+  if (!BATTLE.isHost) initBattlePlayers(MAX_PLAYERS);
   showScreen('battle');
   $b('battle-lobby').style.display = 'none';
   $b('battle-countdown').style.display = 'flex';
@@ -1306,7 +1465,7 @@ function startBattleCountdown() {
     count--;
     if (count > 0) {
       $b('countdown-num').textContent = count;
-      SFX.play('miss'); // tick sound
+      SFX.play('miss');
     } else {
       clearInterval(BATTLE.countdownTimer);
       $b('countdown-num').textContent = 'GO!';
@@ -1317,15 +1476,6 @@ function startBattleCountdown() {
 
 // ---- Start Battle Game ----
 function startBattleGame() {
-  BATTLE.active = true;
-  BATTLE.myFinished = false;
-  BATTLE.opponentFinished = false;
-  BATTLE.opponentScore = 0;
-  BATTLE.opponentCombo = 0;
-  BATTLE.opponentCount = 0;
-  BATTLE.opponentElement = '---';
-
-  // Set up game state (similar to initGame but with seeded pool)
   clearInterval(G.timerID);
   G.mode = 'battle';
   G.diff = BATTLE.diff;
@@ -1338,15 +1488,14 @@ function startBattleGame() {
   G.running = true;
   G.practicing = false;
   G.locked = false;
-
-  // Add battle mode info
   MODE_INFO['battle'] = { label: 'オンライン対戦' };
+  DIFF_INFO[BATTLE.diff] = DIFF_INFO[BATTLE.diff] || DIFF_INFO[1];
 
   showScreen('game');
   $b('battle-opp-panel').style.display = 'flex';
   $b('timer-wrap').style.display = '';
   renderLives();
-  updateBattleOpponentHUD();
+  renderBattleOppPanel();
   G.timerID = setInterval(battleTick, 1000);
   nextQuestion();
   setTimeout(() => $b('typing-inp').focus(), 100);
@@ -1359,84 +1508,137 @@ function battleTick() {
   tv.textContent = G.timeLeft;
   tv.className = 'hud-val timer' +
     (G.timeLeft <= 10 ? ' danger' : G.timeLeft <= 20 ? ' warn' : '');
-  // Send periodic update
   sendBattleUpdate();
-  if (G.timeLeft <= 0) {
-    G.running = false;
-    clearInterval(G.timerID);
-    BATTLE.myFinished = true;
-    if (BATTLE.conn && BATTLE.conn.open) {
-      BATTLE.conn.send({ type: 'finish', score: G.score, count: G.count });
-    }
-    SFX.play('end');
-    if (BATTLE.opponentFinished) {
+  if (G.timeLeft <= 0) finishMyBattle();
+}
+
+function finishMyBattle() {
+  if (BATTLE.myFinished) return;
+  G.running = false;
+  clearInterval(G.timerID);
+  BATTLE.myFinished = true;
+  // Update own slot
+  const me = BATTLE.players[BATTLE.myId];
+  if (me) { me.score = G.score; me.count = G.count; me.finished = true; }
+  if (BATTLE.isHost) {
+    BATTLE.finishedCount++;
+    checkAllFinished();
+  } else {
+    guestSend({ type: 'finish', score: G.score, count: G.count });
+  }
+  SFX.play('end');
+  // Show "waiting" overlay while others play
+  if (!BATTLE.resultShown) showWaitingForOthers();
+}
+
+function showWaitingForOthers() {
+  // If all already finished just show result
+  const allDone = BATTLE.players.every(function(p) { return p.finished; });
+  if (allDone) { showBattleResult(); return; }
+  // Put a non-blocking message over the game area
+  const el = document.createElement('div');
+  el.id = 'battle-wait-msg';
+  el.className = 'battle-wait-msg';
+  el.innerHTML = '<div class="bwm-inner"><div class="bwm-title">⏳ TIME UP</div><div class="bwm-sub">他のプレイヤーの終了を待っています...</div></div>';
+  document.body.appendChild(el);
+  // Timeout fallback: 15 seconds
+  setTimeout(function() {
+    if (!BATTLE.resultShown) {
+      BATTLE.players.forEach(function(p) { p.finished = true; });
       showBattleResult();
-    } else {
-      // Wait for opponent to finish (max 10 seconds)
-      setTimeout(function() {
-        if (!BATTLE.opponentFinished) {
-          BATTLE.opponentFinished = true;
-        }
-        showBattleResult();
-      }, 10000);
     }
+  }, 15000);
+}
+
+function checkAllFinished() {
+  if (!BATTLE.isHost) return;
+  const allDone = BATTLE.players.every(function(p) { return p.finished; });
+  if (allDone && !BATTLE.resultShown) {
+    // Update host's own score
+    const me = BATTLE.players[0];
+    if (me) { me.score = G.score; me.count = G.count; }
+    // Send results to all guests
+    hostBroadcast({ type: 'results', players: BATTLE.players });
+    showBattleResult();
   }
 }
 
 function sendBattleUpdate() {
-  if (BATTLE.conn && BATTLE.conn.open) {
-    BATTLE.conn.send({
-      type: 'update',
-      score: G.score,
-      combo: G.combo,
-      count: G.count,
-      element: G.curEl ? G.curEl.sym : '---',
-    });
+  const me = BATTLE.players[BATTLE.myId];
+  if (me) { me.score = G.score; me.combo = G.combo; me.count = G.count; me.element = G.curEl ? G.curEl.sym : '---'; }
+  const msg = { type: 'update', score: G.score, combo: G.combo, count: G.count, element: G.curEl ? G.curEl.sym : '---' };
+  if (BATTLE.isHost) {
+    // Broadcast current state to all guests
+    hostBroadcast({ type: 'broadcast', players: BATTLE.players });
+  } else {
+    guestSend(msg);
   }
 }
 
-// Called on each correct answer in battle
-const _origCorrectAnswer = correctAnswer;
-// We hook into correctAnswer via sendBattleUpdate in the game loop.
+// ---- Opponent HUD ----
+function renderBattleOppPanel() {
+  const panel = $b('battle-opp-panel');
+  if (!panel) return;
+  updateBattleOpponentHUD();
+}
 
 function updateBattleOpponentHUD() {
-  const p = $b('battle-opp-panel');
-  if (!p) return;
-  $b('opp-score').textContent = BATTLE.opponentScore.toLocaleString();
-  $b('opp-combo').textContent = 'x' + (BATTLE.opponentCombo || 1);
-  $b('opp-count').textContent = BATTLE.opponentCount;
-  $b('opp-element').textContent = BATTLE.opponentElement;
+  const panel = $b('battle-opp-panel');
+  if (!panel) return;
+  const opponents = BATTLE.players.filter(function(p) { return p.id !== BATTLE.myId; });
+  if (opponents.length === 0) { panel.innerHTML = ''; return; }
+  panel.innerHTML =
+    '<span class="opp-label">&#x2694; 相手</span>' +
+    opponents.map(function(p) {
+      return '<span class="opp-sep">|</span>' +
+        '<span class="opp-pname">P' + (p.id + 1) + '</span>' +
+        '<span class="opp-element">' + (p.element || '---') + '</span>' +
+        '<span class="opp-score">' + (p.score || 0).toLocaleString() + '</span>' +
+        '<span class="opp-combo">x' + (p.combo || 1) + '</span>' +
+        '<span class="opp-count">' + (p.count || 0) + '</span>';
+    }).join('');
 }
 
 // ---- Battle Result ----
 function showBattleResult() {
+  if (BATTLE.resultShown) return;
+  BATTLE.resultShown = true;
   BATTLE.active = false;
-  const myScore  = G.score;
-  const oppScore = BATTLE.opponentScore;
-  const iWon = myScore > oppScore;
-  const isDraw = myScore === oppScore;
+  const waitMsg = $b('battle-wait-msg');
+  if (waitMsg) waitMsg.remove();
+
+  // Update own score in players list
+  const me = BATTLE.players[BATTLE.myId];
+  if (me) { me.score = G.score; me.count = G.count; me.maxCombo = G.maxCombo; }
+
+  // Sort by score descending
+  const ranked = BATTLE.players.slice().sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+  const myRank = ranked.findIndex(function(p) { return p.id === BATTLE.myId; }) + 1;
+  const iWon   = myRank === 1;
+  const isDraw = ranked[0].score === ranked[1].score;
+
+  const medals = ['🥇','🥈','🥉','4️⃣'];
+  const verdicts = { 1: '🏆 1位！', 2: '🥈 2位', 3: '🥉 3位', 4: '4位' };
+
+  const scoresHtml = ranked.map(function(p, i) {
+    const isMe = p.id === BATTLE.myId;
+    return '<div class="br-score-box' + (isMe ? ' mine' : '') + '">' +
+      '<div class="br-rank">' + medals[i] + '</div>' +
+      '<div class="br-slabel">' + (isMe ? 'あなた' : 'P' + (p.id + 1)) + '</div>' +
+      '<div class="br-sval">' + (p.score || 0).toLocaleString() + '</div>' +
+      '<div class="br-smeta">正解 ' + (p.count || 0) + '問' + (isMe ? ' / COMBO ' + G.maxCombo + 'x' : '') + '</div>' +
+    '</div>';
+  }).join('');
 
   const overlay = document.createElement('div');
   overlay.id = 'battle-result-overlay';
   overlay.className = 'battle-result-overlay';
   overlay.innerHTML =
     '<div class="br-inner">' +
-      '<div class="br-verdict ' + (iWon ? 'win' : isDraw ? 'draw' : 'lose') + '">' +
-        (iWon ? '🏆 YOU WIN!' : isDraw ? '🤝 DRAW' : '💀 YOU LOSE') +
+      '<div class="br-verdict ' + (iWon && !isDraw ? 'win' : myRank > 2 ? 'lose' : 'draw') + '">' +
+        (verdicts[myRank] || myRank + '位') +
       '</div>' +
-      '<div class="br-scores">' +
-        '<div class="br-score-box mine">' +
-          '<div class="br-slabel">あなた</div>' +
-          '<div class="br-sval">' + myScore.toLocaleString() + '</div>' +
-          '<div class="br-smeta">正解 ' + G.count + '問 / MAX COMBO ' + G.maxCombo + 'x</div>' +
-        '</div>' +
-        '<div class="br-vs">VS</div>' +
-        '<div class="br-score-box opp">' +
-          '<div class="br-slabel">相手</div>' +
-          '<div class="br-sval">' + oppScore.toLocaleString() + '</div>' +
-          '<div class="br-smeta">正解 ' + BATTLE.opponentCount + '問</div>' +
-        '</div>' +
-      '</div>' +
+      '<div class="br-scores br-scores-multi">' + scoresHtml + '</div>' +
       '<div class="br-actions">' +
         '<button class="rbtn" onclick="goHome()">タイトルへ</button>' +
         '<button class="rbtn primary" onclick="rematch()">リマッチ</button>' +
@@ -1444,7 +1646,7 @@ function showBattleResult() {
     '</div>';
   document.body.appendChild(overlay);
   $b('battle-opp-panel').style.display = 'none';
-  SFX.play(iWon ? 'combo' : 'end');
+  SFX.play(iWon && !isDraw ? 'combo' : 'end');
 }
 
 function rematch() {
@@ -1454,6 +1656,7 @@ function rematch() {
 }
 
 function showBattleDisconnect() {
+  if (BATTLE.resultShown) return;
   BATTLE.active = false;
   G.running = false;
   clearInterval(G.timerID);
@@ -1461,7 +1664,7 @@ function showBattleDisconnect() {
   overlay.className = 'battle-result-overlay';
   overlay.innerHTML =
     '<div class="br-inner">' +
-      '<div class="br-verdict lose">相手が切断しました</div>' +
+      '<div class="br-verdict lose">接続が切れました</div>' +
       '<div class="br-actions">' +
         '<button class="rbtn" onclick="goHome()">タイトルへ</button>' +
         '<button class="rbtn primary" onclick="this.closest(\'.battle-result-overlay\').remove(); openBattle()">再接続</button>' +
@@ -1476,31 +1679,31 @@ function cleanupBattle(fullClean) {
   if (fullClean !== false) {
     BATTLE.active = false;
     BATTLE.myFinished = false;
-    BATTLE.opponentFinished = false;
+    BATTLE.finishedCount = 0;
+    BATTLE.resultShown = false;
+    BATTLE.players = [];
   }
   clearInterval(BATTLE.countdownTimer);
-  if (BATTLE.conn) { try { BATTLE.conn.close(); } catch(e) {} BATTLE.conn = null; }
+  BATTLE.conns.forEach(function(c) { try { c.close(); } catch(e) {} });
+  BATTLE.conns = [];
   if (BATTLE.peer) { try { BATTLE.peer.destroy(); } catch(e) {} BATTLE.peer = null; }
-  // Reset lobby UI
   const lobby = $b('battle-lobby');
   const cd    = $b('battle-countdown');
   if (lobby) lobby.style.display = '';
   if (cd)    cd.style.display = 'none';
   const oppPanel = $b('battle-opp-panel');
   if (oppPanel) oppPanel.style.display = 'none';
-  // Remove any lingering result overlay
-  const ro = $b('battle-result-overlay');
+  const waitMsg = $b('battle-wait-msg');
+  if (waitMsg) waitMsg.remove();
+  const ro = document.getElementById('battle-result-overlay');
   if (ro) ro.remove();
 }
 
-// Override goHome to clean up battle state
-const _origGoHome = goHome;
+// Override goHome
 function goHome() {
   cleanupBattle();
-  if (G.running) {
-    G.running = false;
-    clearInterval(G.timerID);
-  }
+  G.running = false;
+  clearInterval(G.timerID);
   showScreen('title');
 }
 
