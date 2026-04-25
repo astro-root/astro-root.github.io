@@ -11,7 +11,7 @@
 <body>
 <div class="bg-grid"></div>
 
-<!-- 常時ホームボタン -->
+<!-- 常時ホームボタン（ゲーム画面ではHUD内ボタンを使うため非表示に切り替え） -->
 <button id="btn-home" onclick="goHome()">&#x2302; HOME</button>
 
 <!-- サウンドトグル -->
@@ -37,7 +37,7 @@
   <div class="title-sub">PERIODIC TYPING</div>
   <div class="title-meta">
     <span id="el-count-badge">118元素収録</span>
-    <span>3モード</span>
+    <span>4モード</span>
     <span>4難易度</span>
   </div>
   <div class="title-btns">
@@ -54,9 +54,14 @@
     <button class="tbtn" onclick="openMode('practice')">
       <span class="tbtn-icon">&#x1F4DA;</span>
       <span class="tbtn-label">学習モード</span>
-      <span class="tbtn-desc">ペナルティなし、じっくり覚える</span>
+      <span class="tbtn-desc">Enter/&#x2192;で次へ。じっくり覚える</span>
     </button>
-    <button class="tbtn" onclick="showHighScore()">
+    <button class="tbtn battle-tbtn" onclick="openBattle()">
+      <span class="tbtn-icon">&#x2694;</span>
+      <span class="tbtn-label">オンライン対戦</span>
+      <span class="tbtn-desc">P2P 60秒バトル。友達と対戦！</span>
+    </button>
+    <button class="tbtn" onclick="showHighScore()" style="grid-column:span 2">
       <span class="tbtn-icon">&#x1F3C6;</span>
       <span class="tbtn-label">ハイスコア</span>
       <span class="tbtn-desc">過去のベストを確認</span>
@@ -84,6 +89,64 @@
 </div>
 
 <!-- ============================================================
+     BATTLE LOBBY
+     ============================================================ -->
+<div id="scr-battle" class="screen">
+  <button class="btn-back" onclick="cleanupBattle(); showScreen('title')">&#x2190; 戻る</button>
+
+  <!-- Lobby -->
+  <div id="battle-lobby" class="battle-lobby">
+    <div class="battle-lobby-title">&#x2694; オンライン対戦</div>
+    <p class="battle-lobby-sub">ルームコードで1対1リアルタイムバトル（60秒）</p>
+
+    <div class="battle-panels">
+      <!-- CREATE -->
+      <div class="battle-panel">
+        <div class="battle-panel-title">&#x271A; ルームを作成</div>
+        <p class="battle-panel-desc">難易度を選んでルームを作成。コードを相手に送ろう。</p>
+        <div class="diff-row" id="battle-diff-row">
+          <button class="dbtn sel" data-d="1" onclick="selBattleDiff(1)">初級</button>
+          <button class="dbtn" data-d="2" onclick="selBattleDiff(2)">中級</button>
+          <button class="dbtn" data-d="3" onclick="selBattleDiff(3)">上級</button>
+        </div>
+        <button class="start-btn" id="battle-create-btn" onclick="createRoom()" style="margin-top:14px;padding:12px 32px;font-size:14px;letter-spacing:2px">ルーム作成</button>
+        <div id="room-code-display" class="room-code-display" style="display:none">
+          <div class="room-code-label">ルームコード（相手に送る）</div>
+          <div class="room-code-value" id="room-code-value">------</div>
+          <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('room-code-value').textContent).then(()=>{this.textContent='コピー済み ✓';setTimeout(()=>{this.textContent='コピー'},2000)})">コピー</button>
+        </div>
+      </div>
+
+      <div class="battle-separator">OR</div>
+
+      <!-- JOIN -->
+      <div class="battle-panel">
+        <div class="battle-panel-title">&#x2197; ルームに参加</div>
+        <p class="battle-panel-desc">相手から受け取ったコードを入力して接続。</p>
+        <input type="text" id="room-code-input" class="room-code-input"
+          placeholder="ルームコードを貼り付け"
+          autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+        <button class="start-btn" id="battle-join-btn" onclick="joinRoom()" style="margin-top:14px;padding:12px 32px;font-size:14px;letter-spacing:2px">参加する</button>
+      </div>
+    </div>
+
+    <div id="battle-status" class="battle-status"></div>
+
+    <div class="battle-howto">
+      <span class="howto-title">接続方法</span>
+      同じネットワーク不要。インターネット越しに直接P2P接続。
+      ルームコードをコピーしてLINEやDiscordで相手に送るだけ。
+    </div>
+  </div>
+
+  <!-- Countdown (inside scr-battle) -->
+  <div id="battle-countdown" class="battle-countdown" style="display:none">
+    <div class="countdown-label">READY?</div>
+    <div class="countdown-num" id="countdown-num">3</div>
+  </div>
+</div>
+
+<!-- ============================================================
      GAME
      ============================================================ -->
 <div id="scr-game" class="screen">
@@ -104,13 +167,32 @@
         <span class="hud-val timer" id="h-timer">60</span>
       </div>
     </div>
-    <div class="hud-grp">
+    <!-- 右グループ：COUNT + HUD内HOMEボタン -->
+    <div class="hud-grp hud-right">
       <div class="lives" id="h-lives"></div>
       <div class="hud-it">
         <span class="hud-lbl">COUNT</span>
         <span class="hud-val" id="h-count">0</span>
       </div>
+      <button class="hud-home-btn" onclick="goHome()" title="タイトルへ">&#x2302;</button>
     </div>
+  </div>
+
+  <!-- 対戦相手パネル（バトル時のみ） -->
+  <div id="battle-opp-panel" class="battle-opp-panel" style="display:none">
+    <span class="opp-label">&#x2694; 相手</span>
+    <span class="opp-sep">|</span>
+    <span class="opp-meta-lbl">今</span>
+    <span class="opp-element" id="opp-element">---</span>
+    <span class="opp-sep">|</span>
+    <span class="opp-meta-lbl">スコア</span>
+    <span class="opp-score" id="opp-score">0</span>
+    <span class="opp-sep">|</span>
+    <span class="opp-meta-lbl">COMBO</span>
+    <span class="opp-combo" id="opp-combo">x1</span>
+    <span class="opp-sep">|</span>
+    <span class="opp-meta-lbl">正解</span>
+    <span class="opp-count" id="opp-count">0</span>
   </div>
 
   <div class="prog-wrap">
@@ -130,12 +212,14 @@
     <div class="typing-area">
       <div class="romaji-guide" id="romaji-guide"></div>
       <div class="inp-wrap">
+        <!-- lang="en" でIME起動を抑制 -->
         <input type="text" class="typing-inp" id="typing-inp"
-          autocomplete="off" autocorrect="off" autocapitalize="none"
-          spellcheck="false" inputmode="latin" placeholder="">
+          lang="en"
+          autocomplete="off" autocorrect="off"
+          autocapitalize="none" spellcheck="false"
+          inputmode="latin" placeholder="">
         <div class="inp-overlay" id="inp-overlay"></div>
       </div>
-      <!-- hint-kana を削除済み -->
       <div class="typing-hint">
         <span class="hint-keys">TAB: スキップ &nbsp; ESC: 終了</span>
       </div>
