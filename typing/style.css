@@ -22,7 +22,6 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
 }
 
 body {
@@ -128,6 +127,7 @@ body::after {
   inset: 0;
   z-index: 10;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .screen.active { display: flex; }
@@ -138,8 +138,11 @@ body::after {
 #scr-title {
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 18px;
   text-align: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 16px;
 }
 
 .title-eyebrow {
@@ -152,7 +155,7 @@ body::after {
 
 .title-logo {
   font-family: var(--font-mono);
-  font-size: clamp(32px, 6vw, 64px);
+  font-size: clamp(28px, 6vw, 64px);
   color: var(--accent);
   letter-spacing: 6px;
   text-shadow: 0 0 24px rgba(0,220,190,.7), 0 0 50px rgba(0,220,190,.3);
@@ -177,6 +180,8 @@ body::after {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-dim);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .title-meta span::before { content: '[ '; color: var(--accent); opacity: .5; }
@@ -228,6 +233,8 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 28px;
+  overflow: hidden;
+  padding: 60px 16px 20px;
 }
 
 .mode-header { text-align: center; }
@@ -479,13 +486,15 @@ body::after {
 
 .game-main {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 16px;
   gap: 20px;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* --- Element card --- */
@@ -497,6 +506,7 @@ body::after {
   max-width: 560px;
   position: relative;
   transition: border-color .2s;
+  flex-shrink: 0;
 }
 
 .el-card.diff1 { border-left: 3px solid rgba(16,185,129,.5); }
@@ -611,6 +621,7 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .romaji-guide {
@@ -673,7 +684,6 @@ body::after {
   color: var(--accent);
 }
 
-/* hint-kana は削除 */
 .typing-hint {
   display: flex;
   justify-content: flex-end;
@@ -733,6 +743,7 @@ body::after {
   align-items: center;
   justify-content: flex-start;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 20px 16px;
 }
 
@@ -1144,7 +1155,6 @@ body::after {
 /* ============================================================
    HUD — HOME BUTTON INSIDE HUD (overlap fix)
    ============================================================ */
-/* 固定 #btn-home はゲーム画面では非表示に (showScreen で制御) */
 #scr-game #btn-home { display: none !important; }
 
 .hud-right {
@@ -1192,8 +1202,13 @@ body::after {
   font-family: var(--font-mono);
   font-size: 12px;
   flex-shrink: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+
+.battle-opp-panel::-webkit-scrollbar { display: none; }
 
 .opp-label {
   color: var(--error);
@@ -1201,14 +1216,16 @@ body::after {
   letter-spacing: 2px;
   text-transform: uppercase;
   opacity: .8;
+  white-space: nowrap;
 }
 
-.opp-sep { color: var(--text-dim); opacity: .4; }
+.opp-sep { color: var(--text-dim); opacity: .4; flex-shrink: 0; }
 
 .opp-meta-lbl {
   color: var(--text-dim);
   font-size: 9px;
   letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .opp-element {
@@ -1216,6 +1233,7 @@ body::after {
   font-size: 15px;
   font-weight: bold;
   min-width: 28px;
+  white-space: nowrap;
 }
 
 .opp-score {
@@ -1223,17 +1241,20 @@ body::after {
   font-size: 16px;
   font-weight: bold;
   min-width: 48px;
+  white-space: nowrap;
 }
 
 .opp-combo {
   color: var(--success);
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .opp-count {
   color: var(--text);
   font-size: 14px;
   min-width: 24px;
+  white-space: nowrap;
 }
 
 /* ============================================================
@@ -1241,16 +1262,17 @@ body::after {
    ============================================================ */
 #scr-battle {
   align-items: center;
-  justify-content: flex-start;  /* centerだとコンテンツ上部が隠れるため */
+  justify-content: flex-start;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 64px 16px 32px;      /* btn-backの高さ分上を確保 */
+  -webkit-overflow-scrolling: touch;
+  padding: 72px 16px 40px;
 }
 
 .battle-lobby {
   width: 100%;
   max-width: 700px;
-  margin: 0 auto;              /* 水平中央揃え */
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1263,6 +1285,7 @@ body::after {
   color: var(--accent);
   letter-spacing: 4px;
   text-shadow: 0 0 20px rgba(0,220,190,.5);
+  padding-top: 8px;
 }
 
 .battle-lobby-sub {
@@ -1337,9 +1360,9 @@ body::after {
 
 .room-code-value {
   font-family: var(--font-mono);
-  font-size: clamp(12px, 2.5vw, 18px);
+  font-size: clamp(18px, 3vw, 28px);
   color: var(--accent2);
-  letter-spacing: 3px;
+  letter-spacing: 6px;
   word-break: break-all;
   margin-bottom: 10px;
 }
@@ -1368,10 +1391,11 @@ body::after {
   border: 1px solid var(--border);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 22px;
   padding: 11px 14px;
   outline: none;
-  letter-spacing: 2px;
+  letter-spacing: 6px;
+  text-align: center;
 }
 
 .room-code-input:focus {
@@ -1546,28 +1570,6 @@ body::after {
 }
 
 /* ============================================================
-   RESPONSIVE — battle
-   ============================================================ */
-@media (max-width: 600px) {
-  .battle-panels { flex-direction: column; }
-  .battle-separator { padding: 4px 0; }
-  .br-scores { flex-direction: column; }
-}
-
-/* ============================================================
-   RESPONSIVE — general
-   ============================================================ */
-@media (max-width: 600px) {
-  .hud        { padding: 8px 12px; gap: 4px; }
-  .hud-val    { font-size: 18px; }
-  .hud-grp    { gap: 10px; }
-  .title-btns { grid-template-columns: 1fr; }
-  .result-stats { grid-template-columns: repeat(3, 1fr); }
-  .pt-cell    { font-size: 5px; }
-  .result-actions { flex-direction: column; align-items: center; }
-}
-
-/* ============================================================
    SHARE BUTTONS (LINE / X)
    ============================================================ */
 .share-btns {
@@ -1723,4 +1725,87 @@ body::after {
   font-size: 10px;
   color: var(--text-dim);
   letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   RESPONSIVE — 768px (tablet)
+   ============================================================ */
+@media (max-width: 768px) {
+  .battle-panels {
+    flex-direction: column;
+  }
+  .battle-panel {
+    min-width: unset;
+    width: 100%;
+  }
+  .battle-separator {
+    padding: 4px 0;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — 480px (mobile)
+   ============================================================ */
+@media (max-width: 480px) {
+  .hud {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .hud-val {
+    font-size: 18px;
+  }
+  .hud-grp {
+    gap: 8px;
+  }
+  .hud-it {
+    min-width: 44px;
+  }
+
+  .title-btns {
+    grid-template-columns: 1fr;
+    width: 90vw;
+  }
+
+  .result-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pt-cell {
+    font-size: 5px;
+  }
+  .result-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  .rbtn {
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .br-scores {
+    flex-direction: column;
+  }
+
+  #scr-battle {
+    padding: 64px 12px 32px;
+  }
+
+  .game-main {
+    padding: 12px;
+    gap: 14px;
+  }
+
+  .el-card {
+    padding: 14px 16px;
+  }
+
+  .q-symbol {
+    font-size: 40px;
+  }
+
+  .romaji-guide {
+    font-size: clamp(20px, 5vw, 28px);
+  }
 }
