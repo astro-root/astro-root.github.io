@@ -1119,6 +1119,11 @@ document.getElementById('scr-game').addEventListener('click', function() {
   if (G.running) document.getElementById('typing-inp').focus();
 });
 
+// iOS Safari: touchstart も必要（click だけでは発火しない場合がある）
+document.getElementById('scr-game').addEventListener('touchstart', function() {
+  if (G.running) document.getElementById('typing-inp').focus();
+}, { passive: true });
+
 // ============================================================
 // ONLINE BATTLE — PeerJS P2P  (最大4人スター型)
 // ============================================================
@@ -1197,7 +1202,15 @@ function openBattle() {
   BATTLE.diff = 1;
   $b('battle-diff-row').querySelector('[data-d="1"]').classList.add('sel');
   $b('room-code-display').style.display = 'none';
-  $b('room-code-input').value = '';
+  const rci = $b('room-code-input');
+  if (rci) {
+    rci.value = '';
+    // iPad/iOS Safari: autocapitalize="characters" がキーボード入力をブロックする場合があるため
+    // none に上書きし、JS 側で toUpperCase() する
+    rci.setAttribute('autocapitalize', 'none');
+    rci.setAttribute('autocorrect', 'off');
+    rci.setAttribute('spellcheck', 'false');
+  }
   setBattleStatus('');
   $b('battle-join-btn').disabled = false;
   $b('battle-create-btn').disabled = false;
@@ -1233,7 +1246,9 @@ function shareRoomCode(code) {
 // https://dashboard.metered.ca → TURN → API Key
 const METERED_API_KEY = ''; // ← Metered.ca の API キーを入力（空欄=フォールバック使用）
 
-// フォールバック ICE サーバーリスト（TURN: freeturn.net 無料公開サーバー）
+// フォールバック ICE サーバーリスト
+// STUN: 複数プロバイダ併用でNAT検出成功率を上げる
+// TURN: freeturn.net（登録不要の無料公開サーバー）＋ metered.ca STUN
 const ICE_SERVERS_FALLBACK = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -1241,9 +1256,13 @@ const ICE_SERVERS_FALLBACK = [
   { urls: 'stun:stun3.l.google.com:19302' },
   { urls: 'stun:stun4.l.google.com:19302' },
   { urls: 'stun:stun.cloudflare.com:3478' },
-  // freeturn.net: 登録不要の無料 TURN サーバー
+  { urls: 'stun:stun.stunprotocol.org:3478' },
+  { urls: 'stun:stun.relay.metered.ca:80' },
+  // freeturn.net: 登録不要の無料 TURN サーバー（UDP/TLS両対応）
   { urls: 'turn:freeturn.net:3478',  username: 'free', credential: 'free' },
   { urls: 'turns:freeturn.net:5349', username: 'free', credential: 'free' },
+  // numb.viagenie.ca: 別系統の無料 TURN（freeturn が落ちている場合のバックアップ）
+  { urls: 'turn:numb.viagenie.ca',   username: 'webrtc@live.com', credential: 'muazkh' },
 ];
 
 let _cachedIceServers = null;
@@ -1369,13 +1388,18 @@ async function createRoom() {
 
   BATTLE.peer.on('error', function(err) {
     if (err.type === 'unavailable-id') {
+      // ID衝突: 別のコードで再試行
       BATTLE.peer.destroy();
       BATTLE.peer = null;
       $b('battle-create-btn').disabled = false;
-      setBattleStatus('コードが使用中です。もう一度お試しください。', 'err');
+      setBattleStatus('コードが使用中です。もう一度「ルーム作成」を押してください。', 'err');
       return;
     }
-    setBattleStatus('エラー: ' + err.type, 'err');
+    if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error') {
+      setBattleStatus('PeerJSサーバーへの接続に失敗しました。ネット接続を確認してください。', 'err');
+    } else {
+      setBattleStatus('エラー: ' + err.type, 'err');
+    }
     $b('battle-create-btn').disabled = false;
     $b('battle-join-btn').disabled = false;
   });
@@ -1441,8 +1465,9 @@ function hostStartGame() {
   $b('host-start-btn').disabled = true;
   // Lock room — no new joins
   BATTLE.active = true;
-  hostBroadcast({ type: 'start' });
-  startBattleCountdown();
+  const playerCount = BATTLE.players.length; // 実際の参加人数（ゴーストプレイヤー防止）
+  hostBroadcast({ type: 'start', playerCount: playerCount });
+  startBattleCountdown(playerCount);
 }
 
 // ---- JOIN ROOM (Guest) ----
@@ -1485,7 +1510,11 @@ function setupGuestConn(conn, raw) {
   // ICE タイムアウト: 15秒で接続が開かなければ諦めてリセット
   const openTimeout = setTimeout(function() {
     if (!conn.open) {
-      setBattleStatus('接続タイムアウト。コードを確認するか、もう一度お試しください。', 'err');
+      setBattleStatus(
+        '接続タイムアウト。コードを確認するか再試行してください。' +
+        '（NAT環境によっては接続できない場合があります）',
+        'err'
+      );
       $b('battle-create-btn').disabled = false;
       $b('battle-join-btn').disabled = false;
       cleanupBattle(false);
@@ -1526,7 +1555,7 @@ function onGuestReceive(data) {
   } else if (data.type === 'roomstate') {
     setBattleStatus('参加者: ' + data.count + '人。ホストの開始を待っています...', 'wait');
   } else if (data.type === 'start') {
-    startBattleCountdown();
+    startBattleCountdown(data.playerCount); // ホストから受け取った実人数を渡す
   } else if (data.type === 'broadcast') {
     if (data.players) {
       // Merge into local players array
@@ -1549,13 +1578,15 @@ function updateShareButtons(code) {
 }
 
 // ---- Countdown ----
-function startBattleCountdown() {
+function startBattleCountdown(playerCount) {
   BATTLE.active = true;
   BATTLE.myFinished = false;
   BATTLE.finishedCount = 0;
   BATTLE.resultShown = false;
-  // init players array for guests (host already has it)
-  if (!BATTLE.isHost) initBattlePlayers(MAX_PLAYERS);
+  // ゲスト側: ホストから受け取った実際の人数でプレイヤー配列を初期化する。
+  // MAX_PLAYERS(=4) を使うと未参加スロットがゴーストとして残り、
+  // showWaitingForOthers() が 15 秒タイムアウトまで解消しないバグの原因になる。
+  if (!BATTLE.isHost) initBattlePlayers(playerCount || MAX_PLAYERS);
   showScreen('battle');
   $b('battle-lobby').style.display = 'none';
   $b('battle-countdown').style.display = 'flex';
