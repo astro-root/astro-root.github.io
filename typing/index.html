@@ -97,23 +97,55 @@
   <!-- Lobby -->
   <div id="battle-lobby" class="battle-lobby">
     <div class="battle-lobby-title">&#x2694; オンライン対戦</div>
-    <p class="battle-lobby-sub">ルームコードで1対1リアルタイムバトル（60秒）</p>
+    <p class="battle-lobby-sub">最大4人・60秒リアルタイムバトル</p>
 
     <div class="battle-panels">
       <!-- CREATE -->
       <div class="battle-panel">
-        <div class="battle-panel-title">&#x271A; ルームを作成</div>
-        <p class="battle-panel-desc">難易度を選んでルームを作成。コードを相手に送ろう。</p>
+        <div class="battle-panel-title">&#x271A; ルームを作成（ホスト）</div>
+        <p class="battle-panel-desc">難易度を選んでルームを作成。コードを友達に送ってSTARTを押す。</p>
         <div class="diff-row" id="battle-diff-row">
           <button class="dbtn sel" data-d="1" onclick="selBattleDiff(1)">初級</button>
           <button class="dbtn" data-d="2" onclick="selBattleDiff(2)">中級</button>
           <button class="dbtn" data-d="3" onclick="selBattleDiff(3)">上級</button>
         </div>
-        <button class="start-btn" id="battle-create-btn" onclick="createRoom()" style="margin-top:14px;padding:12px 32px;font-size:14px;letter-spacing:2px">ルーム作成</button>
+        <button class="start-btn" id="battle-create-btn" onclick="createRoom()"
+          style="margin-top:14px;padding:12px 32px;font-size:14px;letter-spacing:2px">ルーム作成</button>
+
+        <!-- 作成後に表示 -->
         <div id="room-code-display" class="room-code-display" style="display:none">
-          <div class="room-code-label">ルームコード（相手に送る）</div>
+          <div class="room-code-label">ルームコード（友達に送る）</div>
           <div class="room-code-value" id="room-code-value">------</div>
-          <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('room-code-value').textContent).then(()=>{this.textContent='コピー済み ✓';setTimeout(()=>{this.textContent='コピー'},2000)})">コピー</button>
+          <div class="share-btns">
+            <button class="copy-btn" onclick="
+              navigator.clipboard.writeText(document.getElementById('room-code-value').textContent)
+                .then(()=>{this.textContent='コピー済み ✓';setTimeout(()=>{this.textContent='コピー'},2000)})
+            ">コピー</button>
+            <a id="share-line" class="share-btn share-line" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+              LINE
+            </a>
+            <a id="share-x" class="share-btn share-x" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.736-8.847L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              X (Twitter)
+            </a>
+          </div>
+        </div>
+
+        <!-- 待機室 -->
+        <div id="waiting-room" class="waiting-room" style="display:none">
+          <div class="waiting-room-title">参加者</div>
+          <div id="waiting-players"></div>
+        </div>
+
+        <!-- ホスト専用スタートボタン -->
+        <div id="host-start-wrap" style="display:none;margin-top:14px;text-align:center">
+          <button class="start-btn" id="host-start-btn" onclick="hostStartGame()"
+            style="padding:12px 32px;font-size:15px;letter-spacing:2px"
+            disabled>ゲーム開始 (2人以上で有効)</button>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;font-family:var(--font-mono)">
+            最大4人。揃ったらSTARTを押してください
+          </div>
         </div>
       </div>
 
@@ -122,21 +154,17 @@
       <!-- JOIN -->
       <div class="battle-panel">
         <div class="battle-panel-title">&#x2197; ルームに参加</div>
-        <p class="battle-panel-desc">相手から受け取ったコードを入力して接続。</p>
+        <p class="battle-panel-desc">ホストから受け取った6文字のコードを入力して接続。</p>
         <input type="text" id="room-code-input" class="room-code-input"
-          placeholder="ルームコードを貼り付け"
-          autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
-        <button class="start-btn" id="battle-join-btn" onclick="joinRoom()" style="margin-top:14px;padding:12px 32px;font-size:14px;letter-spacing:2px">参加する</button>
+          placeholder="例: AB3K7Z"
+          autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+          maxlength="6" style="text-align:center;font-size:22px;letter-spacing:8px">
+        <button class="start-btn" id="battle-join-btn" onclick="joinRoom()"
+          style="margin-top:14px;padding:12px 32px;font-size:14px;letter-spacing:2px">参加する</button>
       </div>
     </div>
 
     <div id="battle-status" class="battle-status"></div>
-
-    <div class="battle-howto">
-      <span class="howto-title">接続方法</span>
-      同じネットワーク不要。インターネット越しに直接P2P接続。
-      ルームコードをコピーしてLINEやDiscordで相手に送るだけ。
-    </div>
   </div>
 
   <!-- Countdown (inside scr-battle) -->
