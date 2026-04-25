@@ -233,8 +233,7 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 28px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   padding: 60px 16px 20px;
 }
 
@@ -1259,6 +1258,58 @@ body::after {
 }
 
 /* ============================================================
+   NICKNAME INPUT (Battle Lobby)
+   ============================================================ */
+.nickname-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(0,220,190,.04);
+  border: 1px solid var(--border2);
+  padding: 10px 16px;
+}
+
+.nickname-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.nickname-inp {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 4px 6px;
+  outline: none;
+  letter-spacing: 2px;
+  min-width: 0;
+}
+
+.nickname-inp:focus {
+  border-bottom-color: var(--accent2);
+}
+
+.nickname-inp::placeholder {
+  color: var(--text-dim);
+}
+
+.wp-host-tag {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ============================================================
    BATTLE LOBBY SCREEN
    ============================================================ */
 #scr-battle {
@@ -1267,19 +1318,7 @@ body::after {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px 40px;
-}
-
-/* バトル画面内の戻るボタン: position:fixed を解除してフロー内に配置。
-   これにより battle-lobby-title との重なりを解消する。 */
-#scr-battle > .btn-back {
-  position: relative;
-  top: auto;
-  left: auto;
-  z-index: 1;
-  align-self: flex-start;
-  flex-shrink: 0;
-  margin-bottom: 12px;
+  padding: 72px 16px 40px;
 }
 
 .battle-lobby {
@@ -1409,10 +1448,6 @@ body::after {
   outline: none;
   letter-spacing: 6px;
   text-align: center;
-  /* iOS: テキスト選択・入力を確実に有効化 */
-  -webkit-user-select: text;
-  user-select: text;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .room-code-input:focus {
@@ -1805,9 +1840,8 @@ body::after {
     flex-direction: column;
   }
 
-  /* バトル画面: モバイルでの余白調整 */
   #scr-battle {
-    padding: 12px 12px 32px;
+    padding: 64px 12px 32px;
   }
 
   .game-main {
@@ -1825,15 +1859,5 @@ body::after {
 
   .romaji-guide {
     font-size: clamp(20px, 5vw, 28px);
-  }
-
-  /* 対戦ロビー: 小画面でのルームコード表示改善 */
-  .room-code-value {
-    font-size: 20px;
-    letter-spacing: 4px;
-  }
-
-  .battle-lobby-title {
-    font-size: clamp(16px, 4vw, 24px);
   }
 }
