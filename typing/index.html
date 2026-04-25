@@ -99,6 +99,15 @@
     <div class="battle-lobby-title">&#x2694; オンライン対戦</div>
     <p class="battle-lobby-sub">最大4人・60秒リアルタイムバトル</p>
 
+    <!-- ニックネーム設定 -->
+    <div class="nickname-row">
+      <label class="nickname-lbl" for="battle-nickname">&#x1F464; ニックネーム</label>
+      <input type="text" id="battle-nickname" class="nickname-inp"
+        maxlength="12" placeholder="Guest"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+        oninput="const v=this.value.trim().slice(0,12)||'Guest';BATTLE.myNickname=v;localStorage.setItem('ptgame_nickname',this.value.trim())">
+    </div>
+
     <div class="battle-panels">
       <!-- CREATE -->
       <div class="battle-panel">
