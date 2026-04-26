@@ -1267,48 +1267,60 @@ function tweetResult() {
 // Japanese IME intercepts keystrokes before our handlers.
 // We track composition state and ignore input events during composition.
 let isComposing = false;
-let _lastCompositionEnd = 0; // compositionend 直後の input イベントを無視するためのタイムスタンプ
+let _lastCompositionEnd = 0;
+let _compositionStartTyped = ''; // composition開始時のG.typedを保存
 
 const _inp = document.getElementById('typing-inp');
 
 _inp.addEventListener('compositionstart', function() {
   isComposing = true;
-  // Clear any partial IME text that snuck into the field
-  this.value = '';
+  _compositionStartTyped = G.typed;
+  // フィールドをクリアしない。IMEは自分の候補文字をフィールドに書き込む。
+  // クリアするとIMEが誤動作しcompositionendが空データで来るか発火しない場合がある。
 });
 
 _inp.addEventListener('compositionend', function(e) {
   isComposing = false;
-
-  // IMEが確定したテキストを取得（e.data が信頼できない環境では value から差分を取る）
-  const composed = (e.data != null ? e.data : '') || this.value.replace(G.typed, '') || '';
-
-  // フィールドを確定済み入力に同期（IMEゴミを除去）
-  this.value = G.typed;
+  _lastCompositionEnd = Date.now();
 
   if (!G.running || G.practicing || G.locked) {
+    this.value = G.typed;
     this.focus();
     return;
   }
 
-  // IMEが確定した文字列をNFKCで正規化し、使える文字だけ processChar に渡す。
-  // - 全角英数（ａ→a, ＢＣ→bc）: そのまま入力として使う
-  // - 長音符（ー・ｰ）: ハイフンとして扱う
-  // - ひらがな・カタカナ・漢字: 全て破棄（ゲームに不要）
-  const normalized = composed.normalize('NFKC').toLowerCase();
-  // 長音符をハイフンに統一
-  const replaced = normalized.replace(/[ーｰ]/g, '-');
-  // a-z と - のみ抽出
-  const usable = replaced.replace(/[^a-z-]/g, '');
-
-  if (usable.length > 0) {
-    for (let i = 0; i < usable.length; i++) {
-      processChar(usable[i]);
+  // --- 確定テキストの取得（3段階フォールバック） ---
+  // 1. e.data が信頼できる場合（多くのモダンブラウザ）
+  // 2. フィールド値からcomposition開始前のG.typedを除去した差分
+  // 3. フィールド値全体（G.typedが空の場合）
+  let composed = '';
+  if (typeof e.data === 'string' && e.data.length > 0) {
+    composed = e.data;
+  } else {
+    const fieldVal = this.value || '';
+    if (_compositionStartTyped && fieldVal.startsWith(_compositionStartTyped)) {
+      composed = fieldVal.slice(_compositionStartTyped.length);
+    } else {
+      composed = fieldVal.replace(_compositionStartTyped, '');
     }
-    this.value = G.typed; // processCharで更新されたG.typedに同期
   }
 
-  _lastCompositionEnd = Date.now(); // input イベントへの二重処理防止
+  // フィールドを確定済み入力に同期（IMEゴミを除去）
+  this.value = G.typed;
+
+  // --- NFKC正規化：全角英数→半角、長音符→ハイフン、ひらがな/漢字は破棄 ---
+  // 例: 'ａｂ' → 'ab'、'ー' → '-'、'あ' → ''（破棄）
+  const usable = composed
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[\u30FC\uFF70]/g, '-') // 長音符を統一
+    .replace(/[^a-z\-]/g, '');       // a-z と - のみ残す
+
+  for (let i = 0; i < usable.length; i++) {
+    processChar(usable[i]);
+  }
+
+  this.value = G.typed;
   this.focus();
 });
 
@@ -1362,13 +1374,13 @@ document.addEventListener('keydown', function(e) {
  */
 document.getElementById('typing-inp').addEventListener('input', function(e) {
   if (!G.running || G.practicing) return;
-  // Skip during IME composition — compositionend handles it
-  if (e.isComposing || isComposing) {
-    this.value = '';
-    return;
-  }
-  // compositionend が直前に発火した場合（≤30ms）は二重処理を防ぐ
-  if (Date.now() - _lastCompositionEnd < 30) {
+
+  // composition中はIMEがフィールドを管理しているので触らない。
+  // compositionend が後で正しく処理する。
+  if (e.isComposing || isComposing) return;
+
+  // compositionend が直前に発火した場合は二重処理を防ぐ（余裕を持って100ms）
+  if (Date.now() - _lastCompositionEnd < 100) {
     this.value = G.typed;
     return;
   }
@@ -1390,7 +1402,6 @@ document.getElementById('typing-inp').addEventListener('input', function(e) {
 document.getElementById('typing-inp').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') e.preventDefault();
 });
-
 document.getElementById('scr-game').addEventListener('click', function() {
   if (G.running) document.getElementById('typing-inp').focus();
 });
