@@ -1861,3 +1861,356 @@ body::after {
     font-size: clamp(20px, 5vw, 28px);
   }
 }
+/* ============================================================
+   TITLE — CATCHPHRASE (dynamically injected by JS)
+   ============================================================ */
+.title-catch {
+  font-family: var(--font-ja);
+  font-size: clamp(13px, 2.3vw, 16px);
+  color: var(--text-mid);
+  text-align: center;
+  line-height: 1.7;
+  max-width: 480px;
+  padding: 0 12px;
+  opacity: .85;
+}
+
+/* Streak / mastery tags in .title-meta */
+#streak-meta  { color: #f97316 !important; }
+#mastery-meta { color: var(--success) !important; }
+
+/* Title primary CTA highlight */
+.tbtn.tbtn-cta {
+  background: rgba(0,220,190,0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 28px rgba(0,220,190,.10);
+  position: relative;
+}
+.tbtn.tbtn-cta::after {
+  content: 'おすすめ';
+  position: absolute;
+  top: -1px; right: -1px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 2px 7px;
+}
+.tbtn.tbtn-cta .tbtn-label { color: var(--accent2); }
+
+/* ============================================================
+   WELCOME OVERLAY (first visit)
+   ============================================================ */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,11,26,.97);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadein .35s ease;
+}
+
+.welcome-card {
+  background: var(--bg2);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 50px rgba(0,220,190,.15);
+  padding: 36px 28px;
+  max-width: 460px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.welcome-icon { font-size: 52px; line-height: 1; }
+
+.welcome-title {
+  font-family: var(--font-mono);
+  font-size: clamp(17px, 3.5vw, 24px);
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+
+.welcome-sub {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.85;
+}
+
+.welcome-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-family: var(--font-ja);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+  border: 1px solid var(--border);
+  background: rgba(0,220,190,.05);
+  color: var(--text-mid);
+  letter-spacing: 1px;
+}
+
+.welcome-btn:hover {
+  background: rgba(0,220,190,.12);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.welcome-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.welcome-btn.primary:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  box-shadow: 0 10px 32px rgba(0,220,190,.38);
+  transform: translateY(-3px);
+}
+
+/* ============================================================
+   TUTORIAL OVERLAY (first question hint)
+   ============================================================ */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,11,26,.92);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadein .25s ease;
+}
+
+.tutorial-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tutorial-title {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.tutorial-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+.tut-num {
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tutorial-example {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  background: rgba(0,220,190,.04);
+  border: 1px solid var(--border2);
+  padding: 9px 14px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.tut-romaji {
+  color: var(--accent);
+  letter-spacing: 4px;
+  font-size: 14px;
+}
+
+.tutorial-btn {
+  padding: 14px;
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  color: var(--bg);
+  font-family: var(--font-ja);
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+.tutorial-btn:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,220,190,.3);
+}
+
+/* ============================================================
+   RESULT — EXTENDED STATS (accuracy / mastery / streak)
+   ============================================================ */
+.result-stats-ext {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.stat-box-ext {
+  background: rgba(0,220,190,.03);
+  border: 1px dashed rgba(0,220,190,.12);
+  padding: 10px;
+  text-align: center;
+}
+
+.acc-val  { color: var(--success)  !important; }
+.mast-val { color: var(--accent)   !important; }
+.str-val  { color: #f97316         !important; }
+
+/* ============================================================
+   REVIEW MODE
+   ============================================================ */
+.review-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(245,158,11,.05);
+  border: 1px solid rgba(245,158,11,.22);
+  padding: 12px 16px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.review-notice-icon { font-size: 20px; flex-shrink: 0; }
+
+.review-notice-txt {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.review-notice-btn {
+  padding: 9px 18px;
+  background: rgba(245,158,11,.12);
+  border: 1px solid rgba(245,158,11,.38);
+  color: var(--amber);
+  font-family: var(--font-ja);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.review-notice-btn:hover {
+  background: rgba(245,158,11,.22);
+  border-color: var(--amber);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245,158,11,.15);
+}
+
+.review-banner {
+  background: rgba(245,158,11,.07);
+  border-bottom: 1px solid rgba(245,158,11,.18);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--amber);
+  letter-spacing: 2px;
+  padding: 6px 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   MOBILE ENHANCEMENTS — larger touch targets
+   ============================================================ */
+@media (max-width: 480px) {
+  .typing-inp {
+    font-size: 24px;
+    padding: 20px 16px;
+    min-height: 64px;
+  }
+
+  .inp-overlay {
+    font-size: 24px;
+  }
+
+  .dbtn {
+    padding: 16px 18px;
+    font-size: 16px;
+    min-height: 52px;
+  }
+
+  .start-btn {
+    padding: 18px 40px;
+    font-size: 16px;
+  }
+
+  .tbtn {
+    padding: 20px 14px;
+    min-height: 82px;
+  }
+
+  .result-stats-ext {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ============================================================
+   BATTLE LOBBY — btn-back overlap fix
+   ============================================================ */
+#scr-battle > .btn-back {
+  /* Switch from fixed to absolute so it scrolls with the panel
+     and does not float over the lobby title */
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+}
+
+/* Give the scroll container room for the absolute-positioned back button */
+#scr-battle {
+  position: fixed; /* already fixed via .screen */
+}
+
+/* ============================================================
+   LOADING — faster exit animation
+   ============================================================ */
+#scr-loading.fast-exit {
+  animation: fadeout .25s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeout { from { opacity: 1; } to { opacity: 0; } }
