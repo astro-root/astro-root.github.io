@@ -146,6 +146,104 @@ const PT_GRID = [
 ];
 
 // ============================================================
+// PERSISTENCE: STREAK / MASTERY / FIRST VISIT
+// ============================================================
+var STREAK_KEY  = 'ptgame_streak';
+var MASTERY_KEY = 'ptgame_mastery';
+var VISITED_KEY = 'ptgame_visited';
+
+function isFirstVisit() {
+  return !localStorage.getItem(VISITED_KEY);
+}
+function markVisited() {
+  try { localStorage.setItem(VISITED_KEY, '1'); } catch(e) {}
+}
+
+function getStreakData() {
+  try { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{"count":0,"lastDate":""}'); }
+  catch(e) { return { count: 0, lastDate: '' }; }
+}
+function touchStreak() {
+  var today = new Date().toLocaleDateString('ja-JP');
+  var s = getStreakData();
+  if (s.lastDate === today) return s.count; // already played today
+  var yest = new Date(Date.now() - 86400000).toLocaleDateString('ja-JP');
+  s.count = (s.lastDate === yest) ? s.count + 1 : 1;
+  s.lastDate = today;
+  try { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); } catch(e) {}
+  return s.count;
+}
+
+function getMastered() {
+  try { return new Set(JSON.parse(localStorage.getItem(MASTERY_KEY) || '[]')); }
+  catch(e) { return new Set(); }
+}
+function addMastered(no) {
+  var m = getMastered();
+  m.add(no);
+  try { localStorage.setItem(MASTERY_KEY, JSON.stringify(Array.from(m))); } catch(e) {}
+  return m.size;
+}
+function getMasteryPct() {
+  if (!ELEMENTS.length) return 0;
+  return Math.round(getMastered().size / ELEMENTS.length * 100);
+}
+
+// ---- Dynamic title screen state ----
+function initTitleDynamic() {
+  var titleScreen = document.getElementById('scr-title');
+  if (!titleScreen) return;
+
+  // Inject catchphrase once
+  if (!titleScreen.querySelector('.title-catch')) {
+    var meta = titleScreen.querySelector('.title-meta');
+    var catchEl = document.createElement('div');
+    catchEl.className = 'title-catch';
+    catchEl.textContent = '118種の化学元素をタイピングで制覇しよう';
+    if (meta) meta.insertAdjacentElement('afterend', catchEl);
+  }
+
+  // Mark "学習モード" button as primary CTA
+  var btns = titleScreen.querySelectorAll('.tbtn');
+  btns.forEach(function(b) {
+    if (b.querySelector('.tbtn-label') && b.querySelector('.tbtn-label').textContent.indexOf('学習') !== -1) {
+      b.classList.add('tbtn-cta');
+    }
+  });
+
+  // Update streak / mastery badges in title-meta
+  var s = getStreakData();
+  var mPct = getMasteryPct();
+  var masteredCount = getMastered().size;
+
+  var streakSpan = document.getElementById('streak-meta');
+  var masterySpan = document.getElementById('mastery-meta');
+
+  if (!streakSpan) {
+    var metaEl = titleScreen.querySelector('.title-meta');
+    if (metaEl) {
+      var sp1 = document.createElement('span');
+      sp1.id = 'streak-meta';
+      metaEl.appendChild(sp1);
+      var sp2 = document.createElement('span');
+      sp2.id = 'mastery-meta';
+      metaEl.appendChild(sp2);
+    }
+  }
+
+  var sm = document.getElementById('streak-meta');
+  var mm = document.getElementById('mastery-meta');
+  if (sm) {
+    sm.textContent = s.count > 0
+      ? '\uD83D\uDD25 ' + s.count + '\u65E5\u9023\u7D9A'
+      : '\u4ECA\u65E5\u304B\u3089\u59CB\u3081\u3088\u3046\uFF01';
+  }
+  if (mm && ELEMENTS.length) {
+    mm.textContent = '\u7FD2\u5F97\u7387 ' + mPct + '% (' + masteredCount + '/' + ELEMENTS.length + ')';
+  }
+}
+
+// ============================================================
 // CSV LOADING
 // ============================================================
 async function loadElements() {
@@ -165,9 +263,16 @@ async function loadElements() {
     bar.style.width = '100%';
     msg.textContent = 'OK -- ' + ELEMENTS.length + '元素読み込み完了';
     document.getElementById('el-count-badge').textContent = '全' + ELEMENTS.length + '元素収録';
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 400));
     document.getElementById('scr-loading').style.display = 'none';
     showScreen('title');
+    // Dynamic title: streak, mastery, catchphrase
+    initTitleDynamic();
+    // First-time visitor → show welcome overlay
+    if (isFirstVisit()) {
+      markVisited();
+      setTimeout(showWelcomeOverlay, 500);
+    }
   } catch (err) {
     bar.style.background = 'var(--error)';
     bar.style.width = '100%';
@@ -231,6 +336,10 @@ let G = {
   practicing: false,
   // lock flag: prevent input between correctAnswer() and nextQuestion()
   locked: false,
+  // Review mode: elements that had ≥2 misses this session
+  reviewPool: [],
+  // Tutorial: shown flag to prevent re-triggering
+  tutorialShown: false,
 };
 
 // ============================================================
@@ -523,6 +632,9 @@ function restartGame() {
 // ============================================================
 function initGame() {
   clearInterval(G.timerID);
+  // Clean up review banner from previous session
+  var rb = document.getElementById('review-banner');
+  if (rb) rb.remove();
   G.score = 0; G.combo = 0; G.maxCombo = 0;
   G.lives = G.mode === 'endless' ? 5 : 0;
   G.count = 0; G.totalMisses = 0;
@@ -533,6 +645,8 @@ function initGame() {
   G.running = true;
   G.practicing = false;
   G.locked = false;
+  G.reviewPool = [];
+  G.tutorialShown = false;
   updateHUD();
   document.getElementById('timer-wrap').style.display = G.mode === 'timeattack' ? '' : 'none';
   renderLives();
@@ -565,6 +679,11 @@ function nextQuestion() {
   if (!G.elResults[el.no]) G.elResults[el.no] = { correct: false, misses: 0 };
   renderQuestion();
   updateRomajiGuide();
+  // Tutorial: show hint on the very first question of a practice-mode game
+  if (!G.tutorialShown && G.mode === 'practice' && G.count === 0 && G.poolIdx === 1) {
+    G.tutorialShown = true;
+    showTutorialHint();
+  }
   document.getElementById('typing-inp').value = '';
   document.getElementById('typing-inp').focus();
 }
@@ -573,6 +692,8 @@ function endGame() {
   G.running = false;
   clearInterval(G.timerID);
   SFX.play('end');
+  // Record a play day for streak (not for battle mode)
+  if (G.mode !== 'battle') touchStreak();
   showResult();
 }
 
@@ -677,6 +798,11 @@ function wrongInput() {
   G.missesOnEl++;
   G.elResults[G.curEl.no].misses++;
 
+  // Track elements that need review (2nd miss on element → flag for review)
+  if (G.missesOnEl === 2 && G.curEl && G.reviewPool.indexOf(G.curEl.no) === -1) {
+    G.reviewPool.push(G.curEl.no);
+  }
+
   // Reset pendingN on wrong input — the 'n' is discarded
   resetPendingN();
 
@@ -709,6 +835,8 @@ function correctAnswer() {
   const pts = Math.round(el.score * QTYPE_MULT[G.curQType] * comboMult(G.combo));
   G.score += pts;
   G.count++;
+  // Perfect answer (no misses) → mark element as mastered
+  if (G.missesOnEl === 0) addMastered(el.no);
   if (G.missesOnEl > 3) G.combo = 0;
 
   updateHUD();
@@ -838,6 +966,12 @@ function closePracticeCard() {
 // RESULT
 // ============================================================
 function showResult() {
+  // Remove any injected elements from a previous game session
+  var oldExt = document.getElementById('r-stats-ext');
+  if (oldExt) oldExt.remove();
+  var oldReview = document.getElementById('review-notice');
+  if (oldReview) oldReview.remove();
+
   showScreen('result');
   document.getElementById('r-title').textContent =
     G.mode === 'timeattack' ? 'TIME UP' :
@@ -865,6 +999,44 @@ function showResult() {
     }
   } else {
     badge.style.display = 'none';
+  }
+
+  // --- Extended stats: accuracy / mastery / streak ---
+  var accuracy = (G.count + G.totalMisses) > 0
+    ? Math.round(G.count / (G.count + G.totalMisses) * 100) : 0;
+  var mPct  = getMasteryPct();
+  var streak = getStreakData().count;
+
+  var statsExt = document.createElement('div');
+  statsExt.id = 'r-stats-ext';
+  statsExt.className = 'result-stats-ext';
+  statsExt.innerHTML =
+    '<div class="stat-box-ext">' +
+      '<span class="stat-lbl">ACCURACY</span>' +
+      '<span class="stat-val acc-val">' + accuracy + '%</span>' +
+    '</div>' +
+    '<div class="stat-box-ext">' +
+      '<span class="stat-lbl">MASTERY</span>' +
+      '<span class="stat-val mast-val">' + mPct + '%</span>' +
+    '</div>' +
+    '<div class="stat-box-ext">' +
+      '<span class="stat-lbl">STREAK</span>' +
+      '<span class="stat-val str-val">' + streak + '\u65E5</span>' +
+    '</div>';
+  var statsRow = document.querySelector('.result-stats');
+  if (statsRow) statsRow.insertAdjacentElement('afterend', statsExt);
+
+  // --- Review notice: offer review mode if there are missed elements ---
+  if (G.reviewPool.length > 0 && G.mode !== 'battle') {
+    var notice = document.createElement('div');
+    notice.id = 'review-notice';
+    notice.className = 'review-notice';
+    notice.innerHTML =
+      '<span class="review-notice-icon">\uD83D\uDCDD</span>' +
+      '<span class="review-notice-txt">\u82E6\u624B\u306A\u5143\u7D20\u304C <strong>' + G.reviewPool.length + '\u7A2E</strong> \u3042\u308A\u307E\u3059</span>' +
+      '<button class="review-notice-btn" onclick="startReviewMode()">\u5FA9\u7FD2\u30E2\u30FC\u30C9\u3067\u518D\u6311\u6226</button>';
+    var actions = document.querySelector('.result-actions');
+    if (actions) actions.insertAdjacentElement('beforebegin', notice);
   }
 }
 
@@ -1879,7 +2051,137 @@ function goHome() {
   cleanupBattle();
   G.running = false;
   clearInterval(G.timerID);
+  // Remove review banner if present
+  var rb = document.getElementById('review-banner');
+  if (rb) rb.remove();
   showScreen('title');
+  // Refresh streak / mastery displayed on title
+  initTitleDynamic();
+}
+
+// ============================================================
+// WELCOME OVERLAY (first visit)
+// ============================================================
+function showWelcomeOverlay() {
+  var ov = document.createElement('div');
+  ov.id = 'welcome-overlay';
+  ov.className = 'welcome-overlay';
+  ov.innerHTML =
+    '<div class="welcome-card">' +
+      '<div class="welcome-icon">\u2697\uFE0F</div>' +
+      '<div class="welcome-title">\u5143\u7D20\u30BF\u30A4\u30D4\u30F3\u30B0\u3078\u3088\u3046\u3053\u305D\uFF01</div>' +
+      '<div class="welcome-sub">' +
+        '\u307E\u305A\u306F\u300C\u5B66\u7FD2\u30E2\u30FC\u30C9\u30FB\u521D\u7D1A\u300D\u3067\u30B9\u30BF\u30FC\u30C8\u3057\u3088\u3046\u3002<br>' +
+        '\u89E3\u8AAC\u30AB\u30FC\u30C9\u4ED8\u304D\u3067\u3001\u5143\u7D20\u306E\u540D\u524D\u3068\u8AAD\u307F\u65B9\u3092\u697D\u3057\u304F\u899A\u3048\u3089\u308C\u307E\u3059\u3002' +
+      '</div>' +
+      '<button class="welcome-btn primary" onclick="dismissWelcome(true)">' +
+        '\u25B6\uFE0F \u5B66\u7FD2\u30E2\u30FC\u30C9\u3092\u59CB\u3081\u308B\uFF08\u521D\u7D1A\uFF09' +
+      '</button>' +
+      '<button class="welcome-btn" onclick="dismissWelcome(false)">' +
+        '\u81EA\u5206\u3067\u30E2\u30FC\u30C9\u3092\u9078\u3076' +
+      '</button>' +
+    '</div>';
+  document.body.appendChild(ov);
+}
+
+function dismissWelcome(autoStart) {
+  var ov = document.getElementById('welcome-overlay');
+  if (ov) ov.remove();
+  if (autoStart) {
+    G.mode = 'practice';
+    G.diff = 1;
+    G.tutorialShown = false;
+    SFX._init();
+    initGame();
+    showScreen('game');
+  }
+}
+
+// ============================================================
+// TUTORIAL HINT (first question of practice)
+// ============================================================
+function showTutorialHint() {
+  // Pause game input during tutorial
+  G.running = false;
+
+  var ov = document.createElement('div');
+  ov.id = 'tutorial-ov';
+  ov.className = 'tutorial-overlay';
+  ov.innerHTML =
+    '<div class="tutorial-card">' +
+      '<div class="tutorial-title">\uD83C\uDFAE \u904A\u3073\u65B9</div>' +
+      '<div class="tutorial-step">' +
+        '<span class="tut-num">1</span>' +
+        '\u753B\u9762\u306B\u8868\u793A\u3055\u308C\u308B\u5143\u7D20\u540D\u3092\u65E5\u672C\u8A9E\u3067\u8AAD\u3080' +
+      '</div>' +
+      '<div class="tutorial-step">' +
+        '<span class="tut-num">2</span>' +
+        '\u30D8\u30DC\u30F3\u5F0F\u30ED\u30FC\u30DE\u5B57\u3067\u30BF\u30A4\u30D4\u30F3\u30B0\u3059\u308B' +
+      '</div>' +
+      '<div class="tutorial-step">' +
+        '<span class="tut-num">3</span>' +
+        '\u6B63\u89E3\u3059\u308B\u3068\u89E3\u8AAC\u30AB\u30FC\u30C9\u304C\u8868\u793A\u3055\u308C\u308B\uFF08Enter\u3067\u6B21\u3078\uFF09' +
+      '</div>' +
+      '<div class="tutorial-example">' +
+        '\u4F8B\uFF1A\u300C\u6C34\u7D20\uFF08H\uFF09\u300D \u2192 <span class="tut-romaji">suiso</span>' +
+      '</div>' +
+      '<button class="tutorial-btn" onclick="closeTutorialHint()">' +
+        '\u308F\u304B\u3063\u305F\uFF01\u59CB\u3081\u308B \u2192' +
+      '</button>' +
+    '</div>';
+  document.body.appendChild(ov);
+}
+
+function closeTutorialHint() {
+  var ov = document.getElementById('tutorial-ov');
+  if (ov) ov.remove();
+  G.running = true;
+  document.getElementById('typing-inp').focus();
+}
+
+// ============================================================
+// REVIEW MODE
+// ============================================================
+function startReviewMode() {
+  if (!G.reviewPool.length) return;
+  var reviewEls = ELEMENTS.filter(function(e) { return G.reviewPool.indexOf(e.no) !== -1; });
+  if (!reviewEls.length) return;
+
+  var savedPool = G.reviewPool.slice();
+  clearInterval(G.timerID);
+  G.mode = 'practice';
+  G.score = 0; G.combo = 0; G.maxCombo = 0;
+  G.lives = 0; G.count = 0; G.totalMisses = 0;
+  G.timeLeft = 0;
+  G.pool = savedPool.map(function(no) { return reviewEls.find(function(e) { return e.no === no; }); }).filter(Boolean);
+  G.poolIdx = 0;
+  G.elResults = {};
+  G.running = true;
+  G.practicing = false;
+  G.locked = false;
+  G.reviewPool = [];
+  G.tutorialShown = true; // skip tutorial in review mode
+
+  updateHUD();
+  document.getElementById('timer-wrap').style.display = 'none';
+  renderLives();
+  showScreen('game');
+
+  // Show review banner
+  var existing = document.getElementById('review-banner');
+  if (existing) existing.remove();
+  var banner = document.createElement('div');
+  banner.id = 'review-banner';
+  banner.className = 'review-banner';
+  banner.textContent = '\uD83D\uDCDD \u5FA9\u7FD2\u30E2\u30FC\u30C9\uFF1A\u82E6\u624B\u5143\u7D20 ' + G.pool.length + '\u554F';
+  var scrGame = document.getElementById('scr-game');
+  // Insert after HUD
+  var hud = scrGame.querySelector('.hud');
+  if (hud) hud.insertAdjacentElement('afterend', banner);
+  else scrGame.insertBefore(banner, scrGame.firstChild);
+
+  nextQuestion();
+  setTimeout(function() { document.getElementById('typing-inp').focus(); }, 100);
 }
 
 // ============================================================
