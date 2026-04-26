@@ -265,13 +265,17 @@ async function loadElements() {
     document.getElementById('el-count-badge').textContent = '全' + ELEMENTS.length + '元素収録';
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('scr-loading').style.display = 'none';
-    showScreen('title');
-    // Dynamic title: streak, mastery, catchphrase
-    initTitleDynamic();
-    // First-time visitor → show welcome overlay
-    if (isFirstVisit()) {
-      markVisited();
-      setTimeout(showWelcomeOverlay, 500);
+    // Check URL for deep-link (mode or battle room)
+    const routed = handleInitialUrl();
+    if (!routed) {
+      showScreen('title');
+      // Dynamic title: streak, mastery, catchphrase
+      initTitleDynamic();
+      // First-time visitor → show welcome overlay
+      if (isFirstVisit()) {
+        markVisited();
+        setTimeout(showWelcomeOverlay, 500);
+      }
     }
   } catch (err) {
     bar.style.background = 'var(--error)';
@@ -582,6 +586,75 @@ function showScreen(id) {
   }
 }
 
+// ============================================================
+// URL ROUTING — History API
+// ============================================================
+const BASE_URL = 'https://astro-root.com/typing/';
+const MODE_PATHS = {
+  timeattack: 'timeattack',
+  endless:    'endless',
+  practice:   'practice',
+  battle:     'battle',
+};
+
+function setUrl(path, replace) {
+  try {
+    // path は BASE_URL 以降の相対パス（例: "endless", "battle?room=ABCDEF"）
+    const url = BASE_URL + (path || '');
+    if (replace) {
+      history.replaceState({ path }, '', url);
+    } else {
+      history.pushState({ path }, '', url);
+    }
+  } catch(e) { /* iframe などで history が使えない場合は無視 */ }
+}
+
+// ブラウザバック/フォワード対応
+window.addEventListener('popstate', function(e) {
+  const path = (e.state && e.state.path) || '';
+  handleUrlPath(path);
+});
+
+function handleUrlPath(path) {
+  if (!path || path === '/') { showScreen('title'); return; }
+  const clean = path.replace(/^\//, '').split('?')[0];
+  const qs    = path.includes('?') ? path.split('?')[1] : '';
+  const params = new URLSearchParams(qs);
+  if (clean === 'battle') {
+    openBattle();
+    const roomCode = params.get('room');
+    if (roomCode) {
+      // URLにroomコードがあれば自動入力して参加
+      const rci = document.getElementById('room-code-input');
+      if (rci) {
+        rci.value = roomCode.toUpperCase();
+        setTimeout(function() { joinRoom(); }, 600);
+      }
+    }
+  } else if (MODE_PATHS[clean]) {
+    openMode(clean);
+  } else {
+    showScreen('title');
+  }
+}
+
+// 初回ロード時にURLを解析して画面を復元
+function handleInitialUrl() {
+  try {
+    const url = new URL(window.location.href);
+    // BASE_URLのパス以降を取得
+    const base = new URL(BASE_URL);
+    let rel = url.pathname.replace(base.pathname, '').replace(/^\//, '');
+    const qs = url.search.replace('?', '');
+    const path = qs ? (rel + '?' + qs) : rel;
+    if (path) {
+      handleUrlPath(path);
+      return true; // 初期画面を変更した
+    }
+  } catch(e) {}
+  return false;
+}
+
 function trigger(el, cls, dur) {
   el.classList.add(cls);
   setTimeout(() => el.classList.remove(cls), dur || 400);
@@ -603,6 +676,7 @@ function openMode(mode) {
   document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('sel'));
   G.diff = -1;
   document.getElementById('diff-info').textContent = '難易度を選択してください';
+  setUrl(MODE_PATHS[mode] || '');
   showScreen('mode');
 }
 
@@ -1400,6 +1474,7 @@ function openBattle() {
   $b('battle-create-btn').disabled = false;
   $b('host-start-wrap').style.display = 'none';
   updateWaitingRoom([]);
+  setUrl('battle');
   showScreen('battle');
 }
 
@@ -1421,7 +1496,8 @@ function generateShortCode() {
 function codeTopeerId(code) { return PEER_PREFIX + code.toUpperCase(); }
 
 function shareRoomCode(code) {
-  return '元素タイピング対戦に招待！\nルームコード: ' + code + '\nhttps://astro-root.com/typing/\n「オンライン対戦」→「ルームに参加」からコードを入力してね';
+  const url = 'https://astro-root.com/typing/?room=' + code;
+  return '元素タイピング対戦に招待！\nルームコード: ' + code + '\n' + url + '\nURLを開けばコード入力不要で参加できるよ🧪';
 }
 
 // ---- ICE config (STUN + TURN for NAT traversal) ----
@@ -1565,6 +1641,8 @@ async function createRoom() {
     $b('room-code-display').style.display = '';
     $b('room-code-value').textContent = shortCode;
     updateShareButtons(shortCode);
+    // Update browser URL to include room code
+    setUrl('battle?room=' + shortCode);
     $b('host-start-wrap').style.display = '';
     $b('host-start-btn').disabled = true; // need ≥2 players
     $b('waiting-room').style.display = '';
@@ -2054,6 +2132,7 @@ function goHome() {
   // Remove review banner if present
   var rb = document.getElementById('review-banner');
   if (rb) rb.remove();
+  setUrl('', true);
   showScreen('title');
   // Refresh streak / mastery displayed on title
   initTitleDynamic();
