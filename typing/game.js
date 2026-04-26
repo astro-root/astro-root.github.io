@@ -1267,6 +1267,7 @@ function tweetResult() {
 // Japanese IME intercepts keystrokes before our handlers.
 // We track composition state and ignore input events during composition.
 let isComposing = false;
+let _lastCompositionEnd = 0; // compositionend 直後の input イベントを無視するためのタイムスタンプ
 
 const _inp = document.getElementById('typing-inp');
 
@@ -1278,17 +1279,36 @@ _inp.addEventListener('compositionstart', function() {
 
 _inp.addEventListener('compositionend', function(e) {
   isComposing = false;
-  // IMEが「ー」を確定した場合（ひらがなモードで長音符キーを押したとき）、
-  // ハイフンとしてゲームに渡す。バークリウム等の元素名で必要。
-  const composed = (e.data || this.value || '').replace(G.typed, '');
-  // Discard whatever the IME committed — we only accept direct key input
+
+  // IMEが確定したテキストを取得（e.data が信頼できない環境では value から差分を取る）
+  const composed = (e.data != null ? e.data : '') || this.value.replace(G.typed, '') || '';
+
+  // フィールドを確定済み入力に同期（IMEゴミを除去）
   this.value = G.typed;
-  if (G.running && !G.practicing && !G.locked) {
-    if (composed === 'ー' || composed === 'ｰ') {
-      processChar('-');
-      this.value = G.typed;
-    }
+
+  if (!G.running || G.practicing || G.locked) {
+    this.focus();
+    return;
   }
+
+  // IMEが確定した文字列をNFKCで正規化し、使える文字だけ processChar に渡す。
+  // - 全角英数（ａ→a, ＢＣ→bc）: そのまま入力として使う
+  // - 長音符（ー・ｰ）: ハイフンとして扱う
+  // - ひらがな・カタカナ・漢字: 全て破棄（ゲームに不要）
+  const normalized = composed.normalize('NFKC').toLowerCase();
+  // 長音符をハイフンに統一
+  const replaced = normalized.replace(/[ーｰ]/g, '-');
+  // a-z と - のみ抽出
+  const usable = replaced.replace(/[^a-z-]/g, '');
+
+  if (usable.length > 0) {
+    for (let i = 0; i < usable.length; i++) {
+      processChar(usable[i]);
+    }
+    this.value = G.typed; // processCharで更新されたG.typedに同期
+  }
+
+  _lastCompositionEnd = Date.now(); // input イベントへの二重処理防止
   this.focus();
 });
 
@@ -1342,9 +1362,14 @@ document.addEventListener('keydown', function(e) {
  */
 document.getElementById('typing-inp').addEventListener('input', function(e) {
   if (!G.running || G.practicing) return;
-  // Skip during IME composition — compositionend handles cleanup
+  // Skip during IME composition — compositionend handles it
   if (e.isComposing || isComposing) {
     this.value = '';
+    return;
+  }
+  // compositionend が直前に発火した場合（≤30ms）は二重処理を防ぐ
+  if (Date.now() - _lastCompositionEnd < 30) {
+    this.value = G.typed;
     return;
   }
 
