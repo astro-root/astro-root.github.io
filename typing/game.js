@@ -599,8 +599,14 @@ const MODE_PATHS = {
 
 function setUrl(path, replace) {
   try {
-    // path は BASE_URL 以降の相対パス（例: "endless", "battle?room=ABCDEF"）
-    const url = BASE_URL + (path || '');
+    // ハッシュルーティングを使用: /typing/#practice, /typing/#battle?room=ABCDEF
+    //
+    // 【修正理由】パスベースURL（/typing/practice）に直接アクセスすると、
+    // 静的ホスティングはそのパスのファイルを探して404を返す。
+    // ハッシュURLなら、サーバーは常に /typing/index.html を配信し、
+    // ハッシュ以降はクライアント側のみで処理される。
+    // これにより /typing/#practice への直接アクセスが正常動作する。
+    const url = BASE_URL + (path ? '#' + path : '');
     if (replace) {
       history.replaceState({ path }, '', url);
     } else {
@@ -611,7 +617,8 @@ function setUrl(path, replace) {
 
 // ブラウザバック/フォワード対応
 window.addEventListener('popstate', function(e) {
-  const path = (e.state && e.state.path) || '';
+  // history.state.path が優先、なければ現在のハッシュを参照
+  const path = (e.state && e.state.path) || location.hash.replace(/^#/, '') || '';
   handleUrlPath(path);
 });
 
@@ -641,15 +648,28 @@ function handleUrlPath(path) {
 // 初回ロード時にURLを解析して画面を復元
 function handleInitialUrl() {
   try {
+    // ① ハッシュルーティング（主要パス）
+    //    例: /typing/#practice, /typing/#battle?room=ABCDEF
+    //    静的ホスティングでは常に index.html が返るため直接アクセスも動作する。
+    const hash = location.hash.replace(/^#/, '');
+    if (hash) {
+      handleUrlPath(hash);
+      return true;
+    }
+
+    // ② レガシーパスベースURL後方互換（サーバーがリライトで index.html を返す環境）
+    //    例: /typing/practice → rel='practice'
+    //    今後は ① のハッシュURLを使うよう setUrl が書き換え済み。
     const url = new URL(window.location.href);
-    // BASE_URLのパス以降を取得
     const base = new URL(BASE_URL);
     let rel = url.pathname.replace(base.pathname, '').replace(/^\//, '');
     const qs = url.search.replace('?', '');
     const path = qs ? (rel + '?' + qs) : rel;
     if (path) {
       handleUrlPath(path);
-      return true; // 初期画面を変更した
+      // 以降はハッシュURLへ正規化（ブックマーク更新）
+      setUrl(path, true);
+      return true;
     }
   } catch(e) {}
   return false;
@@ -1270,6 +1290,12 @@ let isComposing = false;
 let _lastCompositionEnd = 0;
 let _compositionStartTyped = ''; // composition開始時のG.typedを保存
 
+// ---- keydown/input 二重処理防止フラグ ----
+// デスクトップ・iPad Smart Keyboard では keydown と input の両方が発火する。
+// keydown でキャラクタを処理した直後に input をスキップするためのフラグ。
+// モバイル仮想キーボード（keydown が発火しないケース）では false のまま。
+let _keydownHandled = false;
+
 const _inp = document.getElementById('typing-inp');
 
 _inp.addEventListener('compositionstart', function() {
@@ -1364,6 +1390,8 @@ document.addEventListener('keydown', function(e) {
       // フィールドを同期してから input イベントで差分が出ないようにする
       const inp = document.getElementById('typing-inp');
       inp.value = G.typed;
+      // このキーストロークは keydown で処理済み → input イベントでの二重処理を防ぐ
+      _keydownHandled = true;
     }
   }
 });
@@ -1385,11 +1413,27 @@ document.getElementById('typing-inp').addEventListener('input', function(e) {
     return;
   }
 
+  // keydown（デスクトップ / iPad Smart Keyboard）が既にこの文字を処理済みならスキップ。
+  // _keydownHandled を false に戻してから return することで次の input は通常通り処理される。
+  if (_keydownHandled) {
+    _keydownHandled = false;
+    this.value = G.typed;
+    return;
+  }
+
+  // ---- モバイル仮想キーボードパス ----
+  // keydown が発火しない（または Unidentified キーのみ）の場合にここで処理する。
+  //
+  // 【修正ポイント】base は常に G.typed のみ（pendingNState 補正を除去）。
+  // 旧コードでは base = G.typed + (pendingNState.active ? 'n' : '') としていたため、
+  // pending 'n' が存在するとき次の文字（例: 'i'）の input が届いた際、
+  //   raw     = G.typed + 'i'  (例: 'arumii')
+  //   base    = G.typed + 'n'  (例: 'arumin')
+  //   両者の length が等しく raw.length > base.length が偽 → 文字が飲み込まれる不具合があった。
+  // G.typed のみを基準にすることで pendingN 中の次文字も正しく processChar に渡る。
   const raw = e.target.value.normalize('NFKC').toLowerCase().replace(/[^a-z-]/g, '');
-  const base = G.typed + (pendingNState.active ? 'n' : '');
-  // base === raw のとき: keydown で既に処理済み → 何もしない
-  if (raw.length > base.length) {
-    const newChars = raw.slice(base.length);
+  if (raw.length > G.typed.length) {
+    const newChars = raw.slice(G.typed.length);
     for (let i = 0; i < newChars.length; i++) {
       const c = normalizeChar(newChars[i]);
       if (c) processChar(c);
@@ -1532,7 +1576,8 @@ function generateShortCode() {
 function codeTopeerId(code) { return PEER_PREFIX + code.toUpperCase(); }
 
 function shareRoomCode(code) {
-  const url = 'https://astro-root.com/typing/?room=' + code;
+  // ハッシュルーティングに対応したURLを生成（静的ホスティングで直接アクセス可能）
+  const url = 'https://astro-root.com/typing/#battle?room=' + code;
   return '元素タイピング対戦に招待！\nルームコード: ' + code + '\n' + url + '\nURLを開けばコード入力不要で参加できるよ🧪';
 }
 
