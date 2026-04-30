@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple 信者検定 100問</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000;
+    --surface: #111;
+    --surface2: #1c1c1e;
+    --border: #2c2c2e;
+    --text: #f5f5f7;
+    --muted: #8e8e93;
+    --blue: #0a84ff;
+    --green: #30d158;
+    --red: #ff453a;
+    --yellow: #ffd60a;
+    --orange: #ff9f0a;
+    --purple: #bf5af2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(10,132,255,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(191,90,242,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 760px; }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 24px;
+  }
+  .logo { font-family: 'Bebas Neue', cursive; font-size: 22px; letter-spacing: 3px; color: var(--muted); }
+  .score-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ===== PROGRESS ===== */
+  .progress-wrap { margin-bottom: 28px; }
+  .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .progress-track {
+    height: 3px; background: var(--surface2);
+    border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple));
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* ===== CATEGORY TAG ===== */
+  .cat-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ===== QUESTION CARD ===== */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.35s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .q-number {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .q-text {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* ===== OPTIONS ===== */
+  .options { display: grid; gap: 10px; }
+  .opt {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--text);
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--blue);
+    background: rgba(10,132,255,0.08);
+    transform: translateX(4px);
+  }
+  .opt:disabled { cursor: default; }
+  .opt.correct { border-color: var(--green) !important; background: rgba(48,209,88,0.1) !important; }
+  .opt.wrong   { border-color: var(--red) !important;   background: rgba(255,69,58,0.1) !important; }
+  .opt-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 20px;
+    margin-top: 1px;
+  }
+  .opt.correct .opt-label { color: var(--green); }
+  .opt.wrong   .opt-label { color: var(--red); }
+
+  /* ===== EXPLANATION ===== */
+  .explanation {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #c7c7cc;
+    margin-top: 12px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: var(--blue); }
+
+  /* ===== NEXT BUTTON ===== */
+  .btn-next {
+    display: none;
+    width: 100%;
+    margin-top: 14px;
+    padding: 16px;
+    background: var(--blue);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-next:hover { background: #0071eb; }
+  .btn-next:active { transform: scale(0.98); }
+  .btn-next.show { display: block; animation: fadeUp 0.3s ease; }
+
+  /* ===== RESULT SCREEN ===== */
+  #result-screen { display: none; animation: fadeUp 0.5s ease; }
+  .result-hero {
+    text-align: center;
+    padding: 48px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    margin-bottom: 24px;
+  }
+  .result-rank {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 80px;
+    line-height: 1;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .result-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .result-sub { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .result-score-big {
+    font-family: 'Space Mono', monospace;
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .result-score-big span { font-size: 22px; color: var(--muted); }
+  .cat-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .cat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+  .cat-card .cat-name { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .cat-card .cat-score { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; }
+  .btn-retry {
+    width: 100%; padding: 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: border-color 0.2s;
+  }
+  .btn-retry:hover { border-color: var(--blue); }
+
+  /* ===== START SCREEN ===== */
+  #start-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .start-icon { font-size: 72px; margin-bottom: 24px; filter: drop-shadow(0 0 30px rgba(10,132,255,0.5)); }
+  .start-title { font-family: 'Bebas Neue', cursive; font-size: 48px; letter-spacing: 4px; margin-bottom: 8px; }
+  .start-sub { color: var(--muted); font-size: 16px; margin-bottom: 32px; line-height: 1.7; }
+  .start-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; }
+  .start-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .btn-start {
+    padding: 18px 56px;
+    background: var(--blue);
+    border: none;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 8px 32px rgba(10,132,255,0.3);
+  }
+  .btn-start:hover { background: #0071eb; transform: translateY(-2px); }
+
+  .diff-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+  /* ===== MINI REVIEW ===== */
+  .review-grid { display: grid; gap: 6px; margin-bottom: 24px; }
+  .review-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+  .review-item.ok  { border-left: 3px solid var(--green); }
+  .review-item.ng  { border-left: 3px solid var(--red); }
+  .review-q { color: var(--muted); flex: 1; }
+  .review-mark { font-size: 16px; min-width: 20px; }
+  .review-title { font-size: 14px; font-weight: 700; color: var(--muted); margin: 20px 0 10px; }
+
+  #quiz-screen { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- START SCREEN -->
+  <div id="start-screen">
+    <div class="start-icon">🍎</div>
+    <div class="start-title">APPLE 信者検定</div>
+    <div class="start-sub">
+      Apple製品・歴史・最新スペックまで<br>全100問で真の信者度を証明せよ
+    </div>
+    <div class="start-tags">
+      <span class="start-tag">📅 Apple歴史</span>
+      <span class="start-tag">💻 Mac</span>
+      <span class="start-tag">📱 iPhone</span>
+      <span class="start-tag">⌚ Apple Watch</span>
+      <span class="start-tag">🎵 AirPods</span>
+      <span class="start-tag">🖥️ iPad</span>
+      <span class="start-tag">🔮 Vision Pro</span>
+      <span class="start-tag">⚙️ Apple Silicon</span>
+      <span class="start-tag">🌐 Software</span>
+      <span class="start-tag">🏢 会社情報</span>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">検定スタート</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz-screen">
+    <div class="topbar">
+      <div class="logo">APPLE QUIZ</div>
+      <div class="score-badge" id="score-display">0 / 0</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="prog-label">問題 1 / 100</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div id="cat-tag-wrap"></div>
+    <div class="question-card" id="q-card">
+      <div class="q-number" id="q-num">Q001</div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <div class="options" id="options-wrap"></div>
+    <div class="explanation" id="explanation"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">次の問題 →</button>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen">
+    <div class="result-hero">
+      <div class="result-rank" id="r-rank"></div>
+      <div class="result-title" id="r-title"></div>
+      <div class="result-sub" id="r-sub"></div>
+      <div class="result-score-big" id="r-score"></div>
+    </div>
+    <div class="review-title">カテゴリ別スコア</div>
+    <div class="cat-breakdown" id="cat-breakdown"></div>
+    <div class="review-title">全問レビュー</div>
+    <div class="review-grid" id="review-grid"></div>
+    <button class="btn-retry" onclick="restartQuiz()">🔄 もう一度挑戦する</button>
+  </div>
+
+</div>
+
+<script>
+const CAT_COLORS = {
+  "Apple歴史": { bg: "rgba(255,159,10,0.15)", color: "#ff9f0a" },
+  "Apple Silicon": { bg: "rgba(191,90,242,0.15)", color: "#bf5af2" },
+  "iPhone": { bg: "rgba(10,132,255,0.15)", color: "#0a84ff" },
+  "Mac": { bg: "rgba(48,209,88,0.15)", color: "#30d158" },
+  "iPad": { bg: "rgba(255,69,58,0.15)", color: "#ff453a" },
+  "Apple Watch": { bg: "rgba(255,214,10,0.15)", color: "#ffd60a" },
+  "AirPods": { bg: "rgba(100,210,255,0.15)", color: "#64d2ff" },
+  "Vision Pro": { bg: "rgba(94,92,230,0.15)", color: "#5e5ce6" },
+  "Software": { bg: "rgba(52,199,89,0.15)", color: "#34c759" },
+  "会社情報": { bg: "rgba(255,55,95,0.15)", color: "#ff375f" },
+};
+
+const QUESTIONS = [
+  // ===== Apple歴史 (1-15) =====
+  { cat:"Apple歴史", q:"Appleが設立されたのはいつか？", opts:["1974年4月1日","1976年4月1日","1977年1月1日","1975年7月4日"], ans:1, exp:"AppleはSteve Jobs、Steve Wozniak、Ronald Wayneの3人によって<strong>1976年4月1日</strong>に設立された。" },
+  { cat:"Apple歴史", q:"1984年に放送されたMacintosh発表CMのタイトルは何か？", opts:["Think Different","1984","Here's to the Crazy Ones","Hello Again"], ans:1, exp:"リドリー・スコット監督による伝説的なCM<strong>「1984」</strong>は、スーパーボウルXVIIIで放送された。" },
+  { cat:"Apple歴史", q:"Steve Jobsが最初にAppleを去った年は？", opts:["1983年","1984年","1985年","1986年"], ans:2, exp:"<strong>1985年</strong>、当時のCEO John Sculleyとの対立によりJobsはAppleを去り、NeXTを設立した。" },
+  { cat:"Apple歴史", q:"初代iPodが発売された年は？", opts:["2000年","2001年","2002年","2003年"], ans:1, exp:"初代iPodは<strong>2001年10月23日</strong>に発売。「1,000曲をポケットに」というコピーで登場した。" },
+  { cat:"Apple歴史", q:"Steve Jobsがapple復帰した年は？", opts:["1995年","1996年","1997年","1998年"], ans:2, exp:"<strong>1997年</strong>、AppleがNeXTを買収したことでJobsは復帰。翌年「Think Different」キャンペーンを開始した。" },
+  { cat:"Apple歴史", q:"App Storeが開始されたのはiOSの何バージョンからか？", opts:["iOS 1","iOS 2","iOS 3","iOS 4"], ans:1, exp:"App Storeは<strong>iOS 2（iPhone OS 2.0）</strong>と同時に2008年7月に開始された。" },
+  { cat:"Apple歴史", q:"Apple Payが開始されたのはいつか？", opts:["2013年","2014年","2015年","2016年"], ans:1, exp:"Apple Payは<strong>2014年10月</strong>に米国でサービス開始。iPhone 6とともに導入された。" },
+  { cat:"Apple歴史", q:"初代Apple Watchが発売されたのはいつか？", opts:["2014年","2015年","2016年","2017年"], ans:1, exp:"初代Apple Watchは<strong>2015年4月24日</strong>に発売。価格は$349〜$17,000まで幅があった。" },
+  { cat:"Apple歴史", q:"AirPodsが初めて発売されたのはいつか？", opts:["2016年","2017年","2018年","2019年"], ans:0, exp:"初代AirPodsは<strong>2016年12月</strong>に発売。iPhone 7でヘッドフォンジャックが廃止されたタイミングでの登場だった。" },
+  { cat:"Apple歴史", q:"Apple TV+のサービスが開始されたのはいつか？", opts:["2018年","2019年","2020年","2021年"], ans:1, exp:"Apple TV+は<strong>2019年11月1日</strong>に開始。月額$4.99（当時）で「See」など独占コンテンツを配信。" },
+  { cat:"Apple歴史", q:"MacintoshがRetina Displayという名称を初めて採用した製品は？", opts:["iPhone 4","MacBook Pro (2012)","iPad 3rd gen","iMac (2014)"], ans:0, exp:"<strong>iPhone 4（2010年）</strong>でRetina Displayという名称が初登場。326ppiで「人の目では画素を識別できない」とJobsが主張した。" },
+  { cat:"Apple歴史", q:"「Think Different」キャンペーンが開始されたのはいつか？", opts:["1996年","1997年","1998年","1999年"], ans:1, exp:"「Think Different」は<strong>1997年</strong>にJobsのApple復帰後に開始されたブランドキャンペーン。" },
+  { cat:"Apple歴史", q:"AppleがIntelチップからApple Siliconへの移行を発表したイベントは？", opts:["WWDC 2019","WWDC 2020","WWDC 2021","WWDC 2022"], ans:1, exp:"Apple Siliconへの移行は<strong>WWDC 2020</strong>で発表。2年以内の完全移行を宣言した。" },
+  { cat:"Apple歴史", q:"iCloudのサービスが開始されたのはいつか？", opts:["2010年","2011年","2012年","2013年"], ans:1, exp:"iCloudは<strong>2011年10月</strong>にiOS 5・OS X Lionと同時に開始。MobileMeの後継サービスとして登場。" },
+  { cat:"Apple歴史", q:"初代Vision Proが発売されたのはいつか？", opts:["2023年","2024年2月","2024年6月","2025年1月"], ans:1, exp:"初代Apple Vision Proは<strong>2024年2月2日</strong>に米国で発売。価格は$3,499〜。" },
+
+  // ===== Apple Silicon (16-30) =====
+  { cat:"Apple Silicon", q:"Apple Siliconの最初のチップは何か？", opts:["A14 Bionic","M1","A15 Bionic","M1 Pro"], ans:1, exp:"<strong>M1チップ</strong>（2020年11月）がApple Silicon第一弾。MacBook Air、MacBook Pro 13インチ、Mac miniに搭載。" },
+  { cat:"Apple Silicon", q:"M1チップの製造プロセスノードは？", opts:["7nm","5nm","4nm","3nm"], ans:1, exp:"M1は<strong>TSMCの5nm</strong>プロセスで製造。160億トランジスタを集積した。" },
+  { cat:"Apple Silicon", q:"M4チップが初めて搭載された製品は？", opts:["MacBook Pro（2024年）","iPad Pro（2024年）","Mac mini（2024年）","iMac（2024年）"], ans:1, exp:"M4は<strong>iPad Pro（2024年5月）</strong>に初搭載された後、同年後半にMac製品にも展開された。" },
+  { cat:"Apple Silicon", q:"iPhone初のApple製自社チップは何か？", opts:["A4","A5","A6","A7"], ans:0, exp:"<strong>A4チップ</strong>（2010年、iPhone 4）がApple初の自社設計スマートフォンチップ。ARM Cortex-A8ベース。" },
+  { cat:"Apple Silicon", q:"Neural Engine（ニューラルエンジン）を初めて搭載したチップは？", opts:["A10 Fusion","A11 Bionic","A12 Bionic","A13 Bionic"], ans:1, exp:"<strong>A11 Bionic（iPhone X、2017年）</strong>がNeural Engineを初搭載。" },
+  { cat:"Apple Silicon", q:"iPhone AirのA19 ProのGPUコア数は？", opts:["4コア","5コア","6コア","8コア"], ans:1, exp:"iPhone AirのA19 ProはGPU<strong>5コア</strong>。iPhone 17 ProのA19 Proは6コアで、1コア分の差がある。" },
+  { cat:"Apple Silicon", q:"iPhone 17 ProのA19 ProのGPUコア数は？", opts:["5コア","6コア","7コア","8コア"], ans:1, exp:"iPhone 17 Pro/Pro MaxのA19 ProはGPU<strong>6コア</strong>。iPhone AirのA19 Proより1コア多い。" },
+  { cat:"Apple Silicon", q:"M5チップが同時に搭載された3製品はどれか？", opts:["MacBook Air・Mac mini・iMac","MacBook Pro 14・iPad Pro・Vision Pro","MacBook Pro・Mac Studio・Mac Pro","iPad Pro・MacBook Air・Mac mini"], ans:1, exp:"<strong>2025年10月</strong>に、MacBook Pro 14インチ・M5 iPad Pro・M5 Vision Proの3製品が同時発売された。" },
+  { cat:"Apple Silicon", q:"M2 Ultraを最後に搭載したMac製品は何か？", opts:["Mac Studio（2023）","Mac Pro（2023）","iMac Pro（2023）","Mac mini（2023）"], ans:1, exp:"<strong>Mac Pro（2023年）</strong>がM2 Ultraを搭載した最後のモデル。その後Mac Proは2026年に廃止された。" },
+  { cat:"Apple Silicon", q:"Apple初のセルラーモデムチップの名称は？", opts:["N1","C1","M1C","X1"], ans:1, exp:"<strong>C1チップ</strong>がApple初の自社設計セルラーモデム。iPhone 16eに初搭載された後、iPhone Air等にも採用。" },
+  { cat:"Apple Silicon", q:"Apple製Wi-Fi/Bluetoothチップの名称は？", opts:["W1","W2","N1","B1"], ans:2, exp:"<strong>N1チップ</strong>はAppleが設計したWi-Fi/Bluetoothチップ。iPhone AirやiPad Pro M5などに搭載。" },
+  { cat:"Apple Silicon", q:"M5チップのGPUコア数は？", opts:["8コア","9コア","10コア","12コア"], ans:2, exp:"M5チップは<strong>10コアGPU</strong>を搭載。各コアにNeural Acceleratorが内蔵されており、AI性能が大幅に向上。" },
+  { cat:"Apple Silicon", q:"M4 MacBook Proが発売された時期は？", opts:["2024年6月","2024年10月","2024年11月","2025年1月"], ans:2, exp:"M4 MacBook Proは<strong>2024年11月</strong>に発売。M4、M4 Pro、M4 Maxの3バリエーションが用意された。" },
+  { cat:"Apple Silicon", q:"次世代MacBook ProのOLED版に搭載予定のチップは？", opts:["M5 Pro","M5 Max","M6 Pro / M6 Max","M6 Ultra"], ans:2, exp:"OLEDディスプレイ・タッチスクリーンを搭載する次世代MacBook Proには<strong>M6 Pro / M6 Max</strong>が搭載予定（2026年後半〜2027年）。" },
+  { cat:"Apple Silicon", q:"11代目iPadに搭載されたチップは？（2025年発売）", opts:["A15 Bionic","A16","A17 Pro","A18"], ans:1, exp:"2025年発売の11代目iPadには<strong>A16チップ</strong>が搭載。Apple Intelligenceに必要な8GB RAMがないため非対応。" },
+
+  // ===== iPhone (31-55) =====
+  { cat:"iPhone", q:"iPhone Airの本体厚さは？", opts:["5.1mm","5.4mm","5.6mm","6.1mm"], ans:2, exp:"iPhone Airは<strong>5.6mm</strong>の厚さで、史上最薄のiPhone。チタニウムフレームを採用。" },
+  { cat:"iPhone", q:"iPhone AirのRAM容量は？", opts:["8GB","12GB","16GB","6GB"], ans:1, exp:"iPhone Airには<strong>12GB RAM</strong>が搭載。A19 Proチップとともに高いAI処理能力を実現している。" },
+  { cat:"iPhone", q:"iPhone Airの開始価格（米国）は？", opts:["$899","$949","$999","$1,049"], ans:2, exp:"iPhone Airは<strong>$999（256GB）</strong>から。iPhone 17（$799）より$200高く、iPhone 17 Pro（$1,099）より$100安い。" },
+  { cat:"iPhone", q:"iPhone AirのSIMカードの仕様は？", opts:["物理SIM+eSIM（全世界）","eSIMのみ（全世界）","物理SIMのみ","eSIMのみ（米国のみ）"], ans:1, exp:"iPhone Airは<strong>全世界でeSIMのみ</strong>。物理SIMが廃止されたのは全モデル全地域で初めての仕様。" },
+  { cat:"iPhone", q:"iPhone Airの背面ガラスの種類は？", opts:["通常ガラス","Ceramic Shield","Gorilla Glass","サファイアガラス"], ans:1, exp:"iPhone AirはiPhone史上初めて背面にも<strong>Ceramic Shield</strong>を採用。前面と合わせて両面Ceramic Shieldとなった。" },
+  { cat:"iPhone", q:"iPhone AirのCamera Plateauの形状は？", opts:["四角形・金属製","円形・ガラス製","ピル（カプセル）型・ガラス製","長方形・チタン製"], ans:2, exp:"iPhone AirのCamera Plateauは<strong>ピル（カプセル）型でガラス製</strong>。Pro系のチタン製大型カメラ台座とは異なるデザイン。" },
+  { cat:"iPhone", q:"iPhone AirのUSB-Cポートが対応していないのは？", opts:["USB 2.0充電","MagSafe充電","DisplayPort出力","eSIM通信"], ans:2, exp:"iPhone AirのUSB-Cは<strong>DisplayPort出力が非対応</strong>。有線での外部ディスプレイ接続ができない。iPhone 17は対応している。" },
+  { cat:"iPhone", q:"iPhone Airのフロントカメラの画素数は？", opts:["12MP","16MP","18MP","24MP"], ans:2, exp:"iPhone 17シリーズ全モデルのフロントカメラは<strong>18MP</strong>に統一された。Center Stage対応の正方形センサーを採用。" },
+  { cat:"iPhone", q:"iPhone 17（無印）のディスプレイサイズは？", opts:["6.1インチ","6.3インチ","6.5インチ","6.7インチ"], ans:1, exp:"iPhone 17は<strong>6.3インチ</strong>。先代iPhone 16の6.1インチから拡大された。" },
+  { cat:"iPhone", q:"iPhone 17 ProのMaxズーム倍率（光学品質）は？", opts:["5x","6x","7x","8x"], ans:3, exp:"iPhone 17 ProのTouch Downカメラシステムは<strong>8倍の光学品質ズーム</strong>をサポート。" },
+  { cat:"iPhone", q:"iPhone 17eが後継として廃止されたシリーズは？", opts:["iPhone mini","iPhone Plus","iPhone 16e","iPhone SE"], ans:2, exp:"<strong>iPhone 16e（2025年2月発売）</strong>の後継として、iPhone 17eが2026年3月に登場した。" },
+  { cat:"iPhone", q:"iPhone 17フロントカメラのセンサーの特徴は？", opts:["円形センサー","長方形センサー","正方形センサー","楕円形センサー"], ans:2, exp:"iPhone 17系フロントカメラは<strong>正方形（スクエア）センサー</strong>を採用。端末を回転させずに縦横どちらの構図でも撮影可能。" },
+  { cat:"iPhone", q:"Dynamic Islandが初搭載されたのはどのiPhoneか？", opts:["iPhone 13 Pro","iPhone 14","iPhone 14 Pro","iPhone 15"], ans:2, exp:"Dynamic Islandは<strong>iPhone 14 Pro / 14 Pro Max（2022年）</strong>で初登場。ノッチの代わりとなるインタラクティブな島型デザイン。" },
+  { cat:"iPhone", q:"Camera Controlボタンが初搭載されたのはどの世代か？", opts:["iPhone 15","iPhone 16","iPhone 17","iPhone 16 Pro"], ans:1, exp:"<strong>iPhone 16シリーズ（2024年）</strong>からCamera Controlボタンが全モデルに搭載された。" },
+  { cat:"iPhone", q:"iPhone 17 Proの4K動画の最大フレームレートは？", opts:["60fps","90fps","120fps","240fps"], ans:2, exp:"iPhone 17 Proは<strong>4K 120fps</strong>での動画撮影に対応。iPhone Airは4K 60fpsが上限。" },
+  { cat:"iPhone", q:"iPhone Airの動画再生バッテリー持続時間（単体）は？", opts:["20時間","24時間","27時間","30時間"], ans:2, exp:"iPhone Airの単体ビデオ再生時間は最大<strong>27時間</strong>。MagSafeバッテリー装着時は最大40時間。" },
+  { cat:"iPhone", q:"iPhone AirのMagSafeバッテリーの価格（米国）は？", opts:["$79","$99","$119","$129"], ans:1, exp:"iPhone Air専用MagSafeバッテリーは<strong>$99</strong>。装着時の動画再生時間を27時間から40時間に延長できる。" },
+  { cat:"iPhone", q:"2025年のiPhone発表でPlusモデルが廃止された代わりに登場したモデルは？", opts:["iPhone Max","iPhone Air","iPhone Slim","iPhone Lite"], ans:1, exp:"<strong>iPhone Air</strong>がPlusモデルの後継として位置づけられた。Plusより薄く・高性能だが、カメラはシングルレンズのみ。" },
+  { cat:"iPhone", q:"iPhone 17のメインカメラシステムの構成は？", opts:["シングル48MP","デュアル48MP","トリプル48MP","48MP+12MP"], ans:1, exp:"iPhone 17は<strong>デュアル48MPカメラ（Dual Fusion）</strong>システムを搭載。広角+超広角の2眼構成。" },
+  { cat:"iPhone", q:"iPhone 17のRAM容量は？", opts:["6GB","8GB","12GB","16GB"], ans:1, exp:"iPhone 17（無印）は<strong>8GB RAM</strong>搭載。A19チップと組み合わさりApple Intelligenceに対応している。" },
+  { cat:"iPhone", q:"iPhone 17のリフレッシュレートは？", opts:["60Hz固定","90Hz","120Hz ProMotion","144Hz"], ans:2, exp:"iPhone 17は全モデルで<strong>最大120Hz ProMotion</strong>（適応型）に対応。iPhone 16まで無印は60Hzだった。" },
+  { cat:"iPhone", q:"2025年のiPhoneラインナップの最大ストレージは？（最上位モデル）", opts:["1TB","1.5TB","2TB","4TB"], ans:2, exp:"iPhone 17 Pro Maxの最大ストレージは<strong>2TB</strong>。iPhone 17/Air/Proの最大は1TB。" },
+  { cat:"iPhone", q:"iPhone 17eはいつ発売されたか？", opts:["2026年1月","2026年2月","2026年3月","2026年4月"], ans:2, exp:"iPhone 17eは<strong>2026年3月</strong>にAppleが「Apple Experience」イベントを開催した週に発表・発売された。" },
+
+  // ===== Mac (56-70) =====
+  { cat:"Mac", q:"Mac Proが正式に終了した年は？", opts:["2024年","2025年","2026年","2027年"], ans:2, exp:"<strong>2026年</strong>にMac Proが正式終了。最終モデルはM2 Ultra搭載の2023年モデルだった。" },
+  { cat:"Mac", q:"Mac Proの最終モデルに搭載されたチップは？", opts:["M1 Ultra","M2 Ultra","M3 Ultra","M4 Ultra"], ans:1, exp:"Mac Proの最終モデル（2023年）には<strong>M2 Ultra</strong>が搭載されていた。" },
+  { cat:"Mac", q:"Mac Proが廃止された主な理由は？", opts:["コスト削減","Mac Studioが同等性能を実現","生産設備の問題","ユーザー需要の消滅"], ans:1, exp:"Apple Siliconの進化により<strong>Mac Studioが同等以上の性能</strong>をより低価格・コンパクトで実現したため廃止。" },
+  { cat:"Mac", q:"2026年3月に発売された低価格MacBookの名称は？", opts:["MacBook","MacBook Lite","MacBook Neo","MacBook Air Lite"], ans:2, exp:"<strong>MacBook Neo</strong>が2026年3月に$599で発売。12インチMacBookを彷彿とさせるデザインコンセプト。" },
+  { cat:"Mac", q:"MacBook Neoの価格（米国）は？", opts:["$499","$549","$599","$699"], ans:2, exp:"MacBook Neoは<strong>$599</strong>。エントリーレベルのMacとして、教育市場や初めてMacを買うユーザーをターゲットにしている。" },
+  { cat:"Mac", q:"M4 Mac miniの本体サイズ（幅×奥行き）は？", opts:["12×12cm","13×13cm","5×5インチ（約12.7cm）","15×15cm"], ans:2, exp:"M4 Mac mini（2024年）は大幅にリデザインされ、<strong>約5×5インチ（12.7cm角）</strong>のコンパクトなボディになった。" },
+  { cat:"Mac", q:"MacBook Air M4が発売されたのはいつか？", opts:["2024年10月","2024年11月","2025年3月","2025年6月"], ans:2, exp:"MacBook Air M4は<strong>2025年3月</strong>に発売。M4 Max Mac Studioと同時に発表された。" },
+  { cat:"Mac", q:"M5 MacBook Proが発売されたのはいつか？", opts:["2025年7月","2025年9月","2025年10月","2025年11月"], ans:2, exp:"M5 MacBook Pro（14インチ）は<strong>2025年10月</strong>に、M5 iPad ProおよびM5 Vision Proと同時に発売された。" },
+  { cat:"Mac", q:"次世代OLEDタッチスクリーン搭載MacBook Proに関して正しいのは？", opts:["2026年前半に発売予定","M5チップ搭載予定","Dynamic Islandを廃止してノッチに戻る予定","ホールパンチカメラを採用予定"], ans:3, exp:"次世代OLED MacBook ProはM6 Pro/Max搭載で、ノッチをなくして<strong>ホールパンチカメラ</strong>を採用予定。2026年後半〜2027年の見込み。" },
+  { cat:"Mac", q:"2026年に発表されたApple純正新ディスプレイ製品は何か（2種類）？", opts:["Pro Display XDR・Studio Display","Studio Display・Studio Display XDR","Cinema Display・Studio Display","Thunderbolt Display・Studio Display"], ans:1, exp:"<strong>Studio Display と Studio Display XDR</strong>の2製品が2026年3月に発表された。" },
+  { cat:"Mac", q:"macOS TahoeがIntel Macに対してどういう扱いか？", opts:["完全対応","一部機能のみ対応","最後にサポートするmacOS","すでに非対応"], ans:2, exp:"macOS Tahoe（26）はIntel Macを<strong>サポートする最後のmacOS</strong>。次世代macOS 27からはApple Siliconのみ対応となる。" },
+  { cat:"Mac", q:"M4 Mac miniに搭載されたベースRAMは？", opts:["8GB","16GB","24GB","32GB"], ans:1, exp:"M4 Mac mini（2024年）はベースRAMが<strong>16GB</strong>に引き上げられた。先代M2モデルの8GBから倍増。" },
+  { cat:"Mac", q:"Mac Studioは何のMacの後継と位置づけられているか？", opts:["Mac mini","Mac Pro","iMac Pro","Power Mac"], ans:1, exp:"Apple Siliconの高性能化により、<strong>Mac StudioがMac Proの後継</strong>として実質的に位置づけられた。" },
+  { cat:"Mac", q:"2026年に発売されたMacBook Airのチップは何か？", opts:["M4","M5","M5 Pro","M4 Pro"], ans:1, exp:"<strong>MacBook Air M5</strong>が2026年3月に発売された。パフォーマンスと効率の両立が進化したモデル。" },
+  { cat:"Mac", q:"macOS Tahoeで新たに追加されたアプリケーションは？（2つ）", opts:["Files・Notes","Games・Phone","Freeform・Journal","Maps・Books"], ans:1, exp:"macOS Tahoeには<strong>GamesアプリとPhoneアプリ</strong>が新たに追加された。LaunchpadはAppsに置き換えられた。" },
+
+  // ===== iPad (71-78) =====
+  { cat:"iPad", q:"M5 iPad Proが発売されたのはいつか？", opts:["2025年7月","2025年9月","2025年10月","2025年11月"], ans:2, exp:"M5 iPad Proは<strong>2025年10月</strong>（15日発表、22日発売）に登場した。M5チップで最大3.5倍のAI性能向上を実現。" },
+  { cat:"iPad", q:"iPad Air M3が発売された時期は？", opts:["2025年1月","2025年3月","2025年6月","2025年9月"], ans:1, exp:"iPad Air M3は<strong>2025年3月</strong>に発売。MacBook Air M4と同じ週に発表された。" },
+  { cat:"iPad", q:"iPad mini 7に搭載されたチップは？", opts:["A16","A17 Pro","A18","A18 Pro"], ans:1, exp:"iPad mini 7（2024年）には<strong>A17 Proチップ</strong>が搭載されている。" },
+  { cat:"iPad", q:"11代目iPad（2025年）がApple Intelligenceに対応していない理由は？", opts:["ストレージ不足","A16チップ搭載でRAM不足","対応OSが古い","地域制限"], ans:1, exp:"Apple IntelligenceにはRAM 8GB以上が必要だが、11代目iPadは<strong>A16チップで6GB RAMのみ</strong>のため非対応。" },
+  { cat:"iPad", q:"M5 iPad Proのディスプレイ技術は？", opts:["Liquid Retina","Liquid Retina XDR（タンデムOLED）","Mini-LED","通常OLED"], ans:1, exp:"M5 iPad Proは<strong>Ultra Retina XDR（タンデムOLED）</strong>ディスプレイを搭載。輝度・コントラスト比が大幅に向上している。" },
+  { cat:"iPad", q:"iPad mini 8（2026年予定）で噂されている主要な変更は？", opts:["OLED化","Mini-LED化","4K対応","Thunderbolt搭載"], ans:0, exp:"次世代iPad mini 8では<strong>OLEDディスプレイ</strong>への移行が噂されている。さらに小型化も検討されている。" },
+  { cat:"iPad", q:"M5 iPad ProのWi-Fi規格は？", opts:["Wi-Fi 5","Wi-Fi 6E","Wi-Fi 7","Wi-Fi 6"], ans:2, exp:"M5 iPad ProはN1チップにより<strong>Wi-Fi 7</strong>に対応。高速・低遅延な通信が可能になった。" },
+  { cat:"iPad", q:"iPad Pro M5の11インチの開始価格（米国、Wi-Fi）は？", opts:["$799","$899","$999","$1,099"], ans:2, exp:"M5 iPad Pro 11インチの開始価格（Wi-Fiモデル、256GB）は<strong>$999</strong>。" },
+
+  // ===== Apple Watch (79-85) =====
+  { cat:"Apple Watch", q:"Apple Watch Series 11の通常バッテリー持続時間は？", opts:["18時間","20時間","24時間","30時間"], ans:2, exp:"Apple Watch Series 11の通常バッテリーは<strong>24時間</strong>。Series 10の18時間から6時間延長された。" },
+  { cat:"Apple Watch", q:"Apple Watch Ultra 3のLow Powerモード時のバッテリー持続時間は？", opts:["48時間","60時間","72時間","96時間"], ans:2, exp:"Apple Watch Ultra 3のLow Powerモードでのバッテリーは最大<strong>72時間</strong>。通常は42時間。" },
+  { cat:"Apple Watch", q:"Apple Watch Series 11の新ヘルス機能として追加されたのは？", opts:["ECG（心電図）","高血圧通知","血中酸素計測","体温計測"], ans:1, exp:"Series 11で<strong>高血圧通知機能</strong>が追加。光学心臓センサーで血管の反応を分析する。" },
+  { cat:"Apple Watch", q:"Apple Watch SE 3で初めて搭載された機能は？（2つ）", opts:["常時表示ディスプレイ・ジェスチャーコントロール","ECG・血中酸素","GPS・セルラー","心拍数・体温"], ans:0, exp:"SE 3では<strong>常時表示ディスプレイ（AOD）とジェスチャーコントロール</strong>が初めて搭載された。" },
+  { cat:"Apple Watch", q:"2025年の全Apple Watchシリーズに共通して追加された通信規格は？", opts:["4G LTE","5G","Wi-Fi 6","衛星通信"], ans:1, exp:"2025年発売のApple Watch Series 11、Ultra 3、SE 3の全モデルで<strong>5G通信</strong>に対応した。" },
+  { cat:"Apple Watch", q:"Apple Watch Series 11・SE 3・Ultra 3に共通して搭載されているチップは？", opts:["S9","S10","S11","W3"], ans:1, exp:"2025年の全Apple Watchモデルには<strong>S10チップ</strong>が搭載されている。" },
+  { cat:"Apple Watch", q:"Apple Watch Ultra 3のケースサイズは？", opts:["44mm","47mm","49mm","52mm"], ans:2, exp:"Apple Watch Ultra 3のケースサイズは<strong>49mm</strong>。チタニウムケースで耐久性と軽量性を両立。" },
+
+  // ===== AirPods (86-90) =====
+  { cat:"AirPods", q:"AirPods Pro 3の価格（米国）は？", opts:["$199","$229","$249","$279"], ans:2, exp:"AirPods Pro 3の発売価格は<strong>$249</strong>（2025年9月発売）。" },
+  { cat:"AirPods", q:"AirPods Pro 3で新たに追加されたヘルスケア機能は？", opts:["血中酸素計測","体温計測","心拍数センシング","睡眠計測"], ans:2, exp:"AirPods Pro 3では<strong>心拍数センシング機能</strong>が追加。50種以上のワークアウトタイプに対応し、カロリー計算も可能。" },
+  { cat:"AirPods", q:"AirPods Pro 3の単体充電時のバッテリー持続時間（最大）は？", opts:["8時間","10時間","12時間","7.5時間"], ans:1, exp:"AirPods Pro 3の単体充電での最大バッテリーは<strong>10時間</strong>。Pro 2から延長された。" },
+  { cat:"AirPods", q:"AirPods Pro 3をApple Watchと組み合わせることで何が向上するか？", opts:["ノイズキャンセリング精度","心拍数計測精度","バッテリー持続時間","通話品質"], ans:1, exp:"AirPods Pro 3とApple WatchのデータをAppleが組み合わせることで、<strong>心拍数計測精度</strong>がチェストストラップと同等レベルになると報告されている。" },
+  { cat:"AirPods", q:"2026年3月に発売された新ヘッドフォン（AirPodsシリーズ以外）は何か？", opts:["Beats Studio Pro","Nike Powerbeats Pro 2","AirPods Max 3","Powerbeats 5"], ans:1, exp:"<strong>Nike Powerbeats Pro 2</strong>が2026年3月にAirPods Max 2と同時期に発売された。" },
+
+  // ===== Vision Pro (91-94) =====
+  { cat:"Vision Pro", q:"M5 Vision Proに新たに追加されたバンドの名称は？", opts:["Solo Knit Band","Dual Knit Band","Sport Band","Magnetic Band"], ans:1, exp:"M5 Vision Proには<strong>Dual Knit Band</strong>が同梱。重量配分を改善し、長時間装着時の快適性が向上した。" },
+  { cat:"Vision Pro", q:"初代Vision Proに搭載されていたチップは？", opts:["M1","M2","M3","M4"], ans:1, exp:"初代Apple Vision Pro（2024年2月発売）には<strong>M2チップ</strong>が搭載されていた。" },
+  { cat:"Vision Pro", q:"Vision ProのOSは何か？", opts:["iPadOS","spatialOS","visionOS","macOS Vision"], ans:2, exp:"Apple Vision Proは<strong>visionOS</strong>を搭載。空間コンピューティング専用に開発されたOSで、3D UIとハンドトラッキングをサポート。" },
+  { cat:"Vision Pro", q:"AppleがVision Pro 2の開発を一時停止し、代わりに注力しているのは？", opts:["Vision Pro Pro","より安価なVision（通称Vision Air）","Vision mini","Vision SE"], ans:1, exp:"高価格版Vision Pro 2の開発を停止し、<strong>より安価なVision（Vision Air）</strong>の開発にリソースを集中していると報告されている。" },
+
+  // ===== Software (95-98) =====
+  { cat:"Software", q:"macOS TahoeのUIデザイン言語の名称は？", opts:["Aqua","Skeuomorphic","Flat Design","Liquid Glass"], ans:3, exp:"macOS Tahoe（およびiOS 26）から<strong>Liquid Glass</strong>という新デザイン言語が採用。透明感とガラスのような質感が特徴。" },
+  { cat:"Software", q:"macOS 15（Sequoia）から26（Tahoe）へ大きく番号が変わった理由は？", opts:["MacOS 16〜25が製品不具合で廃棄されたため","iOS等の全OSと番号を統一するため","Appleの都合によりスキップされたため","Microsoftに倣ったため"], ans:1, exp:"<strong>iOS・iPadOS・watchOS等の全OSと番号を統一</strong>するため。「26」はリリース年度（2025→26）に由来する車のモデルイヤーと同じ考え方。" },
+  { cat:"Software", q:"macOS Tahoeで廃止され、別アプリに置き換えられたのは？", opts:["Finder","Spotlight","Launchpad","Mission Control"], ans:2, exp:"<strong>Launchpad</strong>が廃止され、新しい<strong>Appsアプリ</strong>に置き換えられた。macOS 10.7 Lion以来の機能が終了した。" },
+  { cat:"Software", q:"Apple Intelligenceが初めて導入されたのはどのOSバージョンか？", opts:["iOS 17","iOS 18","iOS 26","iOS 16"], ans:1, exp:"Apple Intelligenceは<strong>iOS 18（2024年）</strong>で初導入。ただし機能は段階的に拡大され、iOS 26でさらに強化された。" },
+
+  // ===== 会社情報 (99-100) =====
+  { cat:"会社情報", q:"Tim Cookの後継CEOとして発表された人物は？", opts:["Craig Federighi","Jony Ive","John Ternus","Eddy Cue"], ans:2, exp:"<strong>John Ternus（ジョン・テルナス）</strong>がTim Cookの後継CEOに就任予定。AppleでハードウェアエンジニアリングのSVPを務めてきた人物。" },
+  { cat:"会社情報", q:"Mark Gurmanが2026年4月に報告したAppleの新カテゴリ製品に含まれないものは？", opts:["スマートグラス","卓上ロボット","スマートスピーカー（HomePod new）","ペンダント型デバイス"], ans:2, exp:"Gurmanが挙げた6カテゴリはAI AirPods・スマートグラス・ペンダント・スマートディスプレイ・卓上ロボット・セキュリティカメラ。<strong>HomePodの新カテゴリ</strong>は含まれていない。" },
+  { cat:"Apple歴史", q:"Appleの共同創業者のうち、設立直後に持ち株をほぼ全額で売却し去ったのは誰か？", opts:["Steve Jobs","Steve Wozniak","Ronald Wayne","Mike Markkula"], ans:2, exp:"<strong>Ronald Wayne</strong>は設立わずか12日後に持ち株（10%）を800ドルで売却して去った。現在の価値に換算すると数千億円相当。" },
+  { cat:"Software", q:"iOS 26からSiriが大幅に進化する予定だが、2026年時点でのSiriの主な課題として挙げられているのは？", opts:["音声認識精度の低さ","対応言語の少なさ","文脈理解・複合タスク処理の遅れ","バッテリー消費の大きさ"], ans:2, exp:"Siriは<strong>文脈理解や複合タスク処理</strong>において他社AIアシスタントに遅れており、iOS 26・27での抜本的改善が期待されている。" },
+];
+
+let current = 0;
+let score = 0;
+let answers = [];
+let catScores = {};
+
+function startQuiz() {
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q = QUESTIONS[current];
+  const pct = Math.round((current / QUESTIONS.length) * 100);
+
+  document.getElementById('prog-label').textContent = `問題 ${current + 1} / ${QUESTIONS.length}`;
+  document.getElementById('prog-pct').textContent = `${pct}%`;
+  document.getElementById('prog-fill').style.width = `${pct}%`;
+  document.getElementById('score-display').textContent = `${score} / ${current}`;
+
+  const catEl = document.getElementById('cat-tag-wrap');
+  const c = CAT_COLORS[q.cat] || { bg: "rgba(142,142,147,0.15)", color: "#8e8e93" };
+  catEl.innerHTML = `<div class="cat-tag" style="background:${c.bg};color:${c.color}">${q.cat}</div>`;
+
+  document.getElementById('q-num').textContent = `Q${String(current+1).padStart(3,'0')}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-card').style.animation = 'none';
+  setTimeout(() => document.getElementById('q-card').style.animation = '', 10);
+
+  const optWrap = document.getElementById('options-wrap');
+  optWrap.innerHTML = '';
+  const labels = ['A','B','C','D'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-label">${labels[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    optWrap.appendChild(btn);
+  });
+
+  document.getElementById('explanation').className = 'explanation';
+  document.getElementById('explanation').innerHTML = '';
+  document.getElementById('btn-next').className = 'btn-next';
+  document.getElementById('btn-next').textContent = current === QUESTIONS.length - 1 ? '結果を見る →' : '次の問題 →';
+}
+
+function selectAnswer(i) {
+  const q = QUESTIONS[current];
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(o => o.disabled = true);
+
+  const isCorrect = i === q.ans;
+  if (isCorrect) score++;
+
+  opts[i].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) opts[q.ans].classList.add('correct');
+
+  const exp = document.getElementById('explanation');
+  exp.innerHTML = (isCorrect ? '✅ <strong>正解！</strong><br>' : '❌ <strong>不正解</strong><br>') + q.exp;
+  exp.classList.add('show');
+
+  document.getElementById('btn-next').classList.add('show');
+
+  // Track
+  answers.push({ q: q.q, cat: q.cat, correct: isCorrect, correctOpt: q.opts[q.ans] });
+  if (!catScores[q.cat]) catScores[q.cat] = { ok: 0, total: 0 };
+  catScores[q.cat].total++;
+  if (isCorrect) catScores[q.cat].ok++;
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= QUESTIONS.length) {
+    showResult();
+  } else {
+    loadQuestion();
+    window.scrollTo(0, 0);
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+
+  const pct = Math.round(score / QUESTIONS.length * 100);
+  let rank, title, sub, rankColor;
+  if (pct >= 90) { rank = 'S'; title = '真の信者・伝道者'; sub = '全信者の上位1%。Appleが採用すべき人材です。'; }
+  else if (pct >= 80) { rank = 'A'; title = '上級信者'; sub = 'Apple製品を語る資格があります。'; }
+  else if (pct >= 70) { rank = 'B'; title = '中級信者'; sub = 'さらなる知識の習得を。もう少しで上級です。'; }
+  else if (pct >= 60) { rank = 'C'; title = '初級信者'; sub = 'Appleへの愛はあるが知識はまだ浅い。'; }
+  else if (pct >= 40) { rank = 'D'; title = 'Apple入門者'; sub = 'まずは基礎から学び直しましょう。'; }
+  else               { rank = 'F'; title = '信者候補'; sub = 'Androidユーザーでは？'; }
+
+  document.getElementById('r-rank').textContent = rank;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-sub').textContent = sub;
+  document.getElementById('r-score').innerHTML = `${score}<span> / ${QUESTIONS.length}問 (${pct}%)</span>`;
+
+  // Cat breakdown
+  const cb = document.getElementById('cat-breakdown');
+  cb.innerHTML = '';
+  Object.entries(catScores).forEach(([cat, s]) => {
+    const c = CAT_COLORS[cat] || { color: "#8e8e93" };
+    const catPct = Math.round(s.ok / s.total * 100);
+    cb.innerHTML += `
+      <div class="cat-card">
+        <div class="cat-name">${cat}</div>
+        <div class="cat-score" style="color:${c.color}">${s.ok}<span style="font-size:14px;color:#8e8e93">/${s.total}</span></div>
+      </div>`;
+  });
+
+  // Review
+  const rg = document.getElementById('review-grid');
+  rg.innerHTML = '';
+  answers.forEach((a, idx) => {
+    rg.innerHTML += `
+      <div class="review-item ${a.correct ? 'ok' : 'ng'}">
+        <span class="review-mark">${a.correct ? '✅' : '❌'}</span>
+        <div>
+          <div style="font-size:11px;color:#8e8e93;margin-bottom:2px">Q${idx+1} [${a.cat}]</div>
+          <div class="review-q">${a.q}</div>
+          ${!a.correct ? `<div style="font-size:12px;color:#30d158;margin-top:4px">正解: ${a.correctOpt}</div>` : ''}
+        </div>
+      </div>`;
+  });
+
+  window.scrollTo(0, 0);
+}
+
+function restartQuiz() {
+  current = 0; score = 0; answers = []; catScores = {};
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  loadQuestion();
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
