@@ -130,6 +130,130 @@ function buildElementsFromCSV(rows) {
 // ============================================================
 // DATA
 // ============================================================
+// ============================================================
+// INLINE ELEMENTS DATA (elements.csv をバンドル化 — ネットワーク不要)
+// ============================================================
+const ELEMENTS_DATA = [
+  {"no": 1, "sym": "H", "ja": "水素", "en": "Hydrogen", "hira": "すいそ", "romaji": "suiso", "alts": [], "trivia": "宇宙で最も豊富な元素。太陽の主成分", "diff": 1, "score": 10},
+  {"no": 2, "sym": "He", "ja": "ヘリウム", "en": "Helium", "hira": "へりうむ", "romaji": "heriumu", "alts": [], "trivia": "風船に使われる軽い気体。最初に宇宙で発見", "diff": 1, "score": 10},
+  {"no": 3, "sym": "Li", "ja": "リチウム", "en": "Lithium", "hira": "りちうむ", "romaji": "richiumu", "alts": ["ritiumu"], "trivia": "充電池に使われる最も軽い金属", "diff": 1, "score": 10},
+  {"no": 4, "sym": "Be", "ja": "ベリリウム", "en": "Beryllium", "hira": "べりりうむ", "romaji": "beririumu", "alts": [], "trivia": "エメラルドに含まれる。X線を通しやすい", "diff": 2, "score": 20},
+  {"no": 5, "sym": "B", "ja": "ホウ素", "en": "Boron", "hira": "ほうそ", "romaji": "houso", "alts": [], "trivia": "ガラス強化・半導体材料として重要", "diff": 1, "score": 10},
+  {"no": 6, "sym": "C", "ja": "炭素", "en": "Carbon", "hira": "たんそ", "romaji": "tanso", "alts": ["tannso"], "trivia": "ダイヤモンドも黒鉛もこの元素でできている", "diff": 1, "score": 10},
+  {"no": 7, "sym": "N", "ja": "窒素", "en": "Nitrogen", "hira": "ちっそ", "romaji": "chisso", "alts": ["tisso"], "trivia": "空気の約78%を占める不活性な気体", "diff": 1, "score": 10},
+  {"no": 8, "sym": "O", "ja": "酸素", "en": "Oxygen", "hira": "さんそ", "romaji": "sanso", "alts": ["sannso"], "trivia": "呼吸と燃焼に不可欠な気体。空気の21%", "diff": 1, "score": 10},
+  {"no": 9, "sym": "F", "ja": "フッ素", "en": "Fluorine", "hira": "ふっそ", "romaji": "fusso", "alts": ["husso"], "trivia": "歯磨き粉に含まれ虫歯を防ぐ", "diff": 1, "score": 10},
+  {"no": 10, "sym": "Ne", "ja": "ネオン", "en": "Neon", "hira": "ねおん", "romaji": "neon", "alts": ["neonn"], "trivia": "ネオンサインに使われる希ガス", "diff": 1, "score": 10},
+  {"no": 11, "sym": "Na", "ja": "ナトリウム", "en": "Sodium", "hira": "なとりうむ", "romaji": "natoriumu", "alts": [], "trivia": "食塩の成分。炎色反応は鮮やかな黄色", "diff": 1, "score": 10},
+  {"no": 12, "sym": "Mg", "ja": "マグネシウム", "en": "Magnesium", "hira": "まぐねしうむ", "romaji": "maguneshiumu", "alts": ["magunesiumu"], "trivia": "花火の白い炎の原料。人体に必須のミネラル", "diff": 1, "score": 15},
+  {"no": 13, "sym": "Al", "ja": "アルミニウム", "en": "Aluminium", "hira": "あるみにうむ", "romaji": "aruminiumu", "alts": [], "trivia": "軽くて錆びにくい。地殻中で最多の金属元素", "diff": 1, "score": 15},
+  {"no": 14, "sym": "Si", "ja": "ケイ素", "en": "Silicon", "hira": "けいそ", "romaji": "keiso", "alts": [], "trivia": "半導体の材料。シリコンバレーの名の由来", "diff": 1, "score": 10},
+  {"no": 15, "sym": "P", "ja": "リン", "en": "Phosphorus", "hira": "りん", "romaji": "rin", "alts": ["rinn"], "trivia": "骨・歯・DNAの重要成分。マッチに使われる", "diff": 1, "score": 10},
+  {"no": 16, "sym": "S", "ja": "硫黄", "en": "Sulfur", "hira": "いおう", "romaji": "iou", "alts": [], "trivia": "火山で産出する黄色い固体。温泉の香り成分", "diff": 1, "score": 10},
+  {"no": 17, "sym": "Cl", "ja": "塩素", "en": "Chlorine", "hira": "えんそ", "romaji": "enso", "alts": ["ennso"], "trivia": "プールの消毒に使われる黄緑色の気体", "diff": 1, "score": 10},
+  {"no": 18, "sym": "Ar", "ja": "アルゴン", "en": "Argon", "hira": "あるごん", "romaji": "arugon", "alts": ["arugonn"], "trivia": "白熱電球内に封入される。空気の1%", "diff": 1, "score": 10},
+  {"no": 19, "sym": "K", "ja": "カリウム", "en": "Potassium", "hira": "かりうむ", "romaji": "kariumu", "alts": [], "trivia": "バナナに豊富。筋肉や神経に不可欠なミネラル", "diff": 1, "score": 10},
+  {"no": 20, "sym": "Ca", "ja": "カルシウム", "en": "Calcium", "hira": "かるしうむ", "romaji": "karushiumu", "alts": ["karusiumu"], "trivia": "骨・歯の主成分。牛乳に豊富", "diff": 1, "score": 15},
+  {"no": 21, "sym": "Sc", "ja": "スカンジウム", "en": "Scandium", "hira": "すかんじうむ", "romaji": "sukanjiumu", "alts": ["sukanziumu", "sukannjiumu", "sukannziumu"], "trivia": "自転車フレームなどスポーツ用品の軽合金材料", "diff": 2, "score": 20},
+  {"no": 22, "sym": "Ti", "ja": "チタン", "en": "Titanium", "hira": "ちたん", "romaji": "chitan", "alts": ["titan", "titann", "chitann"], "trivia": "軽くて強い。インプラントや航空機に使われる", "diff": 1, "score": 15},
+  {"no": 23, "sym": "V", "ja": "バナジウム", "en": "Vanadium", "hira": "ばなじうむ", "romaji": "banajiumu", "alts": ["banaziumu"], "trivia": "鉄鋼の強度向上に使われる遷移金属", "diff": 2, "score": 20},
+  {"no": 24, "sym": "Cr", "ja": "クロム", "en": "Chromium", "hira": "くろむ", "romaji": "kuromu", "alts": [], "trivia": "ステンレス鋼の必須成分。クロームメッキの材料", "diff": 1, "score": 15},
+  {"no": 25, "sym": "Mn", "ja": "マンガン", "en": "Manganese", "hira": "まんがん", "romaji": "mangan", "alts": ["mangann", "manngan", "manngann"], "trivia": "乾電池の電極材料。鉄鋼の強化剤", "diff": 1, "score": 15},
+  {"no": 26, "sym": "Fe", "ja": "鉄", "en": "Iron", "hira": "てつ", "romaji": "tetsu", "alts": ["tetu"], "trivia": "地球の核の主成分。人類が最も多く使う金属", "diff": 1, "score": 10},
+  {"no": 27, "sym": "Co", "ja": "コバルト", "en": "Cobalt", "hira": "こばると", "romaji": "kobaruto", "alts": [], "trivia": "青いコバルトブルー色の由来。磁石の材料", "diff": 1, "score": 15},
+  {"no": 28, "sym": "Ni", "ja": "ニッケル", "en": "Nickel", "hira": "にっける", "romaji": "nikkeru", "alts": [], "trivia": "硬貨の材料。ニクロム線に使われる", "diff": 1, "score": 15},
+  {"no": 29, "sym": "Cu", "ja": "銅", "en": "Copper", "hira": "どう", "romaji": "dou", "alts": [], "trivia": "電線に広く使われる。熱・電気の良導体", "diff": 1, "score": 10},
+  {"no": 30, "sym": "Zn", "ja": "亜鉛", "en": "Zinc", "hira": "あえん", "romaji": "aen", "alts": ["aenn"], "trivia": "鉄の防錆めっきに使われる。亜鉛華軟膏", "diff": 1, "score": 10},
+  {"no": 31, "sym": "Ga", "ja": "ガリウム", "en": "Gallium", "hira": "がりうむ", "romaji": "gariumu", "alts": [], "trivia": "手の平の熱(30℃)で溶ける低融点金属", "diff": 2, "score": 20},
+  {"no": 32, "sym": "Ge", "ja": "ゲルマニウム", "en": "Germanium", "hira": "げるまにうむ", "romaji": "gerumaniumu", "alts": [], "trivia": "メンデレーエフが発見を予言した元素", "diff": 2, "score": 20},
+  {"no": 33, "sym": "As", "ja": "ヒ素", "en": "Arsenic", "hira": "ひそ", "romaji": "hiso", "alts": [], "trivia": "有名な毒。半導体にも使われる準金属", "diff": 1, "score": 15},
+  {"no": 34, "sym": "Se", "ja": "セレン", "en": "Selenium", "hira": "せれん", "romaji": "seren", "alts": ["serenn"], "trivia": "光で電気を通す光電効果がある。コピー機に利用", "diff": 2, "score": 20},
+  {"no": 35, "sym": "Br", "ja": "臭素", "en": "Bromine", "hira": "しゅうそ", "romaji": "shuuso", "alts": ["syuuso"], "trivia": "常温で液体の唯一の非金属元素", "diff": 2, "score": 20},
+  {"no": 36, "sym": "Kr", "ja": "クリプトン", "en": "Krypton", "hira": "くりぷとん", "romaji": "kuriputon", "alts": ["kuriputonn"], "trivia": "スーパーマンの故郷「クリプトン星」の名の由来", "diff": 2, "score": 20},
+  {"no": 37, "sym": "Rb", "ja": "ルビジウム", "en": "Rubidium", "hira": "るびじうむ", "romaji": "rubijiumu", "alts": ["rubiziumu"], "trivia": "原子時計の材料。赤い炎色反応", "diff": 2, "score": 20},
+  {"no": 38, "sym": "Sr", "ja": "ストロンチウム", "en": "Strontium", "hira": "すとろんちうむ", "romaji": "sutoronchiumu", "alts": ["sutorontiumu", "sutoronnchiumu", "sutoronntiumu"], "trivia": "花火の赤い炎の原料。炎色反応は深紅色", "diff": 2, "score": 25},
+  {"no": 39, "sym": "Y", "ja": "イットリウム", "en": "Yttrium", "hira": "いっとりうむ", "romaji": "ittoriumu", "alts": [], "trivia": "LEDや蛍光灯の赤色蛍光体に使われる", "diff": 2, "score": 25},
+  {"no": 40, "sym": "Zr", "ja": "ジルコニウム", "en": "Zirconium", "hira": "じるこにうむ", "romaji": "jirukoniumu", "alts": ["zirukoniumu"], "trivia": "原子炉の燃料被覆管に使われる耐熱金属", "diff": 2, "score": 25},
+  {"no": 41, "sym": "Nb", "ja": "ニオブ", "en": "Niobium", "hira": "におぶ", "romaji": "niobu", "alts": [], "trivia": "超電導体として使われるレアメタル", "diff": 2, "score": 20},
+  {"no": 42, "sym": "Mo", "ja": "モリブデン", "en": "Molybdenum", "hira": "もりぶでん", "romaji": "moribuden", "alts": ["moribudenn"], "trivia": "鋼鉄を硬くする添加剤。高温でも溶けにくい", "diff": 2, "score": 25},
+  {"no": 43, "sym": "Tc", "ja": "テクネチウム", "en": "Technetium", "hira": "てくねちうむ", "romaji": "tekunechiumu", "alts": ["tekunetiumu"], "trivia": "人工的に初めて作られた元素。医療用放射性同位体", "diff": 3, "score": 35},
+  {"no": 44, "sym": "Ru", "ja": "ルテニウム", "en": "Ruthenium", "hira": "るてにうむ", "romaji": "ruteniumu", "alts": [], "trivia": "万年筆のペン先や電極の材料", "diff": 2, "score": 25},
+  {"no": 45, "sym": "Rh", "ja": "ロジウム", "en": "Rhodium", "hira": "ろじうむ", "romaji": "rojiumu", "alts": ["roziumu"], "trivia": "自動車触媒として使われる最高値の金属", "diff": 2, "score": 25},
+  {"no": 46, "sym": "Pd", "ja": "パラジウム", "en": "Palladium", "hira": "ぱらじうむ", "romaji": "parajiumu", "alts": ["paraziumu"], "trivia": "体積の900倍の水素を吸収できる金属", "diff": 2, "score": 25},
+  {"no": 47, "sym": "Ag", "ja": "銀", "en": "Silver", "hira": "ぎん", "romaji": "gin", "alts": ["ginn"], "trivia": "金属の中で電気・熱の伝導率が最も高い", "diff": 1, "score": 10},
+  {"no": 48, "sym": "Cd", "ja": "カドミウム", "en": "Cadmium", "hira": "かどみうむ", "romaji": "kadomiumu", "alts": [], "trivia": "イタイイタイ病の原因物質。ニッカド電池の材料", "diff": 2, "score": 20},
+  {"no": 49, "sym": "In", "ja": "インジウム", "en": "Indium", "hira": "いんじうむ", "romaji": "injiumu", "alts": ["inziumu"], "trivia": "スマートフォンのタッチパネル電極の材料", "diff": 2, "score": 20},
+  {"no": 50, "sym": "Sn", "ja": "スズ", "en": "Tin", "hira": "すず", "romaji": "suzu", "alts": [], "trivia": "ハンダの主要成分。ブリキはスズめっきの鉄", "diff": 1, "score": 10},
+  {"no": 51, "sym": "Sb", "ja": "アンチモン", "en": "Antimony", "hira": "あんちもん", "romaji": "anchimon", "alts": ["antimon", "annchimon", "antimonn", "annchimonn", "anntimonn"], "trivia": "古代エジプトのアイメイクに使用された", "diff": 2, "score": 20},
+  {"no": 52, "sym": "Te", "ja": "テルル", "en": "Tellurium", "hira": "てるる", "romaji": "teruru", "alts": [], "trivia": "太陽に比べ地球では非常に希少な元素", "diff": 2, "score": 20},
+  {"no": 53, "sym": "I", "ja": "ヨウ素", "en": "Iodine", "hira": "ようそ", "romaji": "youso", "alts": [], "trivia": "消毒薬・甲状腺ホルモンの材料。昆布に豊富", "diff": 1, "score": 15},
+  {"no": 54, "sym": "Xe", "ja": "キセノン", "en": "Xenon", "hira": "きせのん", "romaji": "kisenon", "alts": ["kisenonn"], "trivia": "HIDヘッドライトに使われる希ガス", "diff": 2, "score": 20},
+  {"no": 55, "sym": "Cs", "ja": "セシウム", "en": "Cesium", "hira": "せしうむ", "romaji": "seshiumu", "alts": ["sesiumu"], "trivia": "原子時計の基準に使われる。最も電気陰性度が低い", "diff": 2, "score": 20},
+  {"no": 56, "sym": "Ba", "ja": "バリウム", "en": "Barium", "hira": "ばりうむ", "romaji": "bariumu", "alts": [], "trivia": "X線検査の造影剤として使われる", "diff": 2, "score": 20},
+  {"no": 57, "sym": "La", "ja": "ランタン", "en": "Lanthanum", "hira": "らんたん", "romaji": "rantan", "alts": ["ranntann"], "trivia": "カメラレンズの材料。ランタノイドの先頭", "diff": 2, "score": 20},
+  {"no": 58, "sym": "Ce", "ja": "セリウム", "en": "Cerium", "hira": "せりうむ", "romaji": "seriumu", "alts": [], "trivia": "最も豊富な希土類元素。自動車の触媒に使われる", "diff": 2, "score": 20},
+  {"no": 59, "sym": "Pr", "ja": "プラセオジム", "en": "Praseodymium", "hira": "ぷらせおじむ", "romaji": "puraseojiumu", "alts": ["puraseoziumu"], "trivia": "強力な永久磁石ネオジム磁石の材料", "diff": 3, "score": 35},
+  {"no": 60, "sym": "Nd", "ja": "ネオジム", "en": "Neodymium", "hira": "ねおじむ", "romaji": "neojimu", "alts": ["neozimu"], "trivia": "世界最強クラスの永久磁石の主成分", "diff": 2, "score": 25},
+  {"no": 61, "sym": "Pm", "ja": "プロメチウム", "en": "Promethium", "hira": "ぷろめちうむ", "romaji": "puromechiumu", "alts": ["purometiumu"], "trivia": "自然界にほとんど存在しない放射性の希土類元素", "diff": 3, "score": 35},
+  {"no": 62, "sym": "Sm", "ja": "サマリウム", "en": "Samarium", "hira": "さまりうむ", "romaji": "samariumu", "alts": [], "trivia": "コバルトとの合金で強力な永久磁石に", "diff": 2, "score": 25},
+  {"no": 63, "sym": "Eu", "ja": "ユウロピウム", "en": "Europium", "hira": "ゆうろぴうむ", "romaji": "yuuropiumu", "alts": [], "trivia": "蛍光灯の赤い蛍光体。紙幣の偽造防止に使われる", "diff": 3, "score": 30},
+  {"no": 64, "sym": "Gd", "ja": "ガドリニウム", "en": "Gadolinium", "hira": "がどりにうむ", "romaji": "gadoriniumu", "alts": [], "trivia": "MRIの造影剤に使われる希土類元素", "diff": 3, "score": 30},
+  {"no": 65, "sym": "Tb", "ja": "テルビウム", "en": "Terbium", "hira": "てるびうむ", "romaji": "terubiumu", "alts": [], "trivia": "スマートフォンのスピーカー振動板の材料", "diff": 3, "score": 30},
+  {"no": 66, "sym": "Dy", "ja": "ジスプロシウム", "en": "Dysprosium", "hira": "じすぷろしうむ", "romaji": "jisupuroshiumu", "alts": ["jisupurosiumu", "zisupuroshiumu", "zisupurosiumu"], "trivia": "ネオジム磁石の耐熱性を大幅に向上させる", "diff": 3, "score": 35},
+  {"no": 67, "sym": "Ho", "ja": "ホルミウム", "en": "Holmium", "hira": "ほるみうむ", "romaji": "horumiumu", "alts": [], "trivia": "元素の中で最も強い磁気モーメントを持つ", "diff": 3, "score": 30},
+  {"no": 68, "sym": "Er", "ja": "エルビウム", "en": "Erbium", "hira": "えるびうむ", "romaji": "erubiumu", "alts": [], "trivia": "光ファイバー通信の増幅器に使われる", "diff": 3, "score": 30},
+  {"no": 69, "sym": "Tm", "ja": "ツリウム", "en": "Thulium", "hira": "つりうむ", "romaji": "tsuriumu", "alts": ["turiumu"], "trivia": "ポータブルX線装置の放射源として利用", "diff": 3, "score": 30},
+  {"no": 70, "sym": "Yb", "ja": "イッテルビウム", "en": "Ytterbium", "hira": "いってるびうむ", "romaji": "itterubiumu", "alts": [], "trivia": "光格子時計に使われる超高精度の原子時計材料", "diff": 3, "score": 35},
+  {"no": 71, "sym": "Lu", "ja": "ルテチウム", "en": "Lutetium", "hira": "るてちうむ", "romaji": "rutechiumu", "alts": ["rutetiumu"], "trivia": "ランタノイドの中で最も重い元素", "diff": 3, "score": 35},
+  {"no": 72, "sym": "Hf", "ja": "ハフニウム", "en": "Hafnium", "hira": "はふにうむ", "romaji": "hafuniumu", "alts": ["hahuniumu"], "trivia": "原子炉の制御棒の材料。ジルコニウムと分離が難しい", "diff": 2, "score": 25},
+  {"no": 73, "sym": "Ta", "ja": "タンタル", "en": "Tantalum", "hira": "たんたる", "romaji": "tantaru", "alts": ["tanntaru"], "trivia": "スマートフォンのコンデンサーに不可欠なレアメタル", "diff": 2, "score": 25},
+  {"no": 74, "sym": "W", "ja": "タングステン", "en": "Tungsten", "hira": "たんぐすてん", "romaji": "tangusuten", "alts": ["tanngusutenn", "tangusutenn", "tanngusuten"], "trivia": "全金属元素の中で最も高い融点(3422℃)を持つ", "diff": 2, "score": 25},
+  {"no": 75, "sym": "Re", "ja": "レニウム", "en": "Rhenium", "hira": "れにうむ", "romaji": "reniumu", "alts": [], "trivia": "最後に発見された安定元素の一つ(1925年発見)", "diff": 2, "score": 25},
+  {"no": 76, "sym": "Os", "ja": "オスミウム", "en": "Osmium", "hira": "おすみうむ", "romaji": "osumiumu", "alts": [], "trivia": "全元素の中で最も高い密度(22.59 g/cm³)を持つ", "diff": 2, "score": 25},
+  {"no": 77, "sym": "Ir", "ja": "イリジウム", "en": "Iridium", "hira": "いりじうむ", "romaji": "irijiumu", "alts": ["iriziumu"], "trivia": "6600万年前の地層(K-Pg境界)に多く含まれる", "diff": 2, "score": 25},
+  {"no": 78, "sym": "Pt", "ja": "白金", "en": "Platinum", "hira": "はっきん", "romaji": "hakkin", "alts": ["hakkinn"], "trivia": "触媒・宝飾品に使われる貴金属。プラチナとも呼ぶ", "diff": 2, "score": 20},
+  {"no": 79, "sym": "Au", "ja": "金", "en": "Gold", "hira": "きん", "romaji": "kin", "alts": ["kinn"], "trivia": "腐食せず輝き続ける貴金属の代表", "diff": 1, "score": 10},
+  {"no": 80, "sym": "Hg", "ja": "水銀", "en": "Mercury", "hira": "すいぎん", "romaji": "suigin", "alts": ["suiginn"], "trivia": "常温で液体の唯一の金属元素", "diff": 1, "score": 15},
+  {"no": 81, "sym": "Tl", "ja": "タリウム", "en": "Thallium", "hira": "たりうむ", "romaji": "tariumu", "alts": [], "trivia": "強い毒性を持つ金属。ミステリー小説でお馴染み", "diff": 2, "score": 20},
+  {"no": 82, "sym": "Pb", "ja": "鉛", "en": "Lead", "hira": "なまり", "romaji": "namari", "alts": [], "trivia": "重くて軟らかい。活版印刷の活字に使われた", "diff": 1, "score": 15},
+  {"no": 83, "sym": "Bi", "ja": "ビスマス", "en": "Bismuth", "hira": "びすます", "romaji": "bisumasu", "alts": [], "trivia": "美しい虹色の階段状結晶を作る金属", "diff": 2, "score": 20},
+  {"no": 84, "sym": "Po", "ja": "ポロニウム", "en": "Polonium", "hira": "ぽろにうむ", "romaji": "poroniumu", "alts": [], "trivia": "キュリー夫人が故国ポーランドにちなんで命名", "diff": 2, "score": 25},
+  {"no": 85, "sym": "At", "ja": "アスタチン", "en": "Astatine", "hira": "あすたちん", "romaji": "asutachin", "alts": ["asutatin", "asutachinn", "asutatinn"], "trivia": "自然界に極めて微量しか存在しない準金属", "diff": 3, "score": 30},
+  {"no": 86, "sym": "Rn", "ja": "ラドン", "en": "Radon", "hira": "らどん", "romaji": "radon", "alts": ["radonn"], "trivia": "放射性の希ガス。地下や建物に溜まることがある", "diff": 2, "score": 20},
+  {"no": 87, "sym": "Fr", "ja": "フランシウム", "en": "Francium", "hira": "ふらんしうむ", "romaji": "furanshiumu", "alts": ["furansiumu", "huranshiumu", "huransiumu", "furannshiumu", "furannsiumu", "hurannshiumu", "hurannsiumu"], "trivia": "自然界に存在する最も不安定な元素", "diff": 3, "score": 35},
+  {"no": 88, "sym": "Ra", "ja": "ラジウム", "en": "Radium", "hira": "らじうむ", "romaji": "rajiumu", "alts": ["raziumu"], "trivia": "キュリー夫人が発見した放射性元素。暗闇で光る", "diff": 2, "score": 25},
+  {"no": 89, "sym": "Ac", "ja": "アクチニウム", "en": "Actinium", "hira": "あくちにうむ", "romaji": "akuchiniumu", "alts": ["akutiniumu"], "trivia": "暗闇で青白く光る強放射性元素", "diff": 3, "score": 30},
+  {"no": 90, "sym": "Th", "ja": "トリウム", "en": "Thorium", "hira": "とりうむ", "romaji": "toriumu", "alts": [], "trivia": "次世代原子炉の燃料候補として注目される", "diff": 2, "score": 25},
+  {"no": 91, "sym": "Pa", "ja": "プロトアクチニウム", "en": "Protactinium", "hira": "ぷろとあくちにうむ", "romaji": "purotoakuchiniumu", "alts": ["purotoakutiniumu"], "trivia": "非常に強い放射性を持つ希少元素", "diff": 3, "score": 40},
+  {"no": 92, "sym": "U", "ja": "ウラン", "en": "Uranium", "hira": "うらん", "romaji": "uran", "alts": ["urann"], "trivia": "原子力発電の燃料。天然に存在する最重元素", "diff": 1, "score": 15},
+  {"no": 93, "sym": "Np", "ja": "ネプツニウム", "en": "Neptunium", "hira": "ねぷつにうむ", "romaji": "neputsuniumu", "alts": ["neputuniumu"], "trivia": "人工合成された最初のトランスウラン元素", "diff": 3, "score": 35},
+  {"no": 94, "sym": "Pu", "ja": "プルトニウム", "en": "Plutonium", "hira": "ぷるとにうむ", "romaji": "purutoniumu", "alts": [], "trivia": "核兵器・原子力発電の材料となる放射性元素", "diff": 2, "score": 30},
+  {"no": 95, "sym": "Am", "ja": "アメリシウム", "en": "Americium", "hira": "あめりしうむ", "romaji": "amerishiumu", "alts": ["amerisiumu"], "trivia": "煙感知器に放射線源として使われている", "diff": 3, "score": 30},
+  {"no": 96, "sym": "Cm", "ja": "キュリウム", "en": "Curium", "hira": "きゅりうむ", "romaji": "kyuriumu", "alts": [], "trivia": "キュリー夫妻にちなんで命名された超ウラン元素", "diff": 3, "score": 30},
+  {"no": 97, "sym": "Bk", "ja": "バークリウム", "en": "Berkelium", "hira": "ばーくりうむ", "romaji": "ba-kuriumu", "alts": [], "trivia": "カリフォルニア州バークレーで発見", "diff": 3, "score": 35},
+  {"no": 98, "sym": "Cf", "ja": "カリホルニウム", "en": "Californium", "hira": "かりほるにうむ", "romaji": "karihoruniumu", "alts": ["kariforuniumu"], "trivia": "強力な中性子源として金属探知などに使われる", "diff": 3, "score": 35},
+  {"no": 99, "sym": "Es", "ja": "アインスタイニウム", "en": "Einsteinium", "hira": "あいんすたいにうむ", "romaji": "ainsutainiumu", "alts": [], "trivia": "アインシュタインにちなんで命名。水爆実験で発見", "diff": 3, "score": 40},
+  {"no": 100, "sym": "Fm", "ja": "フェルミウム", "en": "Fermium", "hira": "ふぇるみうむ", "romaji": "fuerumiumu", "alts": ["ferumiumu"], "trivia": "核物理学者フェルミにちなんで命名", "diff": 3, "score": 40},
+  {"no": 101, "sym": "Md", "ja": "メンデレビウム", "en": "Mendelevium", "hira": "めんでれびうむ", "romaji": "menderebiumu", "alts": [], "trivia": "元素周期表を作ったメンデレーエフにちなんで命名", "diff": 3, "score": 40},
+  {"no": 102, "sym": "No", "ja": "ノーベリウム", "en": "Nobelium", "hira": "のーべりうむ", "romaji": "no-beriumu", "alts": ["noberiumu"], "trivia": "ノーベルにちなんで命名された超ウラン元素", "diff": 3, "score": 40},
+  {"no": 103, "sym": "Lr", "ja": "ローレンシウム", "en": "Lawrencium", "hira": "ろーれんしうむ", "romaji": "ro-renshiumu", "alts": ["ro-rensiumu"], "trivia": "サイクロトロンを発明したローレンスにちなんで命名", "diff": 3, "score": 40},
+  {"no": 104, "sym": "Rf", "ja": "ラザホージウム", "en": "Rutherfordium", "hira": "らざほーじうむ", "romaji": "razaho-jiumu", "alts": ["razaho-ziumu"], "trivia": "ラザフォードにちなんで命名。寿命は数秒", "diff": 3, "score": 40},
+  {"no": 105, "sym": "Db", "ja": "ドブニウム", "en": "Dubnium", "hira": "どぶにうむ", "romaji": "dobuniumu", "alts": [], "trivia": "ロシアのドゥブナ研究所で発見", "diff": 3, "score": 40},
+  {"no": 106, "sym": "Sg", "ja": "シーボーギウム", "en": "Seaborgium", "hira": "しーぼーぎうむ", "romaji": "shi-bo-giumu", "alts": ["si-bo-giumu"], "trivia": "核化学者シーボーグにちなんで命名", "diff": 3, "score": 40},
+  {"no": 107, "sym": "Bh", "ja": "ボーリウム", "en": "Bohrium", "hira": "ぼーりうむ", "romaji": "bo-riumu", "alts": [], "trivia": "物理学者ニールス・ボーアにちなんで命名", "diff": 3, "score": 40},
+  {"no": 108, "sym": "Hs", "ja": "ハッシウム", "en": "Hassium", "hira": "はっしうむ", "romaji": "hasshiumu", "alts": ["hassiumu"], "trivia": "ドイツのヘッセン州（ラテン語名Hassia）で発見", "diff": 3, "score": 40},
+  {"no": 109, "sym": "Mt", "ja": "マイトネリウム", "en": "Meitnerium", "hira": "まいとねりうむ", "romaji": "maitoneriumu", "alts": [], "trivia": "核分裂を発見したリーゼ・マイトナーにちなんで命名", "diff": 3, "score": 40},
+  {"no": 110, "sym": "Ds", "ja": "ダームスタチウム", "en": "Darmstadtium", "hira": "だーむすたちうむ", "romaji": "da-musutachiumu", "alts": ["da-musutatiumu"], "trivia": "ドイツのダルムシュタットで発見", "diff": 3, "score": 40},
+  {"no": 111, "sym": "Rg", "ja": "レントゲニウム", "en": "Roentgenium", "hira": "れんとげにうむ", "romaji": "rentogeniumu", "alts": ["renntogeniumu"], "trivia": "X線を発見したレントゲンにちなんで命名", "diff": 3, "score": 40},
+  {"no": 112, "sym": "Cn", "ja": "コペルニシウム", "en": "Copernicium", "hira": "こぺるにしうむ", "romaji": "koperunishiumu", "alts": ["koperunisiumu"], "trivia": "天文学者コペルニクスにちなんで命名", "diff": 3, "score": 40},
+  {"no": 113, "sym": "Nh", "ja": "ニホニウム", "en": "Nihonium", "hira": "にほにうむ", "romaji": "nihoniumu", "alts": [], "trivia": "日本の理化学研究所が発見した唯一の元素", "diff": 2, "score": 30},
+  {"no": 114, "sym": "Fl", "ja": "フレロビウム", "en": "Flerovium", "hira": "ふれろびうむ", "romaji": "furerobiumu", "alts": ["hurerobiumu"], "trivia": "フレロフ核反応研究所にちなんで命名", "diff": 3, "score": 40},
+  {"no": 115, "sym": "Mc", "ja": "モスコビウム", "en": "Moscovium", "hira": "もすこびうむ", "romaji": "mosukobiumu", "alts": [], "trivia": "ロシアのモスクワ州にちなんで命名", "diff": 3, "score": 40},
+  {"no": 116, "sym": "Lv", "ja": "リバモリウム", "en": "Livermorium", "hira": "りばもりうむ", "romaji": "ribamoriumu", "alts": [], "trivia": "米国リバモア国立研究所にちなんで命名", "diff": 3, "score": 40},
+  {"no": 117, "sym": "Ts", "ja": "テネシン", "en": "Tennessine", "hira": "てねしん", "romaji": "teneshin", "alts": ["tenesin", "teneshinn", "tenesinn"], "trivia": "米国テネシー州にちなんで命名。2010年初合成", "diff": 3, "score": 40},
+  {"no": 118, "sym": "Og", "ja": "オガネソン", "en": "Oganesson", "hira": "おがねそん", "romaji": "oganeson", "alts": ["oganesonn"], "trivia": "現在知られている最も原子番号が大きい元素", "diff": 3, "score": 40},
+];
+
 let ELEMENTS = [];
 
 const PT_GRID = [
@@ -244,26 +368,19 @@ function initTitleDynamic() {
 }
 
 // ============================================================
-// CSV LOADING
+// DATA LOADING (インライン化済み — fetch 不要)
 // ============================================================
-async function loadElements() {
+function loadElements() {
   const bar = document.getElementById('loading-bar');
   const msg = document.getElementById('loading-msg');
   try {
-    bar.style.width = '20%';
-    msg.textContent = 'FETCHING elements.csv...';
-    const res = await fetch('./elements.csv');
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
     bar.style.width = '60%';
-    msg.textContent = 'PARSING DATA...';
-    const text = await res.text();
-    const rows = parseCSV(text);
-    if (rows.length === 0) throw new Error('CSVのパースに失敗しました(0行)');
-    ELEMENTS = buildElementsFromCSV(rows);
+    msg.textContent = 'LOADING DATA...';
+    ELEMENTS = ELEMENTS_DATA;
+    if (ELEMENTS.length === 0) throw new Error('インラインデータが空です');
     bar.style.width = '100%';
     msg.textContent = 'OK -- ' + ELEMENTS.length + '元素読み込み完了';
     document.getElementById('el-count-badge').textContent = '全' + ELEMENTS.length + '元素収録';
-    await new Promise(r => setTimeout(r, 400));
     document.getElementById('scr-loading').style.display = 'none';
     // Check URL for deep-link (mode or battle room)
     const routed = handleInitialUrl();
@@ -285,11 +402,7 @@ async function loadElements() {
     div.className = 'loading-err';
     div.innerHTML =
       '<strong>&#x26A0; ロードエラー</strong><br><br>' +
-      err.message + '<br><br>' +
-      '<code>elements.csv</code> が同じフォルダに存在するか確認してください。<br><br>' +
-      'ローカルで開く場合は簡易サーバーが必要です：<br>' +
-      '<code>python3 -m http.server 8080</code><br>' +
-      'または VSCode の Live Server 拡張を使用してください。';
+      err.message;
     document.getElementById('scr-loading').appendChild(div);
     console.error('[元素タイピング] load error:', err);
   }
@@ -1267,15 +1380,17 @@ function clearHighScores(modal) {
 // TWEET / X SHARE
 // ============================================================
 function tweetResult() {
-  const lines = [
-    '【元素タイピング】',
-    MODE_INFO[G.mode].label + ' / ' + DIFF_INFO[G.diff].label,
-    'スコア: ' + G.score.toLocaleString() + ' pt',
-    '正解: ' + G.count + '問　ベストコンボ: ' + G.maxCombo + 'x',
-    '#元素タイピング #化学 #PeriodicTyping',
-  ];
+  const diffName = DIFF_INFO[G.diff] ? DIFF_INFO[G.diff].label : '';
+  const modeName = MODE_INFO[G.mode] ? MODE_INFO[G.mode].label : '';
+  const text =
+    '元素タイピングで ' + G.score.toLocaleString() + ' pt 獲得！🧪\n' +
+    G.count + '元素正解 / ベストコンボ ' + G.maxCombo + 'x\n' +
+    '（' + modeName + ' / ' + diffName + '）\n' +
+    '#元素タイピング #化学 #PeriodicTyping';
+  const url = 'https://astro-root.com/typing/';
   window.open(
-    'https://twitter.com/intent/tweet?text=' + encodeURIComponent(lines.join('\n')),
+    'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) +
+    '&url=' + encodeURIComponent(url),
     '_blank',
     'noopener'
   );
@@ -1579,6 +1694,28 @@ function shareRoomCode(code) {
   // ハッシュルーティングに対応したURLを生成（静的ホスティングで直接アクセス可能）
   const url = 'https://astro-root.com/typing/#battle?room=' + code;
   return '元素タイピング対戦に招待！\nルームコード: ' + code + '\n' + url + '\nURLを開けばコード入力不要で参加できるよ🧪';
+}
+
+// ============================================================
+// SNSシェア関数（対戦ルーム）
+// ============================================================
+function shareRoomLine() {
+  const codeEl = document.getElementById('room-code-value');
+  const code = codeEl ? codeEl.textContent : '';
+  const text = '元素タイピングで対戦しよう！ルームコード: ' + code + '\nhttps://astro-root.com/typing/';
+  window.open('https://line.me/R/share?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+
+function shareRoomX() {
+  const codeEl = document.getElementById('room-code-value');
+  const code = codeEl ? codeEl.textContent : '';
+  const text = '元素タイピングで対戦しよう！ルームコード: ' + code + ' #元素タイピング';
+  const url = 'https://astro-root.com/typing/';
+  window.open(
+    'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) +
+    '&url=' + encodeURIComponent(url),
+    '_blank', 'noopener'
+  );
 }
 
 // ---- ICE config (STUN + TURN for NAT traversal) ----
