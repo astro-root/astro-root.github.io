@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ジャンル制覇クイズ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root {
+  --bg:    #080f1a;
+  --surf:  rgba(13,24,42,0.92);
+  --bdr:   rgba(148,163,184,0.12);
+  --txt:   #e2e8f0;
+  --muted: #64748b;
+  --blue:  #3b82f6;
+  --bdim:  rgba(59,130,246,0.15);
+  --cyan:  #22d3ee;
+  --green: #10b981;
+  --red:   #f43f5e;
+  --gold:  #f59e0b;
+  --gdim:  rgba(245,158,11,0.15);
+  --amber: #f59e0b;
+  --ice:   #a5f3fc;
+  --icedim:rgba(165,243,252,0.13);
+  --font:  "Hiragino Kaku Gothic ProN","Noto Sans JP","Meiryo",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font)}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 20%,rgba(59,130,246,.05) 0%,transparent 55%),
+    radial-gradient(circle at 80% 80%,rgba(139,92,246,.04) 0%,transparent 55%);
+  color:var(--txt);
+  padding:16px;
+  display:flex;flex-direction:column;
+  min-height:100vh;overflow-x:hidden;
+}
+#grid-wrap{
+  overflow-x:auto;
+  overflow-y:visible;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(59,130,246,.3) transparent;
+}
+#grid-wrap::-webkit-scrollbar{height:4px}
+#grid-wrap::-webkit-scrollbar-track{background:transparent}
+#grid-wrap::-webkit-scrollbar-thumb{background:rgba(59,130,246,.3);border-radius:2px}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+  padding:14px 18px;
+  background:var(--surf);
+  border:1px solid var(--bdr);
+  border-radius:14px;
+  margin-bottom:10px;
+  backdrop-filter:blur(12px);
+}
+.logo-area{display:flex;align-items:center;gap:12px}
+.logo{
+  width:44px;height:44px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;color:#fff;letter-spacing:-0.5px;
+}
+.logo-text h1{font-size:16px;font-weight:800;letter-spacing:.05em}
+.logo-text p{font-size:10px;color:var(--muted);letter-spacing:.12em;margin-top:1px}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  border:none;padding:8px 14px;border-radius:8px;
+  font-weight:700;cursor:pointer;color:#fff;
+  font-size:12px;font-family:var(--font);letter-spacing:.03em;
+  transition:filter .15s,transform .12s;
+}
+.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;filter:none}
+.btn-blue{background:var(--blue)}
+.btn-slate{background:#334155}
+.btn-red{background:var(--red)}
+
+.sgbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 16px;
+  background:var(--surf);
+  border:1px solid var(--bdr);
+  border-radius:12px;
+  margin-bottom:10px;
+  backdrop-filter:blur(8px);
+}
+.sgbar.hidden{display:none}
+.sgbar-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em;white-space:nowrap}
+.sgbar-chips{display:flex;gap:6px;flex-wrap:wrap}
+.sgchip{
+  padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid var(--bdr);
+  background:rgba(255,255,255,.04);color:var(--muted);
+  transition:all .15s;display:flex;align-items:center;gap:5px;
+}
+.sgchip:hover{background:var(--bdim);border-color:rgba(59,130,246,.4);color:var(--blue)}
+.sgchip.sg-active{background:var(--bdim);border-color:var(--blue);color:var(--blue)}
+.sgchip.sg-all-done{background:var(--gdim);border-color:var(--gold);color:var(--gold);cursor:default}
+.sg-count{font-size:10px;opacity:.65}
+
+.modal-wrap{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;padding:16px;
+}
+.modal-wrap.hidden{display:none}
+.modal{
+  background:#0f1c30;
+  border:1px solid rgba(148,163,184,.15);
+  border-radius:18px;
+  padding:26px 28px;
+  width:100%;max-width:640px;
+  max-height:90vh;overflow-y:auto;
+}
+.modal h2{font-size:18px;font-weight:800;color:var(--cyan);letter-spacing:.05em;margin-bottom:22px}
+.msec{margin-bottom:22px}
+.msec-title{
+  font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;
+  font-weight:700;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--bdr);
+}
+.mrow{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.mrow label{font-size:13px;color:var(--txt);min-width:155px}
+.mi{
+  background:rgba(255,255,255,.06);border:1px solid var(--bdr);
+  color:var(--txt);border-radius:8px;padding:7px 10px;
+  font-size:14px;font-family:var(--font);font-weight:700;
+  width:64px;text-align:center;
+}
+.mi:focus{outline:none;border-color:var(--blue)}
+
+.genre-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.gi-row{display:flex;align-items:center;gap:6px}
+.gi-num{width:18px;text-align:right;font-size:11px;color:var(--muted);flex-shrink:0}
+.gi-input{
+  flex:1;background:rgba(255,255,255,.05);border:1px solid var(--bdr);
+  color:var(--txt);border-radius:6px;padding:6px 8px;
+  font-size:13px;font-family:var(--font);
+}
+.gi-input:focus{outline:none;border-color:var(--cyan);background:rgba(34,211,238,.04)}
+
+.mode-btns{display:flex;gap:8px}
+.mbtn{
+  padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;
+  border:1px solid var(--bdr);cursor:pointer;
+  background:rgba(255,255,255,.04);color:var(--muted);
+  font-family:var(--font);transition:all .15s;
+}
+.mbtn.sel{background:var(--bdim);border-color:var(--blue);color:var(--blue)}
+
+.pgroup{display:flex;flex-direction:column;gap:8px}
+.pitem{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  border:1px solid transparent;cursor:pointer;transition:all .12s;
+}
+.pitem:hover{background:rgba(255,255,255,.03)}
+.pitem.sel{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3)}
+.pitem input[type=radio]{accent-color:var(--blue);margin-top:3px;flex-shrink:0;width:15px;height:15px}
+.plabel{font-size:13px;font-weight:700;color:var(--txt)}
+.pdesc{font-size:11px;color:var(--muted);margin-top:3px}
+.pparams{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pparams span{font-size:12px;color:var(--muted)}
+.pi{
+  background:rgba(255,255,255,.07);border:1px solid var(--bdr);
+  color:var(--txt);border-radius:6px;padding:4px 6px;
+  font-size:13px;font-family:var(--font);font-weight:700;
+  width:46px;text-align:center;
+}
+.pi:focus{outline:none;border-color:var(--blue)}
+.mfooter{
+  display:flex;gap:10px;justify-content:flex-end;
+  margin-top:22px;padding-top:14px;border-top:1px solid var(--bdr);
+}
+
+#grid{display:grid;gap:10px;align-items:start;width:100%}
+
+.card{
+  background:var(--surf);
+  border:1px solid var(--bdr);
+  border-radius:14px;
+  padding:14px 14px 12px;
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;
+  transition:border-color .3s,box-shadow .3s,background .3s;
+  overflow:hidden;
+}
+.card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--blue),var(--cyan));
+  opacity:0;transition:opacity .3s;
+}
+.card.active::after{opacity:1}
+
+.name-wrap{height:240px;display:flex;align-items:center;justify-content:center;width:100%;margin-bottom:10px}
+.name-inp{
+  writing-mode:vertical-rl;text-orientation:upright;
+  background:transparent;border:none;color:var(--muted);
+  font-weight:800;font-size:24px;height:100%;width:auto;min-width:28px;max-width:72px;
+  text-align:center;letter-spacing:2px;
+  padding:0;font-family:var(--font);transition:color .2s;cursor:text;
+}
+.name-inp:focus{outline:none;color:var(--txt)}
+
+.gwrap{width:100%;display:grid;gap:3px;margin-bottom:6px}
+.gchip{
+  padding:5px 2px;border-radius:5px;font-size:10px;
+  text-align:center;cursor:pointer;
+  border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);
+  color:#475569;transition:all .15s;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none;
+}
+.gwrap[data-shared] .gchip{pointer-events:none;cursor:default}
+.gchip:hover:not(.gcap){background:var(--bdim);border-color:rgba(59,130,246,.4);color:var(--blue)}
+.gwrap[data-shared] .gchip:hover:not(.gcap){background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08);color:#475569}
+.gchip.gact{background:var(--bdim);border-color:var(--blue);color:var(--blue);font-weight:700}
+.gchip.gcap{background:var(--gdim);border-color:var(--gold);color:var(--gold);font-weight:700;cursor:default}
+.gchip.gdis{cursor:not-allowed;pointer-events:none}
+
+.active-lbl{font-size:10px;color:var(--muted);text-align:center;margin-bottom:6px;letter-spacing:.05em}
+.active-lbl span{color:var(--cyan);font-weight:700}
+
+.tower-bar{
+  position:absolute;
+  bottom:0;left:0;
+  width:100%;height:0%;
+  background:linear-gradient(to top,rgba(59,130,246,.22),rgba(59,130,246,.55));
+  z-index:0;
+  transition:height .4s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.card.winner .tower-bar{
+  background:linear-gradient(to top,rgba(245,158,11,.3),rgba(245,158,11,.6));
+}
+.card.frozen .tower-bar{
+  background:linear-gradient(to top,rgba(165,243,252,.22),rgba(165,243,252,.55));
+}
+.card > *:not(.tower-bar){position:relative;z-index:2;}
+
+.score-row{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-bottom:5px}
+.cap-num{font-size:48px;font-weight:900;color:var(--blue);line-height:1;transition:color .3s,font-size .3s;text-shadow:0 0 20px rgba(59,130,246,.4)}
+.cap-tot{font-size:14px;color:var(--muted);font-weight:600}
+
+.wrong-cnt{font-size:16px;font-weight:700;color:var(--red);min-height:20px;text-align:center;width:100%;margin-bottom:2px;word-break:break-all}
+
+.ice-wrap{
+  min-height:22px;text-align:center;width:100%;
+  margin-bottom:3px;
+  font-size:16px;letter-spacing:2px;
+  color:var(--ice);
+  text-shadow:0 0 8px rgba(165,243,252,.6);
+}
+
+.sbadge{
+  font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+  margin-bottom:6px;letter-spacing:.05em;display:none;
+}
+.sbadge.srest{display:inline-block;background:var(--icedim);border:1px solid rgba(165,243,252,.35);color:var(--ice)}
+.sbadge.selim{display:inline-block;background:rgba(244,63,94,.15);border:1px solid rgba(244,63,94,.3);color:var(--red)}
+.sbadge.swait{display:inline-block;background:var(--gdim);border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+
+.card-btns{display:flex;gap:6px;width:100%}
+.bop{
+  flex:1;border:none;padding:11px 0;border-radius:8px;
+  font-weight:900;font-size:16px;cursor:pointer;
+  transition:transform .1s,filter .15s;font-family:var(--font);
+}
+.bop:active{transform:scale(.95)}
+.bop:disabled{opacity:.2;cursor:not-allowed;transform:none !important}
+.bco{background:var(--green);color:#022c22}
+.bwr{background:var(--red);color:#440a1e}
+
+.rank-badge{
+  position:absolute;top:8px;right:8px;
+  font-size:10px;font-weight:800;color:var(--gold);
+  display:none;letter-spacing:.05em;
+}
+
+.card.winner{
+  border-color:var(--gold);
+  box-shadow:0 0 28px rgba(245,158,11,.18),0 0 60px rgba(245,158,11,.06);
+  background:linear-gradient(180deg,rgba(245,158,11,.07),var(--surf));
+}
+.card.winner::after{background:linear-gradient(90deg,var(--gold),#fde68a,var(--gold));opacity:1}
+.card.winner .cap-num{color:var(--gold);text-shadow:0 0 20px rgba(245,158,11,.6);font-size:40px}
+.card.eliminated{border-color:rgba(244,63,94,.15);background:rgba(8,15,26,.97)}
+
+.card.frozen{
+  border-color:var(--ice);
+  box-shadow:0 0 18px rgba(165,243,252,.2),0 0 40px rgba(165,243,252,.06);
+  background:linear-gradient(180deg,rgba(165,243,252,.08),var(--surf));
+}
+.card.frozen::after{
+  background:linear-gradient(90deg,var(--ice),rgba(165,243,252,.5),var(--ice));
+  opacity:1;
+}
+.card.frozen::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:
+    radial-gradient(ellipse at 20% 30%,rgba(165,243,252,.07) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 70%,rgba(165,243,252,.05) 0%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
+.card.frozen .name-inp{color:rgba(165,243,252,.5)}
+.card.frozen .cap-num{opacity:.65}
+
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.45)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 28px rgba(245,158,11,.18)}50%{box-shadow:0 0 44px rgba(245,158,11,.32)}}
+@keyframes ice-pulse{0%,100%{box-shadow:0 0 18px rgba(165,243,252,.2)}50%{box-shadow:0 0 34px rgba(165,243,252,.38)}}
+.card.winner{animation:glow-pulse 2s ease-in-out infinite}
+.card.frozen{animation:ice-pulse 2.2s ease-in-out infinite}
+.anim-pop{animation:pop .25s cubic-bezier(.175,.885,.32,1.275)}
+.anim-shake{animation:shake .3s ease}
+
+@media(max-width:640px){
+  body{padding:8px}
+  header{padding:10px 12px}
+  .logo-text p{display:none}
+  .name-wrap{height:120px}
+  .name-inp{font-size:15px}
+  .cap-num{font-size:32px}
+  .bop{padding:9px 0;font-size:16px}
+  .genre-list{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="logo">制覇</div>
+    <div class="logo-text">
+      <h1>ジャンル制覇クイズ</h1>
+      <p>GENRE CONQUEST QUIZ</p>
+    </div>
+  </div>
+  <div class="hbtns">
+    <button id="btnSettings" class="btn btn-blue">⚙ 設定</button>
+    <button id="btnResetScore" class="btn btn-slate">スコアリセット</button>
+    <button id="btnResetAll" class="btn btn-red">全リセット</button>
+    <button id="btnUndo" class="btn btn-slate" disabled>↩ 戻る</button>
+    <button id="btnThrough" class="btn btn-slate">⏭ スルー</button>
+    <button id="btnAdd" class="btn btn-slate">＋ 追加</button>
+  </div>
+</header>
+
+<div class="sgbar hidden" id="sgbar">
+  <span class="sgbar-label">挑戦ジャンル:</span>
+  <div class="sgbar-chips" id="sgbarChips"></div>
+</div>
+
+<div class="modal-wrap hidden" id="modalWrap">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>⚙ ゲーム設定</h2>
+
+    <div class="msec">
+      <div class="msec-title">プレイヤー</div>
+      <div class="mrow">
+        <label>プレイヤー数</label>
+        <input type="number" class="mi" id="s-pc" min="1" max="20" value="6">
+      </div>
+    </div>
+
+    <div class="msec">
+      <div class="msec-title">ジャンル設定</div>
+      <div class="mrow">
+        <label>ジャンル数</label>
+        <input type="number" class="mi" id="s-gc" min="1" max="12" value="5">
+        <button class="btn btn-slate" id="btnRefresh" style="font-size:11px;padding:6px 10px">更新</button>
+      </div>
+      <div class="genre-list" id="genreList"></div>
+    </div>
+
+    <div class="msec">
+      <div class="msec-title">挑戦ジャンルモード</div>
+      <div class="mode-btns" id="genreMode">
+        <button class="mbtn sel" data-v="shared">全員同じ</button>
+        <button class="mbtn" data-v="individual">一人ひとり異なる</button>
+      </div>
+    </div>
+
+    <div class="msec">
+      <div class="msec-title">勝利条件</div>
+      <div class="mrow">
+        <label>勝ち抜けジャンル数</label>
+        <input type="number" class="mi" id="s-gw" min="1" value="5">
+      </div>
+      <div class="mrow">
+        <label>1ジャンル獲得の正解数</label>
+        <input type="number" class="mi" id="s-cpg" min="1" value="1">
+      </div>
+    </div>
+
+    <div class="msec">
+      <div class="msec-title">誤答ペナルティ</div>
+      <div class="pgroup" id="pgroup">
+
+        <label class="pitem" data-v="none">
+          <input type="radio" name="pen" value="none">
+          <div>
+            <div class="plabel">なし</div>
+            <div class="pdesc">誤答によるペナルティなし（正解進捗はリセット）</div>
+          </div>
+        </label>
+
+        <label class="pitem sel" data-v="rest">
+          <input type="radio" name="pen" value="rest" checked>
+          <div>
+            <div class="plabel">休み（氷漬け）</div>
+            <div class="pdesc">誤答で一定問数休みになる。他プレイヤーが答えるたびに自動で解凍が進む</div>
+            <div class="pparams">
+              <input type="number" class="pi" id="s-wr" min="1" value="1">
+              <span>問誤答で</span>
+              <input type="number" class="pi" id="s-rc" min="1" value="1">
+              <span>問休み</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="pitem" data-v="disqualify">
+          <input type="radio" name="pen" value="disqualify">
+          <div>
+            <div class="plabel">失格</div>
+            <div class="pdesc">誤答累計が上限に達すると失格</div>
+            <div class="pparams">
+              <input type="number" class="pi" id="s-wd" min="1" value="3">
+              <span>問誤答で失格</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="pitem" data-v="genreLost">
+          <input type="radio" name="pen" value="genreLost">
+          <div>
+            <div class="plabel">ジャンルロスト</div>
+            <div class="pdesc">誤答で獲得済みジャンルを1つ失う</div>
+            <div class="pparams">
+              <input type="number" class="pi" id="s-wl" min="1" value="1">
+              <span>問誤答でジャンルを1つ失う</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="pitem" data-v="combo">
+          <input type="radio" name="pen" value="combo">
+          <div>
+            <div class="plabel">休み＋失格（複合）</div>
+            <div class="pdesc">誤答で休みになり、さらに累計が上限で失格</div>
+            <div class="pparams" style="gap:4px">
+              <input type="number" class="pi" id="s-cwr" min="1" value="1">
+              <span>問誤答で</span>
+              <input type="number" class="pi" id="s-crc" min="1" value="1">
+              <span>問休み</span>
+              <span style="padding:0 4px">/</span>
+              <input type="number" class="pi" id="s-cwd" min="1" value="3">
+              <span>問誤答で失格</span>
+            </div>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <div class="mfooter">
+      <button class="btn btn-slate" id="btnCancel">キャンセル</button>
+      <button class="btn btn-blue" id="btnApply">適用</button>
+    </div>
+  </div>
+</div>
+
+<div id="grid-wrap"><div id="grid"></div></div>
+
+<script>
+(function(){
+'use strict';
+
+var cfg = {
+  genres: ['社会','科学','スポーツ','芸能','生活'],
+  genresNeeded: 5,
+  correctsPerGenre: 1,
+  penaltyType: 'rest',
+  wrongsForRest: 1,
+  restCount: 1,
+  wrongsForDisq: 3,
+  wrongsForLost: 1,
+  comboWrongsRest: 1,
+  comboRestCount: 1,
+  comboWrongsDisq: 3,
+  sharedGenre: true
+};
+
+var players = [];
+var hist    = [];
+var rankCtr = 0;
+var sharedGenreIdx = 0;
+
+var grid       = document.getElementById('grid');
+var btnUndo    = document.getElementById('btnUndo');
+var sgbar      = document.getElementById('sgbar');
+var sgbarChips = document.getElementById('sgbarChips');
+
+function pushHist(){
+  hist.push({
+    rc:  rankCtr,
+    sgi: sharedGenreIdx,
+    ss:  players.map(function(p){
+      return {
+        correct:p.correct, wrong:p.wrong,
+        cap:p.cap.slice(), active:p.active,
+        rest:p.rest, elim:p.elim, rank:p.rank
+      };
+    })
+  });
+  if(hist.length > 300) hist.shift();
+  btnUndo.disabled = false;
+}
+
+function undo(){
+  if(!hist.length) return;
+  var snap = hist.pop();
+  rankCtr = snap.rc;
+  sharedGenreIdx = snap.sgi;
+  snap.ss.forEach(function(s,i){
+    var p = players[i];
+    if(!p) return;
+    p.correct = s.correct; p.wrong = s.wrong;
+    p.cap = s.cap.slice(); p.active = s.active;
+    p.rest = s.rest; p.elim = s.elim; p.rank = s.rank;
+  });
+  renderAll();
+  renderSharedGenreBar();
+  btnUndo.disabled = hist.length === 0;
+}
+
+function decreaseAllRest(){
+  players.forEach(function(p){
+    if(p.rest > 0 && !p.elim && p.rank === 0){
+      p.rest = Math.max(0, p.rest - 1);
+    }
+  });
+}
+
+function mkPlayer(idx, name){
+  return {
+    idx: idx,
+    name: name || 'P'+(idx+1),
+    correct: 0, wrong: 0,
+    cap: [],
+    active: cfg.sharedGenre ? sharedGenreIdx : 0,
+    rest: 0,
+    elim: false,
+    rank: 0,
+    el: null
+  };
+}
+
+function buildCard(p){
+  var el = document.createElement('div');
+  el.className = 'card';
+  p.el = el;
+  grid.appendChild(el);
+
+  var gl   = cfg.genres.length;
+  var cols = gl <= 3 ? gl : gl <= 6 ? 3 : 4;
+
+  el.innerHTML =
+    '<div class="tower-bar"></div>' +
+    '<div class="rank-badge"></div>' +
+    '<div class="name-wrap"><input class="name-inp" maxlength="8" value="'+esc(p.name)+'"></div>' +
+    '<div class="gwrap" style="grid-template-columns:repeat('+cols+',1fr)">' +
+      cfg.genres.map(function(g, gi){
+        return '<div class="gchip" data-gi="'+gi+'" title="'+esc(g)+'">'+esc(t4(g))+'</div>';
+      }).join('') +
+    '</div>' +
+    '<div class="score-row">' +
+      '<div class="cap-num">0</div>' +
+      '<div class="cap-tot">/'+cfg.genresNeeded+'</div>' +
+    '</div>' +
+    '<div class="wrong-cnt"></div>' +
+    '<div class="ice-wrap"></div>' +
+    '<div class="sbadge"></div>' +
+    '<div class="card-btns">' +
+      '<button class="bop bco">正解</button>' +
+      '<button class="bop bwr">誤答</button>' +
+    '</div>';
+
+  var nameEl = el.querySelector('.name-inp');
+  nameEl.addEventListener('input', function(){ p.name = nameEl.value; });
+
+  el.querySelectorAll('.gchip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      if(cfg.sharedGenre) return;
+      var gi = parseInt(chip.dataset.gi, 10);
+      if(p.elim || p.rank > 0 || p.cap.indexOf(gi) >= 0) return;
+      if(p.active !== gi){
+        pushHist();
+        p.correct = 0;
+        p.active  = gi;
+        renderState(p);
+      }
+    });
+  });
+
+  var btnCo = el.querySelector('.bco');
+  btnCo.addEventListener('click', function(){
+    if(p.elim || p.rank > 0 || p.rest > 0) return;
+    pushHist();
+    onCorrect(p);
+    decreaseAllRest();
+    renderAll('correct', p.idx);
+    renderSharedGenreBar();
+  });
+
+  var btnWr = el.querySelector('.bwr');
+  btnWr.addEventListener('click', function(){
+    if(p.elim || p.rank > 0) return;
+    pushHist();
+    decreaseAllRest();
+    onWrong(p);
+    renderAll('wrong', p.idx);
+  });
+
+  renderState(p);
+}
+
+function onCorrect(p){
+  p.correct++;
+  var gi = cfg.sharedGenre ? sharedGenreIdx : p.active;
+  if(p.correct >= cfg.correctsPerGenre){
+    if(p.cap.indexOf(gi) < 0) p.cap.push(gi);
+    p.correct = 0;
+    if(!cfg.sharedGenre){
+      var next = -1;
+      for(var i = 0; i < cfg.genres.length; i++){
+        if(p.cap.indexOf(i) < 0){ next = i; break; }
+      }
+      if(next >= 0) p.active = next;
+    }
+    if(p.cap.length >= cfg.genresNeeded && p.rank === 0){
+      rankCtr++;
+      p.rank = rankCtr;
+    }
+  }
+}
+
+function onWrong(p){
+  p.wrong++;
+  p.correct = 0;
+
+  var c = cfg;
+  if(c.penaltyType === 'none') return;
+
+  if(c.penaltyType === 'rest'){
+    if(p.wrong % c.wrongsForRest === 0){
+      p.rest += c.restCount;
+    }
+  } else if(c.penaltyType === 'disqualify'){
+    if(p.wrong >= c.wrongsForDisq) p.elim = true;
+  } else if(c.penaltyType === 'genreLost'){
+    if(p.wrong % c.wrongsForLost === 0){
+      if(p.cap.length > 0){
+        var lost = p.cap.pop();
+        if(!cfg.sharedGenre) p.active = lost;
+      }
+    }
+  } else if(c.penaltyType === 'combo'){
+    if(p.wrong >= c.comboWrongsDisq){
+      p.elim = true;
+    } else if(p.wrong % c.comboWrongsRest === 0){
+      p.rest += c.comboRestCount;
+    }
+  }
+}
+
+function renderTower(towerEl, correct, total){
+  var pct = Math.min(100, Math.max(0, (correct / Math.max(1, total)) * 100));
+  towerEl.style.height = pct + '%';
+}
+
+function renderState(p, anim, focusIdx){
+  var el     = p.el;
+  var nameEl = el.querySelector('.name-inp');
+  var chips  = el.querySelectorAll('.gchip');
+  var gwrap  = el.querySelector('.gwrap');
+  var tower  = el.querySelector('.tower-bar');
+  var capNum = el.querySelector('.cap-num');
+  var capTot = el.querySelector('.cap-tot');
+  var wcnt   = el.querySelector('.wrong-cnt');
+  var iceWrap= el.querySelector('.ice-wrap');
+  var badge  = el.querySelector('.sbadge');
+  var btnCo  = el.querySelector('.bco');
+  var btnWr  = el.querySelector('.bwr');
+  var rankBg = el.querySelector('.rank-badge');
+
+  el.classList.remove('winner','eliminated','frozen','active');
+
+  if(p.elim){
+    el.classList.add('eliminated');
+    nameEl.disabled = true;
+    chips.forEach(function(c){ c.classList.remove('gact','gcap'); });
+    btnCo.disabled = true;
+    btnWr.disabled = true;
+    capNum.textContent = p.cap.length;
+    capNum.style.fontSize = '28px';
+    if(capTot) capTot.style.display = '';
+    wcnt.textContent = '× '+p.wrong;
+    iceWrap.textContent = '';
+    badge.className = 'sbadge selim';
+    badge.textContent = '🚫 失格';
+    rankBg.style.display = 'none';
+    renderTower(tower, 0, 1);
+    return;
+  }
+
+  if(p.rank > 0){
+    el.classList.add('winner');
+    nameEl.disabled = true;
+    btnCo.disabled = true;
+    btnWr.disabled = true;
+    capNum.textContent = ordLabel(p.rank);
+    capNum.style.fontSize = '';
+    if(capTot) capTot.style.display = 'none';
+    wcnt.textContent = '';
+    iceWrap.textContent = '';
+    badge.className = 'sbadge';
+    rankBg.style.display = 'none';
+    chips.forEach(function(chip){
+      var gi = parseInt(chip.dataset.gi, 10);
+      chip.classList.remove('gact','gdis');
+      if(p.cap.indexOf(gi) >= 0){
+        chip.classList.add('gcap');
+        chip.textContent = t4(cfg.genres[gi]);
+      } else {
+        chip.classList.remove('gcap');
+        chip.textContent = t4(cfg.genres[gi]);
+      }
+    });
+    renderTower(tower, 1, 1);
+    if(anim === 'correct') trigAnim(capNum, 'anim-pop');
+    return;
+  }
+
+  rankBg.style.display = 'none';
+  nameEl.disabled = false;
+  capNum.style.fontSize = '';
+  if(capTot) capTot.style.display = '';
+
+  if(cfg.sharedGenre){
+    gwrap.setAttribute('data-shared','1');
+  } else {
+    gwrap.removeAttribute('data-shared');
+  }
+
+  var curGenre   = cfg.sharedGenre ? sharedGenreIdx : p.active;
+  var genreDone  = cfg.sharedGenre && p.cap.indexOf(curGenre) >= 0;
+
+  chips.forEach(function(chip){
+    var gi = parseInt(chip.dataset.gi, 10);
+    chip.classList.remove('gact','gcap','gdis');
+    if(p.cap.indexOf(gi) >= 0){
+      chip.classList.add('gcap');
+      chip.textContent = t4(cfg.genres[gi]);
+    } else if(gi === curGenre && !genreDone){
+      chip.classList.add('gact');
+      chip.textContent = t4(cfg.genres[gi]);
+    } else {
+      chip.textContent = t4(cfg.genres[gi]);
+    }
+  });
+
+  capNum.textContent = p.cap.length;
+  if(capTot) capTot.style.display = '';
+  wcnt.textContent   = p.wrong > 0 ? '×'.repeat(Math.min(p.wrong, 15)) : '';
+
+  // tower: show overall genre capture progress (cap / genresNeeded)
+  // within current genre, if in progress, show within-genre progress
+  var towerCorrect = p.cap.length + (p.correct / cfg.correctsPerGenre);
+  renderTower(tower, towerCorrect, cfg.genresNeeded);
+
+  if(p.rest > 0){
+    el.classList.add('frozen');
+    badge.className = 'sbadge srest';
+    badge.textContent = '❄'.repeat(Math.min(p.rest, 10));
+    iceWrap.textContent = '';
+    btnCo.disabled = true;
+    btnWr.disabled = true;
+  } else if(genreDone){
+    el.classList.add('active');
+    badge.className = 'sbadge swait';
+    badge.textContent = '✓ 獲得済み';
+    iceWrap.textContent = '';
+    btnCo.disabled = false;
+    btnWr.disabled = false;
+  } else {
+    el.classList.add('active');
+    badge.className = 'sbadge';
+    iceWrap.textContent = '';
+    btnCo.disabled = false;
+    btnWr.disabled = false;
+  }
+
+  if(anim === 'correct') trigAnim(capNum, 'anim-pop');
+  if(anim === 'wrong')   trigAnim(wcnt,   'anim-shake');
+}
+
+function trigAnim(el, cls){
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  el.addEventListener('animationend', function(){ el.classList.remove(cls); }, {once:true});
+}
+
+function renderAll(anim, activeIdx){
+  players.forEach(function(p){
+    renderState(p, p.idx === activeIdx ? anim : undefined);
+  });
+  btnUndo.disabled = hist.length === 0;
+}
+
+function renderSharedGenreBar(){
+  if(!cfg.sharedGenre){
+    sgbar.classList.add('hidden');
+    return;
+  }
+  sgbar.classList.remove('hidden');
+  sgbarChips.innerHTML = '';
+
+  cfg.genres.forEach(function(g, gi){
+    var capCount = players.filter(function(p){ return p.cap.indexOf(gi) >= 0; }).length;
+    var allDone  = players.length > 0 && capCount === players.length;
+
+    var chip = document.createElement('div');
+    chip.className = 'sgchip' +
+      (gi === sharedGenreIdx ? ' sg-active' : '') +
+      (allDone ? ' sg-all-done' : '');
+    chip.innerHTML = esc(g) +
+      (players.length > 0
+        ? '<span class="sg-count">'+capCount+'/'+players.length+'</span>'
+        : '');
+
+    chip.addEventListener('click', function(){
+      if(gi === sharedGenreIdx) return;
+      pushHist();
+      setSharedGenre(gi);
+    });
+    sgbarChips.appendChild(chip);
+  });
+}
+
+function setSharedGenre(gi){
+  sharedGenreIdx = gi;
+  players.forEach(function(p){
+    if(!p.elim && p.rank === 0){
+      p.active = gi;
+      if(p.cap.indexOf(gi) < 0){
+        p.correct = 0;
+      }
+    }
+  });
+  renderSharedGenreBar();
+  renderAll();
+}
+
+function setGridCols(n){
+  var GAP  = 10;
+  var cols = Math.min(n, 12);
+  var wrap = document.getElementById('grid-wrap');
+
+  if(n <= 8){
+    /* 8人以下: 画面幅に均等に収める・gapは常に10px固定 */
+    grid.style.gridTemplateColumns = 'repeat('+cols+', 1fr)';
+    grid.style.width  = '';
+    wrap.style.overflowX = 'hidden';
+  } else {
+    /* 9人以上: 8列時の列幅を計算して固定し、はみ出た分を横スクロール */
+    var wrapW  = wrap.clientWidth;
+    var colW   = Math.floor((wrapW - GAP * 7) / 8);
+    var totalW = colW * cols + GAP * (cols - 1);
+    grid.style.gridTemplateColumns = 'repeat('+cols+', '+colW+'px)';
+    grid.style.width  = totalW + 'px';
+    wrap.style.overflowX = 'auto';
+  }
+}
+
+function createGrid(count, oldNames){
+  grid.innerHTML = '';
+  players  = [];
+  hist     = [];
+  rankCtr  = 0;
+  sharedGenreIdx = 0;
+  btnUndo.disabled = true;
+  setGridCols(count);
+  for(var i = 0; i < count; i++){
+    var p = mkPlayer(i, oldNames && oldNames[i] ? oldNames[i] : undefined);
+    players.push(p);
+    buildCard(p);
+  }
+  renderSharedGenreBar();
+}
+
+var modalWrap = document.getElementById('modalWrap');
+var genreModeSel = 'shared';
+
+document.getElementById('genreMode').addEventListener('click', function(e){
+  var btn = e.target.closest('.mbtn');
+  if(!btn) return;
+  document.querySelectorAll('#genreMode .mbtn').forEach(function(b){ b.classList.remove('sel'); });
+  btn.classList.add('sel');
+  genreModeSel = btn.dataset.v;
+});
+
+function openModal(){
+  document.getElementById('s-pc').value  = players.length || 6;
+  document.getElementById('s-gc').value  = cfg.genres.length;
+  document.getElementById('s-gw').value  = cfg.genresNeeded;
+  document.getElementById('s-cpg').value = cfg.correctsPerGenre;
+  var radio = document.querySelector('input[name=pen][value="'+cfg.penaltyType+'"]');
+  if(radio) radio.checked = true;
+  document.getElementById('s-wr').value  = cfg.wrongsForRest;
+  document.getElementById('s-rc').value  = cfg.restCount;
+  document.getElementById('s-wd').value  = cfg.wrongsForDisq;
+  document.getElementById('s-wl').value  = cfg.wrongsForLost;
+  document.getElementById('s-cwr').value = cfg.comboWrongsRest;
+  document.getElementById('s-crc').value = cfg.comboRestCount;
+  document.getElementById('s-cwd').value = cfg.comboWrongsDisq;
+  genreModeSel = cfg.sharedGenre ? 'shared' : 'individual';
+  document.querySelectorAll('#genreMode .mbtn').forEach(function(b){
+    b.classList.toggle('sel', b.dataset.v === genreModeSel);
+  });
+  buildGenreInputs(cfg.genres);
+  updatePHL();
+  modalWrap.classList.remove('hidden');
+}
+
+function buildGenreInputs(genres){
+  var list = document.getElementById('genreList');
+  list.innerHTML = '';
+  var defaults = ['社会','科学','スポーツ','芸能','生活','音楽','映画','料理','IT','医学','歴史','法律'];
+  genres.forEach(function(g, i){
+    var row = document.createElement('div');
+    row.className = 'gi-row';
+    row.innerHTML =
+      '<span class="gi-num">'+(i+1)+'</span>'+
+      '<input class="gi-input" maxlength="10" data-gi="'+i+'" value="'+esc(g)+'" placeholder="'+(defaults[i]||'ジャンル'+(i+1))+'">';
+    list.appendChild(row);
+  });
+}
+
+function updatePHL(){
+  document.querySelectorAll('.pitem').forEach(function(item){
+    var r = item.querySelector('input[type=radio]');
+    item.classList.toggle('sel', r && r.checked);
+  });
+}
+
+document.getElementById('pgroup').addEventListener('change', updatePHL);
+
+document.getElementById('btnRefresh').addEventListener('click', function(){
+  var cnt = clamp(1,12,parseInt(document.getElementById('s-gc').value)||5);
+  var cur = Array.from(document.querySelectorAll('.gi-input')).map(function(el){ return el.value; });
+  var def = ['社会','科学','スポーツ','芸能','生活','音楽','映画','料理','IT','医学','歴史','法律'];
+  var genres = [];
+  for(var i = 0; i < cnt; i++) genres.push(cur[i] || def[i] || 'ジャンル'+(i+1));
+  buildGenreInputs(genres);
+});
+
+document.getElementById('btnApply').addEventListener('click', function(){
+  var gins   = Array.from(document.querySelectorAll('.gi-input'));
+  var genres = gins.map(function(el, i){ return el.value.trim() || 'ジャンル'+(i+1); });
+  var pc     = clamp(1,20,parseInt(document.getElementById('s-pc').value)||6);
+  var gw     = clamp(1,genres.length,parseInt(document.getElementById('s-gw').value)||genres.length);
+  var cpg    = clamp(1,50,parseInt(document.getElementById('s-cpg').value)||1);
+  var pt     = (document.querySelector('input[name=pen]:checked')||{}).value || 'rest';
+
+  cfg = {
+    genres:          genres,
+    genresNeeded:    gw,
+    correctsPerGenre:cpg,
+    penaltyType:     pt,
+    sharedGenre:     genreModeSel === 'shared',
+    wrongsForRest:   clamp(1,99,parseInt(document.getElementById('s-wr').value)||1),
+    restCount:       clamp(1,99,parseInt(document.getElementById('s-rc').value)||1),
+    wrongsForDisq:   clamp(1,99,parseInt(document.getElementById('s-wd').value)||3),
+    wrongsForLost:   clamp(1,99,parseInt(document.getElementById('s-wl').value)||1),
+    comboWrongsRest: clamp(1,99,parseInt(document.getElementById('s-cwr').value)||1),
+    comboRestCount:  clamp(1,99,parseInt(document.getElementById('s-crc').value)||1),
+    comboWrongsDisq: clamp(1,99,parseInt(document.getElementById('s-cwd').value)||3)
+  };
+
+  var oldNames = players.map(function(p){ return p.name; });
+  modalWrap.classList.add('hidden');
+  createGrid(pc, oldNames);
+});
+
+document.getElementById('btnCancel').addEventListener('click', function(){
+  modalWrap.classList.add('hidden');
+});
+modalWrap.addEventListener('click', function(e){
+  if(e.target === modalWrap) modalWrap.classList.add('hidden');
+});
+
+document.getElementById('btnSettings').addEventListener('click', openModal);
+
+document.getElementById('btnResetScore').addEventListener('click', function(){
+  if(!confirm('スコアをリセットしますか？\n（名前はそのまま保持されます）')) return;
+  var names = players.map(function(p){ return p.name; });
+  createGrid(players.length, names);
+});
+
+document.getElementById('btnResetAll').addEventListener('click', function(){
+  if(!confirm('全てリセットしますか？')) return;
+  createGrid(players.length || 6);
+});
+
+document.getElementById('btnUndo').addEventListener('click', undo);
+
+document.getElementById('btnThrough').addEventListener('click', function(){
+  pushHist();
+  decreaseAllRest();
+  renderAll();
+});
+
+document.getElementById('btnAdd').addEventListener('click', function(){
+  if(players.length >= 20) return;
+  var p = mkPlayer(players.length);
+  players.push(p);
+  setGridCols(players.length);
+  buildCard(p);
+  renderSharedGenreBar();
+});
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function t4(s){ return s.length > 4 ? s.slice(0,4) : s; }
+function t3(s){ return s.length > 3 ? s.slice(0,3) : s; }
+function clamp(min,max,v){ return Math.max(min,Math.min(max,isNaN(v)?min:v)); }
+function ordLabel(n){
+  if(n % 100 >= 11 && n % 100 <= 13) return n+'th';
+  var last = n % 10;
+  if(last === 1) return n+'st';
+  if(last === 2) return n+'nd';
+  if(last === 3) return n+'rd';
+  return n+'th';
+}
+
+createGrid(6);
+window.addEventListener('resize', function(){ setGridCols(players.length || 6); });
+
+})();
+</script>
+</body>
+</html>
