@@ -7,7 +7,7 @@
   <meta name="description" content="高校生Webエンジニア「るーと」のポートフォリオサイト。クイズ大会支援ツール（Q-Score / Q-Room / Q-Mark / Q-Panel）の開発・公開と、天文学・物理学の探求を行う研究室。" />
   <meta name="keywords" content="るーと,astro_root,Webエンジニア,高校生,クイズ,Q-Score,Q-Room,Q-Mark,Q-Panel,天文学,AstroHigh,クイズツール,るーとの研究室,得点表示" />
   <meta name="author" content="るーと" />
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <meta name="theme-color" content="#020b18" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="るーとの研究室 | クイズツール開発・天文学・高校生Webエンジニア" />
@@ -22,6 +22,7 @@
   <meta name="twitter:title" content="るーとの研究室 | クイズツール開発・天文学・高校生Webエンジニア" />
   <meta name="twitter:description" content="高校生Webエンジニア「るーと」のポートフォリオ。クイズツール開発・天文学探求・AstroHigh運営。" />
   <meta name="twitter:image" content="https://astro-root.com/ogp-image.png" />
+  <meta name="twitter:image:alt" content="るーとの研究室 - クイズツール開発・天文学・高校生Webエンジニア" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -406,7 +407,15 @@
       backdrop-filter: blur(14px); position: relative; overflow: hidden;
     }
     .project-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--accent-blue) 40%, var(--accent-teal) 60%, transparent 100%); opacity: 0.18; transition: opacity var(--t); }
+    .project-card:nth-child(1)::before { background: linear-gradient(90deg, transparent, var(--accent-teal), var(--accent-aurora), transparent); }
+    .project-card:nth-child(2)::before { background: linear-gradient(90deg, transparent, var(--accent-blue), #60a5fa, transparent); }
+    .project-card:nth-child(3)::before { background: linear-gradient(90deg, transparent, var(--accent-purple), #c4b5fd, transparent); }
+    .project-card:nth-child(4)::before { background: linear-gradient(90deg, transparent, var(--accent-aurora), var(--accent-teal), transparent); }
     .project-card::after { content: ''; position: absolute; bottom: -120px; right: -120px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(59,158,255,0.08) 0%, transparent 70%); opacity: 0; transition: opacity 0.5s var(--ease); pointer-events: none; }
+    .project-card:nth-child(1)::after { background: radial-gradient(circle, rgba(0,229,184,0.10) 0%, transparent 70%); }
+    .project-card:nth-child(2)::after { background: radial-gradient(circle, rgba(59,158,255,0.10) 0%, transparent 70%); }
+    .project-card:nth-child(3)::after { background: radial-gradient(circle, rgba(139,114,255,0.10) 0%, transparent 70%); }
+    .project-card:nth-child(4)::after { background: radial-gradient(circle, rgba(26,240,196,0.10) 0%, transparent 70%); }
     .project-card:hover { border-color: var(--border-m); transform: translateY(-6px); box-shadow: 0 24px 60px rgba(59,158,255,0.10), inset 0 1px 0 rgba(59,158,255,0.08); background: var(--bg-card-hover); }
     .project-card:hover::before { opacity: 1; }
     .project-card:hover::after { opacity: 1; }
@@ -546,6 +555,21 @@
       a, button { cursor: pointer; }
       #cursor-dot, #cursor-ring { display: none; }
     }
+
+    .skills-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 28px; }
+    .skill-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px;
+      background: rgba(59,158,255,0.04); border: 1px solid rgba(59,158,255,0.16);
+      font-family: var(--font-mono); font-size: 0.63rem; color: var(--text-2);
+      letter-spacing: 0.08em;
+      transition: border-color var(--t), color var(--t), background var(--t);
+    }
+    .skill-pill::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; opacity: 0.4; flex-shrink: 0;
+    }
+    .skill-pill:hover { border-color: rgba(0,229,184,0.4); color: var(--accent-teal); background: rgba(0,229,184,0.04); }
   </style>
 </head>
 <body>
@@ -637,7 +661,7 @@
           <aside class="about-profile reveal" role="complementary" aria-label="プロフィール">
             <div class="about-avatar-wrap">
               <div class="about-avatar">
-                <img src="/icon.png" alt="るーとのアバター" width="120" height="120" />
+                <img src="/icon.png" alt="るーとのアバター" width="120" height="120" loading="lazy" />
               </div>
               <div class="about-avatar-ring" aria-hidden="true"></div>
             </div>
@@ -678,6 +702,13 @@
               高校生天文学コミュニティ「AstroHigh」の管理者として
               同志とつながる場も運営しています。
             </p>
+            <div class="skills-row reveal d2" aria-label="使用技術">
+              <span class="skill-pill">HTML / CSS</span>
+              <span class="skill-pill">JavaScript</span>
+              <span class="skill-pill">Firebase</span>
+              <span class="skill-pill">GitHub Pages</span>
+              <span class="skill-pill">Web API</span>
+            </div>
             <div class="pillar-grid">
               <div class="pillar-card reveal d1">
                 <div class="pillar-emoji">⌨️</div>
@@ -1086,7 +1117,31 @@
           if (Math.hypot(b.x - a.x, b.y - a.y) < 260) constellations.push({ a: a, b: b });
         }
       }
-      function init() { stars = Array.from({ length: starCount }, mkStar); buildConstellations(); }
+      var shooters = [];
+      function mkShooter() {
+        return { x: 0, y: 0, len: Math.random() * 110 + 60, speed: Math.random() * 7 + 4,
+          angle: Math.PI / 4 + (Math.random() - 0.5) * 0.5,
+          life: 0, maxLife: Math.random() * 40 + 25,
+          active: false, timer: Math.random() * 300 + 80 };
+      }
+      function resetShooter(sh) {
+        sh.x = Math.random() * W * 1.4 - W * 0.2;
+        sh.y = Math.random() * H * 0.4;
+        sh.len = Math.random() * 110 + 60;
+        sh.speed = Math.random() * 7 + 4;
+        sh.angle = Math.PI / 4 + (Math.random() - 0.5) * 0.5;
+        sh.maxLife = Math.random() * 40 + 25;
+        sh.life = 0; sh.active = true;
+      }
+      function initShooters() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { shooters = []; return; }
+        shooters = Array.from({ length: 4 }, function(_, i) {
+          var s = mkShooter();
+          if (i === 0) s.timer = 60;
+          return s;
+        });
+      }
+      function init() { stars = Array.from({ length: starCount }, mkStar); buildConstellations(); initShooters(); }
       function draw() {
         if (!active) { rafId = null; return; }
         ctx.clearRect(0, 0, W, H);
@@ -1094,6 +1149,26 @@
           var c = constellations[ci];
           ctx.beginPath(); ctx.moveTo(c.a.x, c.a.y); ctx.lineTo(c.b.x, c.b.y);
           ctx.strokeStyle = 'rgba(59,158,255,0.04)'; ctx.lineWidth = 0.5; ctx.stroke();
+        }
+        for (var shi = 0; shi < shooters.length; shi++) {
+          var sh = shooters[shi];
+          if (!sh.active) { sh.timer--; if (sh.timer <= 0) resetShooter(sh); continue; }
+          sh.life++;
+          sh.x += Math.cos(sh.angle) * sh.speed;
+          sh.y += Math.sin(sh.angle) * sh.speed;
+          var t = sh.life / sh.maxLife;
+          var al = t < 0.2 ? t / 0.2 : t > 0.75 ? (1 - t) / 0.25 : 1;
+          var tX = sh.x - Math.cos(sh.angle) * sh.len * Math.min(t * 2.5, 1);
+          var tY = sh.y - Math.sin(sh.angle) * sh.len * Math.min(t * 2.5, 1);
+          var sg = ctx.createLinearGradient(tX, tY, sh.x, sh.y);
+          sg.addColorStop(0, 'rgba(180,220,255,0)');
+          sg.addColorStop(0.7, 'rgba(200,230,255,' + (al * 0.28) + ')');
+          sg.addColorStop(1, 'rgba(240,250,255,' + (al * 0.92) + ')');
+          ctx.beginPath(); ctx.moveTo(tX, tY); ctx.lineTo(sh.x, sh.y);
+          ctx.strokeStyle = sg; ctx.lineWidth = 1.2; ctx.stroke();
+          ctx.beginPath(); ctx.arc(sh.x, sh.y, 1.5 * al, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(220,240,255,' + al + ')'; ctx.fill();
+          if (sh.life >= sh.maxLife) { sh.active = false; sh.timer = Math.random() * 360 + 180; }
         }
         for (var si = 0; si < stars.length; si++) {
           var s = stars[si];
