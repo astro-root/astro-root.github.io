@@ -198,75 +198,6 @@
     @media(max-width:820px){.tools-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:540px){.tools-grid{grid-template-columns:1fr}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}.reveal{opacity:1;transform:none}}
-
-    /* ===== NAV FIX ===== */
-    .nav-links li{display:flex;align-items:center}
-
-    /* ===== FLOOR BACKGROUND NUMBERS ===== */
-    .floor[data-floor]::before{
-      content:attr(data-floor);
-      position:absolute;right:-0.03em;bottom:-0.08em;
-      font-family:var(--font-mono);
-      font-size:clamp(9rem,24vw,22rem);
-      font-weight:800;
-      color:rgba(59,158,255,0.024);
-      line-height:1;letter-spacing:-0.05em;
-      pointer-events:none;user-select:none;z-index:0
-    }
-    .floor-inner,.hero-center{position:relative;z-index:1}
-
-    /* ===== TERMINAL CHROME ON LAB SCENES ===== */
-    .lab-scene{position:relative}
-    .lab-scene::before{
-      content:'root@astro-lab:~ $ _';
-      display:block;height:34px;
-      padding:0 16px 0 72px;line-height:34px;
-      background:rgba(4,10,22,0.98);
-      border-bottom:1px solid rgba(59,158,255,0.1);
-      font-family:var(--font-mono);font-size:.54rem;
-      color:rgba(59,158,255,0.30);letter-spacing:.06em;
-      position:relative;z-index:2
-    }
-    .lab-scene::after{
-      content:'';position:absolute;
-      top:11px;left:14px;
-      width:12px;height:12px;border-radius:50%;
-      background:#ff5f57;
-      box-shadow:20px 0 0 #ffbd2e,40px 0 0 #28c840;
-      pointer-events:none;z-index:3
-    }
-
-    /* ===== SECTION HEADER LEFT ACCENT ===== */
-    .floor-label-wrap{position:relative;padding-left:20px}
-    .floor-label-wrap::before{
-      content:'';position:absolute;left:0;top:50%;
-      transform:translateY(-50%);
-      width:3px;height:75%;
-      background:linear-gradient(180deg,var(--accent-blue),var(--accent-teal));
-      border-radius:2px;
-      box-shadow:0 0 12px rgba(59,158,255,0.45)
-    }
-
-    /* ===== TOOL CARD ROOM LABEL ===== */
-    .tool-room{
-      position:absolute;top:12px;right:14px;
-      font-family:var(--font-mono);font-size:.5rem;
-      color:var(--text-2);letter-spacing:.12em;opacity:0.38;
-      pointer-events:none
-    }
-    .tool-card:hover .tool-room{opacity:0.78;color:var(--accent-teal)}
-
-    /* ===== TOOL CARD LEFT ACCENT ===== */
-    .tool-card{border-left:3px solid rgba(59,158,255,0.18)}
-    .tool-card:hover{border-left-color:var(--accent-blue)}
-
-    /* ===== BLUEPRINT GRID ON ENTRANCE ===== */
-    #entrance{
-      background-image:
-        linear-gradient(rgba(59,158,255,.013) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(59,158,255,.013) 1px,transparent 1px);
-      background-size:40px 40px
-    }
   </style>
 </head>
 <body>
@@ -317,7 +248,7 @@
   <main id="main-content">
 
     <!-- ══════ FLOOR 1: ENTRANCE ══════ -->
-    <section id="entrance" class="floor" data-floor="F01" aria-label="エントランス">
+    <section id="entrance" class="floor" aria-label="エントランス">
       <div class="hero-center">
         <div class="hero-avatar-wrap">
           <div class="hero-avatar"><img src="/icon.png" alt="るーと" width="108" height="108" /></div>
@@ -393,7 +324,7 @@
     <div class="divider"></div>
 
     <!-- ══════ FLOOR 2: QUIZ LAB ══════ -->
-    <section id="quiz-lab" class="floor" data-floor="F02" aria-labelledby="quiz-lab-h2">
+    <section id="quiz-lab" class="floor" aria-labelledby="quiz-lab-h2">
       <div class="container floor-inner">
         <div class="floor-label-wrap reveal">
           <span class="floor-badge">QUIZ LAB</span>
@@ -450,27 +381,27 @@
           </svg>
         </div>
         <div class="tools-grid">
-          <article class="tool-card reveal d1" onclick="location.href='https://q-score.astro-root.com/'"><span class="tool-room">RM-201</span>
+          <article class="tool-card reveal d1" onclick="location.href='https://q-score.astro-root.com/'">
             <div class="tool-icon">📊</div><h3 class="tool-name">Q-Score</h3>
             <p class="tool-desc">クイズ大会の得点をリアルタイムかつスタイリッシュに表示するスコアリングシステム。配信・投影画面への表示に最適化。</p>
             <a href="https://q-score.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
           </article>
-          <article class="tool-card reveal d2" onclick="location.href='https://q-room.astro-root.com/'"><span class="tool-room">RM-202</span>
+          <article class="tool-card reveal d2" onclick="location.href='https://q-room.astro-root.com/'">
             <div class="tool-icon">🎮</div><h3 class="tool-name">Q-Room</h3>
             <p class="tool-desc">16種類のルールに対応したリアルタイムのオンラインクイズルーム。アカウント登録・フレンド招待・プッシュ通知に対応。</p>
             <a href="https://q-room.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
           </article>
-          <article class="tool-card reveal d3" onclick="location.href='https://q-mark.astro-root.com/'"><span class="tool-room">RM-203</span>
+          <article class="tool-card reveal d3" onclick="location.href='https://q-mark.astro-root.com/'">
             <div class="tool-icon">📝</div><h3 class="tool-name">Q-Mark</h3>
             <p class="tool-desc">ペーパークイズの採点をデジタル化するツール。手作業の採点工程を効率化し、正確かつ迅速な採点を実現。</p>
             <a href="https://q-mark.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
           </article>
-          <article class="tool-card reveal d4" onclick="location.href='https://q-panel.astro-root.com/'"><span class="tool-room">RM-204</span>
+          <article class="tool-card reveal d4" onclick="location.href='https://q-panel.astro-root.com/'">
             <div class="tool-icon">🟦</div><h3 class="tool-name">Q-Panel</h3>
             <p class="tool-desc">パネルを開けていきクイズの正解を目指す「パネル開放クイズ」形式をWebで手軽に楽しめるシステム。</p>
             <a href="https://q-panel.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
           </article>
-          <article class="tool-card reveal d1" onclick="location.href='https://q-cumber.astro-root.com/'"><span class="tool-room">RM-205</span>
+          <article class="tool-card reveal d1" onclick="location.href='https://q-cumber.astro-root.com/'">
             <div class="tool-icon">🥒</div><h3 class="tool-name">Q-Cumber</h3>
             <p class="tool-desc">1人用早押しクイズの得点管理アプリ。自分のペースで練習しながら、得点を正確に記録できる。</p>
             <a href="https://q-cumber.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
@@ -482,7 +413,7 @@
     <div class="divider"></div>
 
     <!-- ══════ FLOOR 3: UTILITY LAB ══════ -->
-    <section id="utility-lab" class="floor" data-floor="F03" aria-labelledby="utility-lab-h2">
+    <section id="utility-lab" class="floor" aria-labelledby="utility-lab-h2">
       <div class="container floor-inner">
         <div class="floor-label-wrap reveal">
           <span class="floor-badge">UTILITY LAB</span>
@@ -534,17 +465,17 @@
           </svg>
         </div>
         <div class="tools-grid">
-          <article class="tool-card reveal d1" onclick="location.href='https://shift.astro-root.com/'"><span class="tool-room">RM-301</span>
+          <article class="tool-card reveal d1" onclick="location.href='https://shift.astro-root.com/'">
             <div class="tool-icon">📅</div><h3 class="tool-name">ShiftLink</h3>
             <p class="tool-desc">シフトを簡単に作成・共有できるWebアプリ。スタッフのシフト管理を直感的な操作でシンプルに。</p>
             <a href="https://shift.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
           </article>
-          <article class="tool-card reveal d2" onclick="location.href='https://ticket.astro-root.com/'"><span class="tool-room">RM-302</span>
+          <article class="tool-card reveal d2" onclick="location.href='https://ticket.astro-root.com/'">
             <div class="tool-icon">🎫</div><h3 class="tool-name">LineGO</h3>
             <p class="tool-desc">番号順に整理券を発行・管理できるWebアプリ。イベントや窓口の待ち列をスマートに整理。</p>
             <a href="https://ticket.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
           </article>
-          <article class="tool-card reveal d3" onclick="location.href='https://typing.astro-root.com/'"><span class="tool-room">RM-303</span>
+          <article class="tool-card reveal d3" onclick="location.href='https://typing.astro-root.com/'">
             <div class="tool-icon">⌨️</div><h3 class="tool-name">元素タイピング</h3>
             <p class="tool-desc">118個の元素の名前・記号を打ち込むタイピング練習アプリ。理科好き・クイズ好きにおすすめ。</p>
             <a href="https://typing.astro-root.com/" target="_blank" rel="noopener noreferrer" class="tool-link" onclick="event.stopPropagation()">Launch →</a>
@@ -556,7 +487,7 @@
     <div class="divider"></div>
 
     <!-- ══════ FLOOR 4: PROFILE ══════ -->
-    <section id="profile-lab" class="floor" data-floor="F04" aria-labelledby="profile-h2">
+    <section id="profile-lab" class="floor" aria-labelledby="profile-h2">
       <div class="container floor-inner">
         <div class="floor-label-wrap reveal">
           <span class="floor-badge">PROFILE</span>
