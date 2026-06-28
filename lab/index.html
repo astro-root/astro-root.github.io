@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Equipment | るーとの研究室</title>
+  <meta name="description" content="るーとの研究室で使用している技術スタック一覧。Frontend・Runtime・Backend・Hosting・Development・Environmentの各カテゴリで紹介。" />
+  <meta name="author" content="るーと" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#020b18" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Lab Equipment | るーとの研究室" />
+  <meta property="og:description" content="研究室で使用している技術スタック。HTML5 / CSS3 / JavaScript / TypeScript / Firebase / Cloudflare Pages など。" />
+  <meta property="og:url" content="https://astro-root.com/lab/" />
+  <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
+  <meta property="og:site_name" content="るーとの研究室" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@astro_root" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="canonical" href="https://astro-root.com/lab/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/variables.css" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/nav.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
+
+    /* ── ページヘッダー ── */
+    .page-header { margin-bottom: 64px; }
+    .page-header-inner { display: flex; flex-direction: column; gap: 20px; }
+    .page-eyebrow { display: flex; align-items: center; gap: 14px; }
+    .page-eyebrow-line { width: 32px; height: 1px; background: var(--accent-blue); opacity: 0.6; }
+    .page-eyebrow-text { font-family: var(--font-mono); font-size: 0.60rem; color: var(--accent-teal); letter-spacing: 0.28em; text-transform: uppercase; }
+    .page-desc { font-size: 0.88rem; color: var(--text-1); line-height: 1.85; max-width: 560px; }
+
+    /* ── カテゴリセクション ── */
+    .cat-section { margin-bottom: 72px; }
+
+    .cat-section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cat-section-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cat-section-icon svg { width: 18px; height: 18px; }
+
+    .cat-section-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--accent-teal);
+    }
+
+    .cat-section-title {
+      font-family: var(--font-display);
+      font-size: 1.10rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-0);
+    }
+
+    .cat-section-count {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-2);
+      letter-spacing: 0.12em;
+      margin-left: auto;
+    }
+
+    /* ── テックグリッド ── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── テックカード ── */
+    .tech-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+      transition:
+        border-color var(--t),
+        background var(--t),
+        transform var(--t) var(--ease),
+        box-shadow var(--t);
+    }
+
+    /* カード上部の色ライン */
+    .tech-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity var(--t);
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+    }
+
+    .tech-card:hover {
+      border-color: var(--border-m);
+      background: var(--bg-card-hover);
+      transform: translateY(-5px);
+      box-shadow:
+        0 14px 40px rgba(0,0,0,0.32),
+        0 0 0 1px rgba(59,158,255,0.06);
+    }
+
+    .tech-card:hover::before { opacity: 1; }
+
+    /* カテゴリ別アクセントカラー */
+    .tech-card[data-cat="frontend"]    { --card-accent: #3b9eff; }
+    .tech-card[data-cat="runtime"]     { --card-accent: #00e5b8; }
+    .tech-card[data-cat="backend"]     { --card-accent: #8b72ff; }
+    .tech-card[data-cat="hosting"]     { --card-accent: #ffb340; }
+    .tech-card[data-cat="development"] { --card-accent: #ff6b6b; }
+    .tech-card[data-cat="environment"] { --card-accent: #64d9fb; }
+
+    .tech-card::before { background: var(--card-accent, var(--accent-blue)); }
+
+    .tech-card:hover { box-shadow: 0 14px 40px rgba(0,0,0,0.32), 0 0 20px rgba(var(--card-accent, 59,158,255), 0.06); }
+
+    /* アイコンエリア */
+    .tech-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color var(--t), box-shadow var(--t);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .tech-card:hover .tech-icon {
+      border-color: var(--border-m);
+      box-shadow: 0 0 16px rgba(59,158,255,0.12);
+    }
+
+    .tech-icon svg { width: 28px; height: 28px; }
+
+    /* テキスト */
+    .tech-info { flex: 1; width: 100%; }
+
+    .tech-name {
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text-0);
+      margin-bottom: 4px;
+    }
+
+    .tech-desc {
+      font-size: 0.72rem;
+      color: var(--text-2);
+      line-height: 1.65;
+    }
+
+    /* ステータスバッジ */
+    .tech-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid;
+      margin-top: auto;
+      align-self: flex-start;
+    }
+
+    .tech-badge-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .tech-badge[data-level="primary"] {
+      color: var(--accent-teal);
+      border-color: rgba(0,229,184,0.28);
+      background: rgba(0,229,184,0.06);
+    }
+
+    .tech-badge[data-level="secondary"] {
+      color: var(--accent-blue);
+      border-color: rgba(59,158,255,0.22);
+      background: rgba(59,158,255,0.05);
+    }
+
+    .tech-badge[data-level="learning"] {
+      color: var(--text-2);
+      border-color: var(--border);
+      background: transparent;
+    }
+
+    /* ── スペックバー（全体統計） ── */
+    .spec-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      margin-bottom: 64px;
+    }
+
+    .spec-item {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 28px 24px;
+      text-align: center;
+      transition: background var(--t);
+    }
+
+    .spec-item:hover { background: var(--bg-card-hover); }
+
+    .spec-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--text-0) 0%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .spec-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-2);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* ── ターミナル風フッターブロック ── */
+    .terminal-block {
+      background: rgba(2,8,20,0.92);
+      border: 1px solid var(--border-m);
+      border-radius: var(--r-lg);
+      padding: 28px 32px;
+      margin-top: 56px;
+      font-family: var(--font-mono);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .terminal-block::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 32px;
+      background: rgba(8,25,55,0.9);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-dots {
+      position: absolute;
+      top: 10px; left: 16px;
+      display: flex; gap: 7px;
+    }
+
+    .terminal-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot:nth-child(1){ background: rgba(255,80,60,0.7); }
+    .terminal-dot:nth-child(2){ background: rgba(255,180,60,0.7); }
+    .terminal-dot:nth-child(3){ background: rgba(0,229,184,0.7); }
+
+    .terminal-title {
+      position: absolute;
+      top: 8px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.60rem;
+      color: var(--text-2);
+      letter-spacing: 0.12em;
+    }
+
+    .terminal-body { margin-top: 24px; }
+
+    .terminal-line {
+      font-size: 0.75rem;
+      line-height: 1.9;
+      color: var(--text-1);
+    }
+
+    .terminal-prompt { color: var(--accent-teal); margin-right: 8px; }
+    .terminal-cmd    { color: var(--text-0); }
+    .terminal-out    { color: var(--text-2); padding-left: 20px; }
+    .terminal-hl     { color: var(--accent-blue); }
+    .terminal-hl2    { color: var(--accent-purple); }
+
+    .terminal-cursor {
+      display: inline-block;
+      width: 7px; height: 13px;
+      background: var(--accent-teal);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: termBlink 1s step-end infinite;
+    }
+
+    @keyframes termBlink { 0%,100%{ opacity: 1; } 50%{ opacity: 0; } }
+
+    /* ── 戻るリンク ── */
+    .back-to-lab {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 0.62rem;
+      color: var(--text-2); letter-spacing: 0.14em;
+      text-transform: uppercase; text-decoration: none;
+      transition: color var(--t); margin-top: 56px;
+    }
+
+    .back-to-lab:hover { color: var(--accent-blue); }
+    .back-to-lab svg { width: 14px; height: 14px; transform: rotate(180deg); }
+
+    /* ── レスポンシブ ── */
+    /* タブレット (768px以下) */
+    @media (max-width: 768px) {
+      main { padding-top: calc(var(--nav-h) + 36px); }
+
+      .spec-bar { grid-template-columns: 1fr; }
+      .spec-item { padding: 20px 24px; }
+      .spec-value { font-size: 1.8rem; }
+
+      .tech-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .tech-card { padding: 18px 16px; gap: 12px; }
+      .tech-icon { width: 44px; height: 44px; }
+      .tech-icon svg { width: 22px; height: 22px; }
+      .tech-name { font-size: 0.88rem; }
+
+      .terminal-block { padding: 28px 20px 20px; }
+      .terminal-line { font-size: 0.68rem; }
+    }
+
+    /* スマートフォン (480px以下) */
+    @media (max-width: 480px) {
+      .tech-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .tech-card { padding: 16px 14px; gap: 10px; }
+      .tech-icon { width: 40px; height: 40px; }
+      .tech-icon svg { width: 20px; height: 20px; }
+      .tech-name { font-size: 0.82rem; }
+      .tech-desc { font-size: 0.68rem; }
+      .tech-badge { font-size: 0.48rem; padding: 2px 8px; }
+
+      .cat-section-header { gap: 10px; }
+      .cat-section-title { font-size: 0.95rem; }
+      .cat-section-count { display: none; }
+
+      .terminal-block { display: none; }
+    }
+
+    /* 極小 (360px以下) */
+    @media (max-width: 360px) {
+      .tech-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="scroll-progress" aria-hidden="true"></div>
+  <canvas id="star-canvas" aria-hidden="true"></canvas>
+  <div class="aurora-bg" aria-hidden="true">
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+  </div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
+  <header role="banner">
+    <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
+      <div class="container">
+        <div class="nav-inner">
+          <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
+            <div class="nav-logo-mark">
+              <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
+            </div>
+            <span>るーとの研究室</span>
+          </a>
+          <ul class="nav-links" role="list">
+            <li><a href="/">TOP</a></li>
+            <li><a href="/projects/">PROJECTS</a></li>
+            <li><a href="/study/">STUDY</a></li>
+            <li><a href="/blog/">BLOG</a></li>
+            <li><a href="/about">ABOUT</a></li>
+            <li><a href="/contact">CONTACT</a></li>
+          </ul>
+          <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+    <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
+      <a href="/">TOP</a>
+      <a href="/projects/">PROJECTS</a>
+      <a href="/study/">STUDY</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/lab/" aria-current="page">LAB EQUIPMENT</a>
+      <a href="/astronomy/">ASTRONOMY</a>
+      <a href="/about">ABOUT</a>
+      <a href="/contact">CONTACT</a>
+      <a href="/privacy">PRIVACY POLICY</a>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <div class="container">
+
+      <!-- ページヘッダー -->
+      <header class="page-header reveal">
+        <div class="page-header-inner">
+          <div class="page-eyebrow">
+            <div class="page-eyebrow-line" aria-hidden="true"></div>
+            <span class="page-eyebrow-text">Research Lab / Equipment</span>
+          </div>
+          <h1 class="page-title">Lab <em>Equipment</em></h1>
+          <p class="page-desc">
+            研究室で稼働している技術スタック。
+            フロントエンドからインフラまで、すべての設備を公開します。
+          </p>
+        </div>
+      </header>
+
+      <!-- スペックバー -->
+      <div class="spec-bar reveal d1" aria-label="設備統計">
+        <div class="spec-item">
+          <div class="spec-value" id="spec-total">17</div>
+          <div class="spec-label">Technologies</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-value">6</div>
+          <div class="spec-label">Categories</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-value" id="spec-primary">—</div>
+          <div class="spec-label">Primary Stack</div>
+        </div>
+      </div>
+
+      <!-- ── Frontend ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-frontend">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(59,158,255,0.06);color:#3b9eff;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 01</p>
+            <h2 class="cat-section-title" id="cat-frontend">Frontend</h2>
+          </div>
+          <span class="cat-section-count">4 technologies</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- HTML5 -->
+          <article class="tech-card reveal" data-cat="frontend">
+            <div class="tech-icon" style="color:#e34f26;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M4 0l2.4 27L16 30l9.6-3L28 0zm20.8 8H10.4l.4 4h13.6l-1.2 13-7.2 2-7.2-2-.5-5.5h4l.25 2.75L16 24l4.25-1.25L20.8 20H9.6L8 8z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">HTML5</h3>
+              <p class="tech-desc">マークアップ言語。セマンティックHTML・アクセシビリティを重視して実装。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+          <!-- CSS3 -->
+          <article class="tech-card reveal" data-cat="frontend">
+            <div class="tech-icon" style="color:#1572b6;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M4 0l2.4 27L16 30l9.6-3L28 0zm20.8 8H10.4l.2 2.5h14l-.4 4.5H12.2l.2 2.5h11.6l-.6 6.5-7.4 2-7.4-2-.5-5.5h2.5l.25 2.75L16 23l5.25-1.25.6-6.25H9.4L8.6 5.5h14.8z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">CSS3</h3>
+              <p class="tech-desc">スタイルシート。CSS変数・Glassmorphism・カスタムアニメーションを活用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+          <!-- JavaScript -->
+          <article class="tech-card reveal" data-cat="frontend">
+            <div class="tech-icon" style="color:#f7df1e;">
+              <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect width="32" height="32" rx="3" fill="#f7df1e"/>
+                <path d="M8 24.5c.8 1.3 1.9 2.3 3.9 2.3 1.6 0 2.7-.8 2.7-2 0-1.3-.7-1.8-2.4-2.6l-.8-.3c-2.4-1-4-2.3-4-5 0-2.5 1.9-4.4 4.8-4.4 2.1 0 3.6.7 4.7 2.6l-2.6 1.7c-.6-1-1.2-1.4-2.1-1.4-.9 0-1.5.6-1.5 1.4 0 1 .6 1.4 2.1 2.1l.8.3c2.8 1.2 4.4 2.4 4.4 5.2 0 3-2.3 4.7-5.5 4.7-3.1 0-5-1.5-6-3.4zM22 24.1c.6 1.1 1.2 2 2.6 2 1.3 0 2.1-.5 2.1-2.5V12.5h3.3v11.2c0 4.1-2.4 6-5.9 6-3.2 0-5-1.7-5.9-3.7z" fill="#323330"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">JavaScript</h3>
+              <p class="tech-desc">メインスクリプト言語。ES6+・バニラJSを中心にWebツールを構築。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+          <!-- TypeScript -->
+          <article class="tech-card reveal" data-cat="frontend">
+            <div class="tech-icon" style="color:#3178c6;">
+              <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect width="32" height="32" rx="3" fill="#3178c6"/>
+                <path d="M18.5 19v2c.5.3 1.1.5 1.8.5 1.8 0 3-1 3-2.6 0-1.5-1-2.2-2.5-2.8-.9-.4-1.3-.6-1.3-1.1 0-.4.3-.7 1-.7.5 0 1 .2 1.5.5l.6-1.8c-.6-.4-1.4-.6-2.3-.6-1.7 0-2.8 1-2.8 2.5 0 1.4.9 2.1 2.3 2.6 1 .4 1.4.7 1.4 1.2 0 .5-.4.8-1.1.8-.7 0-1.3-.3-1.6-.5zM14 14h-3v12h-2V14H6v-2h8z" fill="white"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">TypeScript</h3>
+              <p class="tech-desc">型安全なJavaScript。大規模ツール・シミュレーションの開発に活用。</p>
+            </div>
+            <span class="tech-badge" data-level="secondary">
+              <span class="tech-badge-dot"></span>Secondary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ── Runtime ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-runtime">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(0,229,184,0.06);color:#00e5b8;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 02</p>
+            <h2 class="cat-section-title" id="cat-runtime">Runtime</h2>
+          </div>
+          <span class="cat-section-count">1 technology</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- Node.js -->
+          <article class="tech-card reveal" data-cat="runtime">
+            <div class="tech-icon" style="color:#339933;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M16 0C7.2 0 0 7.2 0 16s7.2 16 16 16 16-7.2 16-16S24.8 0 16 0zm6.8 22.4c-.3.5-.8.8-1.4.8-.4 0-.8-.1-1.1-.4l-3.3-2.7-1.8 1.7c-.2.2-.5.3-.8.3l.4-5.6 6.4-5.9c.3-.3-.1-.4-.4-.2l-7.9 5-3.4-1.1c-.7-.2-.7-.7.2-1l13.3-5.1c.6-.2 1.1.1.9.8z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">Node.js</h3>
+              <p class="tech-desc">JavaScriptランタイム。ビルドツール・パッケージ管理の基盤として使用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ── Package Manager ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-pkgmgr">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(203,0,0,0.06);color:#cb0000;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 03</p>
+            <h2 class="cat-section-title" id="cat-pkgmgr">Package Manager</h2>
+          </div>
+          <span class="cat-section-count">1 technology</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- npm -->
+          <article class="tech-card reveal" data-cat="runtime">
+            <div class="tech-icon" style="color:#cb0000;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M0 0h32v32H0zm4 4v24h24V4zm4 4h16v16H20V12h-4v12H8z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">npm</h3>
+              <p class="tech-desc">Node.jsパッケージマネージャー。依存関係・スクリプト管理に使用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ── Backend ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-backend">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(255,179,64,0.06);color:#ffb340;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 04</p>
+            <h2 class="cat-section-title" id="cat-backend">Backend</h2>
+          </div>
+          <span class="cat-section-count">1 technology</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- Firebase -->
+          <article class="tech-card reveal" data-cat="backend">
+            <div class="tech-icon" style="color:#ffca28;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M5.8 24.6l.7-7.5 7.9-14.1 4.1 7.5z" fill="#ffa000"/>
+                <path d="M23.2 17l2 7.6L16 29.5l-10.2-5-.2-.8 7.3-13z" fill="#f57c00"/>
+                <path d="M20.4 5.9l2.8 11.1-7.6 4.5-7.9-4.5 1.1-5.9z" fill="#ffca28"/>
+                <path d="M16 14.5l4.4 2.5-7.2 12.5-1.8-1.1z" fill="#ffa000" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">Firebase</h3>
+              <p class="tech-desc">BaaSプラットフォーム。Firestore・RealtimeDB・Authentication・Hostingを活用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ── Hosting ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-hosting">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(139,114,255,0.06);color:#8b72ff;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 05</p>
+            <h2 class="cat-section-title" id="cat-hosting">Hosting</h2>
+          </div>
+          <span class="cat-section-count">2 technologies</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- Cloudflare Pages -->
+          <article class="tech-card reveal" data-cat="hosting">
+            <div class="tech-icon" style="color:#f6821f;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M21.3 20.3c.1-.4.1-.8 0-1.2l1.5-1.1c.1-.1.2-.3.1-.5l-1.4-2.4c-.1-.2-.3-.2-.5-.2l-1.7.7c-.4-.3-.8-.5-1.3-.6l-.3-1.8c0-.2-.2-.3-.4-.3h-2.8c-.2 0-.4.1-.4.3l-.3 1.8c-.5.1-.9.4-1.3.6l-1.7-.7c-.2-.1-.4 0-.5.2l-1.4 2.4c-.1.2 0 .4.1.5l1.5 1.1c-.1.4-.1.8 0 1.2l-1.5 1.1c-.1.1-.2.3-.1.5l1.4 2.4c.1.2.3.2.5.2l1.7-.7c.4.3.8.5 1.3.6l.3 1.8c0 .2.2.3.4.3h2.8c.2 0 .4-.1.4-.3l.3-1.8c.5-.1.9-.4 1.3-.6l1.7.7c.2.1.4 0 .5-.2l1.4-2.4c.1-.2 0-.4-.1-.5zm-5.3 1.5c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3z"/>
+                <path d="M25 7.5c-3.6 0-6.5 2.9-6.5 6.5h1.5c0-2.8 2.2-5 5-5V7.5z" opacity=".5"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">Cloudflare Pages</h3>
+              <p class="tech-desc">静的サイトホスティング。高速CDN・自動デプロイ・カスタムドメインに対応。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+          <!-- GitHub Pages -->
+          <article class="tech-card reveal" data-cat="hosting">
+            <div class="tech-icon" style="color:#ffffff;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M16 0C7.16 0 0 7.16 0 16c0 7.08 4.58 13.07 10.94 15.19.8.15 1.09-.35 1.09-.76 0-.38-.01-1.38-.02-2.71-4.45.97-5.39-2.14-5.39-2.14-.73-1.85-1.78-2.34-1.78-2.34-1.45-.99.11-.97.11-.97 1.61.11 2.45 1.65 2.45 1.65 1.43 2.44 3.74 1.74 4.65 1.33.14-1.03.56-1.74 1.01-2.14-3.55-.4-7.28-1.77-7.28-7.89 0-1.74.62-3.17 1.64-4.28-.16-.4-.71-2.02.16-4.22 0 0 1.34-.43 4.38 1.63a15.2 15.2 0 0 1 4-.54c1.36.01 2.72.18 4 .54 3.04-2.06 4.37-1.63 4.37-1.63.87 2.2.32 3.82.16 4.22 1.02 1.11 1.63 2.54 1.63 4.28 0 6.13-3.74 7.49-7.3 7.88.57.49 1.08 1.47 1.08 2.96 0 2.14-.02 3.86-.02 4.39 0 .42.29.91 1.1.76C27.43 29.06 32 23.07 32 16 32 7.16 24.84 0 16 0z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">GitHub Pages</h3>
+              <p class="tech-desc">Gitリポジトリからの静的サイト公開。一部ツール・ポートフォリオのホスティングに使用。</p>
+            </div>
+            <span class="tech-badge" data-level="secondary">
+              <span class="tech-badge-dot"></span>Secondary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ── Development ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-dev">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(255,107,107,0.06);color:#ff6b6b;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 06</p>
+            <h2 class="cat-section-title" id="cat-dev">Development</h2>
+          </div>
+          <span class="cat-section-count">3 technologies</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- Git -->
+          <article class="tech-card reveal" data-cat="development">
+            <div class="tech-icon" style="color:#f05032;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M31.4 14.6L17.4.6c-.8-.8-2-.8-2.8 0l-2.8 2.8 3.5 3.5c.8-.3 1.8-.1 2.4.5.7.7.8 1.6.5 2.4l3.4 3.4c.8-.3 1.7-.1 2.4.5.9.9.9 2.4 0 3.3-.9.9-2.4.9-3.3 0-.7-.7-.9-1.7-.5-2.5l-3.2-3.2v8.4c.2.1.5.3.7.5.9.9.9 2.4 0 3.3-.9.9-2.4.9-3.3 0-.9-.9-.9-2.4 0-3.3.2-.2.5-.4.8-.5v-8.5c-.3-.1-.6-.3-.8-.5-.7-.7-.9-1.7-.5-2.5L11 5.5.6 15.8c-.8.8-.8 2 0 2.8l14 14c.8.8 2 .8 2.8 0l14-14c.8-.7.8-2 0-2.8z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">Git</h3>
+              <p class="tech-desc">バージョン管理システム。ブランチ戦略・コミット設計を意識して運用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+          <!-- GitHub -->
+          <article class="tech-card reveal" data-cat="development">
+            <div class="tech-icon" style="color:#ffffff;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M16 0C7.16 0 0 7.16 0 16c0 7.08 4.58 13.07 10.94 15.19.8.15 1.09-.35 1.09-.76 0-.38-.01-1.38-.02-2.71-4.45.97-5.39-2.14-5.39-2.14-.73-1.85-1.78-2.34-1.78-2.34-1.45-.99.11-.97.11-.97 1.61.11 2.45 1.65 2.45 1.65 1.43 2.44 3.74 1.74 4.65 1.33.14-1.03.56-1.74 1.01-2.14-3.55-.4-7.28-1.77-7.28-7.89 0-1.74.62-3.17 1.64-4.28-.16-.4-.71-2.02.16-4.22 0 0 1.34-.43 4.38 1.63a15.2 15.2 0 0 1 4-.54c1.36.01 2.72.18 4 .54 3.04-2.06 4.37-1.63 4.37-1.63.87 2.2.32 3.82.16 4.22 1.02 1.11 1.63 2.54 1.63 4.28 0 6.13-3.74 7.49-7.3 7.88.57.49 1.08 1.47 1.08 2.96 0 2.14-.02 3.86-.02 4.39 0 .42.29.91 1.1.76C27.43 29.06 32 23.07 32 16 32 7.16 24.84 0 16 0z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">GitHub</h3>
+              <p class="tech-desc">コードホスティング。リポジトリ管理・CI/CD・GitHub Actionsを活用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+          <!-- GitHub Codespaces -->
+          <article class="tech-card reveal" data-cat="development">
+            <div class="tech-icon" style="color:#0078d4;">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                <rect x="3" y="6" width="26" height="18" rx="3"/>
+                <path d="M10 16l4 4 8-8"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">GitHub Codespaces</h3>
+              <p class="tech-desc">クラウドIDE。ブラウザ上で完結する開発環境。どこからでも開発可能。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ── Environment ── -->
+      <section class="cat-section reveal" aria-labelledby="cat-env">
+        <div class="cat-section-header">
+          <div class="cat-section-icon" style="background:rgba(100,217,251,0.06);color:#64d9fb;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+              <path d="M7 8l3 3-3 3"/>
+              <line x1="13" y1="14" x2="17" y2="14"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cat-section-label">Category 07</p>
+            <h2 class="cat-section-title" id="cat-env">Environment</h2>
+          </div>
+          <span class="cat-section-count">1 technology</span>
+        </div>
+        <div class="tech-grid">
+
+          <!-- Linux -->
+          <article class="tech-card reveal" data-cat="environment">
+            <div class="tech-icon" style="color:#fcc624;">
+              <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                <path d="M16 1C7.7 1 1 7.7 1 16s6.7 15 15 15 15-6.7 15-15S24.3 1 16 1zm-.9 3.5c.3 0 .5.1.7.2.3.2.4.5.4.8 0 .4-.2.7-.5.9-.2.1-.4.2-.6.2-.4 0-.7-.2-.9-.5-.1-.2-.2-.4-.2-.6 0-.3.1-.6.4-.8.2-.1.4-.2.7-.2zm2.8 1.1c.2 0 .4.1.6.2.3.2.5.5.5.9 0 .2-.1.4-.2.6-.2.3-.5.5-.9.5-.2 0-.4-.1-.6-.2-.3-.2-.5-.5-.5-.9 0-.2.1-.4.2-.6.2-.3.5-.5.9-.5zm-6.7 4.8c1.2 0 2 .9 2.3 2.1.1.4.1.9.1 1.3 0 .8-.2 1.6-.6 2.2-.4.6-1 1-1.8 1s-1.4-.4-1.8-1c-.4-.6-.6-1.4-.6-2.2 0-.4 0-.9.1-1.3.3-1.2 1.1-2.1 2.3-2.1zm9.6 0c1.2 0 2 .9 2.3 2.1.1.4.1.9.1 1.3 0 .8-.2 1.6-.6 2.2-.4.6-1 1-1.8 1s-1.4-.4-1.8-1c-.4-.6-.6-1.4-.6-2.2 0-.4 0-.9.1-1.3.3-1.2 1.1-2.1 2.3-2.1zM16 17c2.2 0 4.2 1 5.5 2.5.4.5.3 1.2-.2 1.6l-.1.1c-1.3 1-3.2 1.8-5.2 1.8s-3.9-.8-5.2-1.8l-.1-.1c-.5-.4-.6-1.1-.2-1.6C11.8 18 13.8 17 16 17z"/>
+              </svg>
+            </div>
+            <div class="tech-info">
+              <h3 class="tech-name">Linux</h3>
+              <p class="tech-desc">開発・本番環境のOS。Ubuntu (Codespaces)・Debian系を中心に利用。</p>
+            </div>
+            <span class="tech-badge" data-level="primary">
+              <span class="tech-badge-dot"></span>Primary
+            </span>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ターミナルブロック -->
+      <div class="terminal-block reveal" aria-label="環境情報">
+        <div class="terminal-dots" aria-hidden="true">
+          <span class="terminal-dot"></span>
+          <span class="terminal-dot"></span>
+          <span class="terminal-dot"></span>
+        </div>
+        <span class="terminal-title" aria-hidden="true">lab-equipment — zsh</span>
+        <div class="terminal-body">
+          <div class="terminal-line">
+            <span class="terminal-prompt">$</span>
+            <span class="terminal-cmd">cat /etc/lab-stack.conf</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl">[Frontend]</span>
+            <span>  HTML5 · CSS3 · JavaScript · TypeScript</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl">[Runtime] </span>
+            <span>  Node.js · npm</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl">[Backend] </span>
+            <span>  Firebase (Firestore · RealtimeDB · Auth)</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl">[Hosting] </span>
+            <span>  Cloudflare Pages · GitHub Pages</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl">[DevTools]</span>
+            <span>  Git · GitHub · GitHub Codespaces</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl">[Env]     </span>
+            <span>  Linux (Ubuntu 24.04)</span>
+          </div>
+          <div class="terminal-line" style="margin-top:8px;">
+            <span class="terminal-prompt">$</span>
+            <span class="terminal-cmd">uptime</span>
+          </div>
+          <div class="terminal-line terminal-out">
+            <span class="terminal-hl2">Research Lab</span>
+            <span> — online and running</span>
+            <span class="terminal-hl"> · </span>
+            <span>all systems nominal</span>
+          </div>
+          <div class="terminal-line" style="margin-top:8px;">
+            <span class="terminal-prompt">$</span>
+            <span class="terminal-cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+      </div>
+
+      <a href="/" class="back-to-lab reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
+        </svg>
+        Back to Lab
+      </a>
+
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <span class="footer-logo">るーとの研究室</span>
+      <nav class="footer-links" aria-label="フッターナビゲーション">
+        <a href="/privacy">Privacy</a>
+        <a href="/contact">Contact</a>
+      </nav>
+      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/js/lab-common.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* Primary バッジの数を集計してスペックバーに反映 */
+    function updateStats() {
+      var primaries = document.querySelectorAll('.tech-badge[data-level="primary"]').length;
+      var el = document.getElementById('spec-primary');
+      if (el) el.textContent = primaries;
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateStats);
+    } else {
+      updateStats();
+    }
+  })();
+  </script>
+</body>
+</html>
