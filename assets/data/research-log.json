@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "schema": "research-log",
+    "description": "研究ログ・活動記録データ。Firebase Firestoreコレクション 'research_logs' への移行を想定。",
+    "firestore": {
+      "collection": "research_logs",
+      "indexFields": ["type", "date", "tags"],
+      "orderBy": [["date", "desc"]]
+    },
+    "changelog": [
+      { "version": "1.0.0", "date": "2026-06-28", "note": "初期スキーマ定義" }
+    ]
+  },
+  "_schema": {
+    "id":          "string  — Firestoreドキュメントid",
+    "type":        "string  — 'update' | 'release' | 'study' | 'observation' | 'event' | 'note'",
+    "title":       "string  — ログタイトル",
+    "body":        "string  — 本文（Markdown形式、任意）",
+    "date":        "string  — ISO 8601日付文字列（YYYY-MM-DD）",
+    "tags":        "string[] — タグ一覧",
+    "relatedId":   "string | null — 関連コンテンツid（記事・プロジェクト等）",
+    "relatedType": "string | null — 'article' | 'project' | 'study' | 'external'",
+    "relatedUrl":  "string | null — 外部リンク",
+    "visibility":  "string  — 'public' | 'private'",
+    "icon":        "string  — アイコン識別子（SVGアイコン名）"
+  },
+  "typeConfig": {
+    "update":      { "label": "更新",   "color": "#3b9eff",  "icon": "refresh" },
+    "release":     { "label": "リリース","color": "#00e5b8",  "icon": "rocket" },
+    "study":       { "label": "学習",   "color": "#8b72ff",  "icon": "book" },
+    "observation": { "label": "観測",   "color": "#ffb340",  "icon": "telescope" },
+    "event":       { "label": "イベント","color": "#ff6b6b",  "icon": "star" },
+    "note":        { "label": "メモ",   "color": "#4a6680",  "icon": "note" }
+  },
+  "logs": []
+}

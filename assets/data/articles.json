@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "schema": "article",
+    "description": "ブログ記事データ。Firebase Firestoreコレクション 'articles' への移行を想定。",
+    "firestore": {
+      "collection": "articles",
+      "indexFields": ["status", "publishedAt", "tags", "category"],
+      "orderBy": [["publishedAt", "desc"]]
+    },
+    "changelog": [
+      { "version": "1.0.0", "date": "2026-06-28", "note": "初期スキーマ定義" }
+    ]
+  },
+  "_schema": {
+    "id":          "string  — Firestoreドキュメントid（slug形式）例: 'hubble-constant-2026'",
+    "title":       "string  — 記事タイトル",
+    "slug":        "string  — URLスラッグ（idと同値）",
+    "excerpt":     "string  — 記事要約（150字以内）",
+    "body":        "string  — 本文（Markdown形式）",
+    "category":    "string  — カテゴリid（navigation.jsonのblogCategories参照）",
+    "tags":        "string[] — タグ一覧",
+    "status":      "string  — 'published' | 'draft' | 'archived'",
+    "publishedAt": "string  — ISO 8601日時文字列（公開日時）",
+    "updatedAt":   "string  — ISO 8601日時文字列（更新日時）",
+    "createdAt":   "string  — ISO 8601日時文字列（作成日時）",
+    "author":      "string  — 著者id（settings.jsonのauthors参照）",
+    "coverImage":  "string | null — カバー画像パス",
+    "ogImage":     "string | null — OGP画像パス（nullの場合はcoverImageを使用）",
+    "readingTime": "number  — 想定読了時間（分）",
+    "featured":    "boolean — トップ特集表示フラグ",
+    "related":     "string[] — 関連記事slug一覧（最大3件）"
+  },
+  "articles": []
+}

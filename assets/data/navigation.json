@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "schema": "navigation",
+    "description": "サイト全体のナビゲーション・ルーティング定義。Firebase Remote Configへの移行を想定。",
+    "changelog": [
+      { "version": "1.0.0", "date": "2026-06-28", "note": "初期定義。Phase 2以降の新規ページを反映。" }
+    ]
+  },
+  "main": [
+    { "label": "TOP",          "labelJa": "トップ",          "href": "/",              "key": "top",          "phase": 2 },
+    { "label": "Projects",     "labelJa": "プロジェクト",    "href": "/projects/",     "key": "projects",     "phase": 4 },
+    { "label": "Study",        "labelJa": "スタディ",        "href": "/study/",        "key": "study",        "phase": 5 },
+    { "label": "Blog",         "labelJa": "ブログ",          "href": "/blog/",         "key": "blog",         "phase": 6 },
+    { "label": "Lab",          "labelJa": "ラボ設備",        "href": "/lab/",          "key": "lab",          "phase": 7 },
+    { "label": "Astronomy",    "labelJa": "天文学",          "href": "/astronomy/",    "key": "astronomy",    "phase": 8 },
+    { "label": "Research Log", "labelJa": "研究ログ",        "href": "/research-log/", "key": "research-log", "phase": 9 },
+    { "label": "About",        "labelJa": "アバウト",        "href": "/about",         "key": "about",        "phase": 10 },
+    { "label": "Contact",      "labelJa": "コンタクト",      "href": "/contact",       "key": "contact",      "phase": 11 }
+  ],
+  "footer": [
+    { "label": "Privacy Policy", "labelJa": "プライバシーポリシー", "href": "/privacy", "key": "privacy" },
+    { "label": "Contact",        "labelJa": "コンタクト",           "href": "/contact", "key": "contact" }
+  ],
+  "labObjects": [
+    { "id": "obj-monitor",    "name": "大型モニター",   "dest": "→ Projects",      "href": "/projects/",     "icon": "monitor" },
+    { "id": "obj-laptop",     "name": "ノートPC",        "dest": "→ Web Tools",     "href": "/projects/",     "icon": "laptop" },
+    { "id": "obj-bookshelf",  "name": "本棚",            "dest": "→ Study",         "href": "/study/",        "icon": "book" },
+    { "id": "obj-whiteboard", "name": "ホワイトボード",  "dest": "→ Blog",          "href": "/blog/",         "icon": "whiteboard" },
+    { "id": "obj-telescope",  "name": "天体望遠鏡",      "dest": "→ Astronomy",     "href": "/astronomy/",    "icon": "telescope" },
+    { "id": "obj-server",     "name": "サーバーラック",  "dest": "→ Lab Equipment", "href": "/lab/",          "icon": "server" },
+    { "id": "obj-cabinet",    "name": "キャビネット",    "dest": "→ Research Log",  "href": "/research-log/", "icon": "cabinet" },
+    { "id": "obj-envelope",   "name": "封筒",            "dest": "→ Contact",       "href": "/contact",       "icon": "envelope" },
+    { "id": "obj-door",       "name": "ドア",            "dest": "→ About",         "href": "/about",         "icon": "door" }
+  ],
+  "blogCategories": [
+    { "id": "tech",       "label": "Tech",       "labelJa": "技術",   "color": "#3b9eff" },
+    { "id": "astronomy",  "label": "Astronomy",  "labelJa": "天文学", "color": "#00e5b8" },
+    { "id": "quiz",       "label": "Quiz",       "labelJa": "クイズ", "color": "#8b72ff" },
+    { "id": "diary",      "label": "Diary",      "labelJa": "日記",   "color": "#ffb340" },
+    { "id": "review",     "label": "Review",     "labelJa": "レビュー","color": "#ff6b6b" }
+  ]
+}

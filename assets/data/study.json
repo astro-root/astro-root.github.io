@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "schema": "study",
+    "description": "Studyコンテンツデータ。Firebase Firestoreコレクション 'study_items' への移行を想定。",
+    "firestore": {
+      "collection": "study_items",
+      "indexFields": ["category", "status", "publishedAt", "difficulty"],
+      "orderBy": [["category", "asc"], ["publishedAt", "desc"]]
+    },
+    "changelog": [
+      { "version": "1.0.0", "date": "2026-06-28", "note": "初期スキーマ定義" }
+    ]
+  },
+  "_schema": {
+    "id":            "string  — Firestoreドキュメントid（slug形式）",
+    "title":         "string  — コンテンツタイトル",
+    "slug":          "string  — URLスラッグ",
+    "category":      "string  — 'physics' | 'astronomy' | 'mathematics' | 'simulations'",
+    "subcategory":   "string  — サブカテゴリ（例: 'mechanics', 'electromagnetism'）",
+    "excerpt":       "string  — 要約（100字以内）",
+    "body":          "string  — 本文（Markdown形式）",
+    "difficulty":    "number  — 難易度 1〜5",
+    "status":        "string  — 'published' | 'draft' | 'wip'",
+    "publishedAt":   "string  — ISO 8601日時文字列",
+    "updatedAt":     "string  — ISO 8601日時文字列",
+    "tags":          "string[] — タグ一覧",
+    "references":    "object[] — 参考文献 { title, url, author }",
+    "simulation":    "object | null — シミュレーション設定（simulationsカテゴリのみ）",
+    "simulation.type":      "'canvas' | 'webgl' | 'iframe'",
+    "simulation.scriptSrc": "string — JSファイルパス（assetsからの相対パス）",
+    "simulation.params":    "object — シミュレーション初期パラメータ",
+    "coverImage":    "string | null — サムネイル画像パス",
+    "featured":      "boolean — 特集表示フラグ"
+  },
+  "categories": [
+    {
+      "id":          "physics",
+      "label":       "Physics",
+      "labelJa":     "物理学",
+      "color":       "#3b9eff",
+      "description": "力学・電磁気学・量子力学・熱力学・相対性理論などの物理学ノート",
+      "subcategories": [
+        { "id": "mechanics",        "label": "Mechanics",         "labelJa": "力学" },
+        { "id": "electromagnetism", "label": "Electromagnetism",  "labelJa": "電磁気学" },
+        { "id": "thermodynamics",   "label": "Thermodynamics",    "labelJa": "熱力学" },
+        { "id": "quantum",          "label": "Quantum Mechanics", "labelJa": "量子力学" },
+        { "id": "relativity",       "label": "Relativity",        "labelJa": "相対性理論" }
+      ]
+    },
+    {
+      "id":          "astronomy",
+      "label":       "Astronomy",
+      "labelJa":     "天文学",
+      "color":       "#00e5b8",
+      "description": "天体観測・宇宙論・銀河・恒星進化・惑星科学などの天文学ノート",
+      "subcategories": [
+        { "id": "cosmology",   "label": "Cosmology",     "labelJa": "宇宙論" },
+        { "id": "stellar",     "label": "Stellar",        "labelJa": "恒星進化" },
+        { "id": "galaxies",    "label": "Galaxies",       "labelJa": "銀河" },
+        { "id": "planetary",   "label": "Planetary",      "labelJa": "惑星科学" },
+        { "id": "observation", "label": "Observation",    "labelJa": "天体観測" }
+      ]
+    },
+    {
+      "id":          "mathematics",
+      "label":       "Mathematics",
+      "labelJa":     "数学",
+      "color":       "#8b72ff",
+      "description": "解析学・線形代数・確率統計・微分方程式などの数学ノート",
+      "subcategories": [
+        { "id": "calculus",      "label": "Calculus",           "labelJa": "微積分学" },
+        { "id": "linear-algebra","label": "Linear Algebra",     "labelJa": "線形代数" },
+        { "id": "statistics",    "label": "Statistics",         "labelJa": "確率統計" },
+        { "id": "differential",  "label": "Differential Eq.",   "labelJa": "微分方程式" },
+        { "id": "number-theory", "label": "Number Theory",      "labelJa": "数論" }
+      ]
+    },
+    {
+      "id":          "simulations",
+      "label":       "Simulations",
+      "labelJa":     "シミュレーション",
+      "color":       "#ffb340",
+      "description": "JavaScript / TypeScript による物理・天文学インタラクティブシミュレーション",
+      "subcategories": [
+        { "id": "orbital",    "label": "Orbital Mechanics", "labelJa": "軌道力学" },
+        { "id": "n-body",     "label": "N-Body Problem",    "labelJa": "多体問題" },
+        { "id": "wave",       "label": "Wave",              "labelJa": "波動" },
+        { "id": "fluid",      "label": "Fluid Dynamics",    "labelJa": "流体力学" },
+        { "id": "custom",     "label": "Custom",            "labelJa": "その他" }
+      ]
+    }
+  ],
+  "items": []
+}

@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "schema": "settings",
+    "description": "サイト全体の設定・定数定義。Firebase Remote Configへの移行を想定。",
+    "changelog": [
+      { "version": "1.0.0", "date": "2026-06-28", "note": "初期設定定義" }
+    ]
+  },
+  "site": {
+    "name":        "るーとの研究室",
+    "nameEn":      "Root's Lab",
+    "tagline":     "研究室を探索するWebサイト",
+    "taglineEn":   "Explore the Research Lab",
+    "url":         "https://astro-root.com",
+    "locale":      "ja_JP",
+    "lang":        "ja",
+    "themeColor":  "#020b18",
+    "ogImage":     "https://astro-root.com/ogp-image.png",
+    "favicon":     "/favicon.ico"
+  },
+  "author": {
+    "id":          "root",
+    "name":        "るーと",
+    "nameEn":      "Root",
+    "role":        "高校生 / Webエンジニア / 天文学研究者 / クイズプレイヤー",
+    "roleEn":      "High School Student / Web Engineer / Astronomy Researcher / Quiz Player",
+    "avatar":      "/icon.png",
+    "bio":         "クイズ研究会に所属しプレイヤーとして活動しながら、クイズシーンを技術で革新することを目指して本格的なWebツールを独学で開発・公開しています。将来の夢は天文学者。",
+    "organization":"日本物理学会 学生会友",
+    "community":   "AstroHigh 管理者",
+    "social": {
+      "twitter":   "https://x.com/astro_root",
+      "twitter2":  "https://x.com/root_qscore",
+      "twitter3":  "https://x.com/AstroHigh_Info",
+      "github":    "https://github.com/astro-root",
+      "line":      "https://line.me/R/ti/p/@468vemfe"
+    }
+  },
+  "features": {
+    "cursor":          true,
+    "starCanvas":      true,
+    "scrollProgress":  true,
+    "revealAnim":      true,
+    "aurora":          true,
+    "gridOverlay":     true,
+    "noiseOverlay":    true
+  },
+  "firebase": {
+    "enabled":     false,
+    "projectId":   "",
+    "region":      "asia-northeast1",
+    "collections": {
+      "articles":      "articles",
+      "study":         "study_items",
+      "projects":      "projects",
+      "researchLogs":  "research_logs"
+    },
+    "note": "enabled=trueに変更しfirebaseConfigを設定することでFirestore移行が完了する"
+  },
+  "admin": {
+    "storageKey":  "lab_admin_data",
+    "sessionKey":  "lab_admin_session",
+    "note":        "管理画面はPhase 12で実装。LocalStorage → Firestore移行設計に準拠。"
+  },
+  "pagination": {
+    "articlesPerPage":    10,
+    "studyPerPage":       12,
+    "projectsPerPage":    9,
+    "researchLogsPerPage":20
+  },
+  "seo": {
+    "defaultTitle":       "るーとの研究室",
+    "titleSeparator":     " | ",
+    "defaultDescription": "高校生Webエンジニア「るーと」の研究室。クイズ大会支援ツールの開発と天文学の探求を行う研究室。",
+    "keywords":           ["クイズ","早押しクイズ","Webツール","天文学","高校生","JavaScript","Firebase","Q-Score"]
+  }
+}
