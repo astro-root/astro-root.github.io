@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ARTICLE_TITLE}} | るーとの研究室</title>
+  <meta name="description" content="{{ARTICLE_EXCERPT}}" />
+  <meta name="author" content="るーと" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#020b18" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="{{ARTICLE_TITLE}} | るーとの研究室" />
+  <meta property="og:description" content="{{ARTICLE_EXCERPT}}" />
+  <meta property="og:url" content="https://astro-root.com/blog/{{ARTICLE_SLUG}}/" />
+  <meta property="og:image" content="{{ARTICLE_OG_IMAGE}}" />
+  <meta property="og:site_name" content="るーとの研究室" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta property="article:published_time" content="{{ARTICLE_PUBLISHED_AT}}" />
+  <meta property="article:modified_time" content="{{ARTICLE_UPDATED_AT}}" />
+  <meta property="article:author" content="るーと" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@astro_root" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="canonical" href="https://astro-root.com/blog/{{ARTICLE_SLUG}}/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/variables.css" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/nav.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
+
+    .article-layout {
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 56px;
+      align-items: start;
+    }
+
+    /* ── 記事ヘッダー ── */
+    .article-header { margin-bottom: 40px; }
+
+    .article-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .article-cat-badge {
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      border: 1px solid rgba(59,158,255,0.28);
+      color: var(--accent-blue);
+      background: rgba(59,158,255,0.06);
+    }
+
+    .article-date {
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--text-2);
+      letter-spacing: 0.10em;
+    }
+
+    .article-reading-time {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-2);
+      letter-spacing: 0.08em;
+    }
+
+    .article-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text-0);
+      margin-bottom: 20px;
+    }
+
+    .article-excerpt-lead {
+      font-size: 1.00rem;
+      color: var(--text-1);
+      line-height: 1.85;
+      border-left: 2px solid var(--accent-blue);
+      padding-left: 20px;
+      margin-bottom: 32px;
+    }
+
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .article-tag {
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.09em;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+    }
+
+    /* ── 記事本文 ── */
+    .article-body {
+      font-size: 0.92rem;
+      color: var(--text-1);
+      line-height: 1.9;
+    }
+
+    .article-body h2 {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-0);
+      margin: 48px 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .article-body h3 {
+      font-family: var(--font-display);
+      font-size: 1.10rem;
+      font-weight: 700;
+      color: var(--text-0);
+      margin: 36px 0 14px;
+    }
+
+    .article-body p { margin-bottom: 20px; }
+
+    .article-body a {
+      color: var(--accent-blue);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+      transition: color var(--t);
+    }
+
+    .article-body a:hover { color: var(--accent-teal); }
+
+    .article-body ul,
+    .article-body ol {
+      list-style: disc;
+      padding-left: 24px;
+      margin-bottom: 20px;
+    }
+
+    .article-body ol { list-style: decimal; }
+    .article-body li { margin-bottom: 8px; }
+
+    .article-body code {
+      font-family: var(--font-mono);
+      font-size: 0.82em;
+      background: rgba(59,158,255,0.08);
+      border: 1px solid rgba(59,158,255,0.15);
+      border-radius: 4px;
+      padding: 2px 6px;
+      color: var(--accent-teal);
+    }
+
+    .article-body pre {
+      background: rgba(2,8,20,0.9);
+      border: 1px solid var(--border-m);
+      border-radius: var(--r-md);
+      padding: 24px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+
+    .article-body pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: var(--text-0);
+    }
+
+    .article-body blockquote {
+      border-left: 2px solid var(--accent-purple);
+      padding-left: 20px;
+      color: var(--text-1);
+      font-style: italic;
+      margin: 24px 0;
+    }
+
+    .article-body img {
+      max-width: 100%;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .article-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 40px 0;
+    }
+
+    /* ── 記事フッター ── */
+    .article-footer {
+      margin-top: 56px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .article-footer-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.10em;
+      color: var(--text-1);
+      border: 1px solid var(--border-m);
+      border-radius: var(--r-sm);
+      padding: 8px 16px;
+      background: transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color var(--t), color var(--t);
+    }
+
+    .share-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+    .share-btn svg { width: 14px; height: 14px; }
+
+    /* ── サイドバー（TOC） ── */
+    .article-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: calc(var(--nav-h) + 24px); }
+
+    .toc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 22px;
+    }
+
+    .toc-title {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--accent-teal);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toc-list { display: flex; flex-direction: column; gap: 2px; }
+
+    .toc-item {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-2);
+      letter-spacing: 0.08em;
+      padding: 5px 8px;
+      border-radius: var(--r-xs);
+      text-decoration: none;
+      transition: color var(--t), background var(--t);
+      line-height: 1.4;
+    }
+
+    .toc-item:hover { color: var(--text-0); background: rgba(59,158,255,0.05); }
+    .toc-item.active { color: var(--accent-blue); }
+
+    .toc-item-h3 { padding-left: 20px; font-size: 0.58rem; }
+
+    /* ── 前後の記事ナビ ── */
+    .article-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 48px;
+    }
+
+    .article-nav-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px 22px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color var(--t), background var(--t), transform var(--t) var(--ease);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .article-nav-btn:hover {
+      border-color: var(--border-m);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .article-nav-btn.next { text-align: right; align-items: flex-end; }
+
+    .article-nav-label {
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      color: var(--text-2);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .article-nav-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-0);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── 戻るリンク ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-2);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color var(--t);
+      margin-bottom: 32px;
+    }
+
+    .back-link:hover { color: var(--accent-blue); }
+    .back-link svg { width: 14px; height: 14px; transform: rotate(180deg); }
+
+    /* ── レスポンシブ ── */
+    @media (max-width: 900px) {
+      .article-layout { grid-template-columns: 1fr; }
+      .article-sidebar { position: static; }
+      .toc-card { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      main { padding-top: calc(var(--nav-h) + 32px); }
+      .article-nav { grid-template-columns: 1fr; }
+      .article-nav-btn.next { text-align: left; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div id="scroll-progress" aria-hidden="true"></div>
+  <canvas id="star-canvas" aria-hidden="true"></canvas>
+  <div class="aurora-bg" aria-hidden="true">
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+  </div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
+  <header role="banner">
+    <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
+      <div class="container">
+        <div class="nav-inner">
+          <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
+            <div class="nav-logo-mark">
+              <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
+            </div>
+            <span>るーとの研究室</span>
+          </a>
+          <ul class="nav-links" role="list">
+            <li><a href="/">TOP</a></li>
+            <li><a href="/projects/">PROJECTS</a></li>
+            <li><a href="/study/">STUDY</a></li>
+            <li><a href="/blog/" aria-current="page">BLOG</a></li>
+            <li><a href="/about">ABOUT</a></li>
+            <li><a href="/contact">CONTACT</a></li>
+          </ul>
+          <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+    <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
+      <a href="/">TOP</a>
+      <a href="/projects/">PROJECTS</a>
+      <a href="/study/">STUDY</a>
+      <a href="/blog/" aria-current="page">BLOG</a>
+      <a href="/lab/">LAB EQUIPMENT</a>
+      <a href="/astronomy/">ASTRONOMY</a>
+      <a href="/about">ABOUT</a>
+      <a href="/contact">CONTACT</a>
+      <a href="/privacy">PRIVACY POLICY</a>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <div class="container">
+      <a href="/blog/" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
+        </svg>
+        Blog
+      </a>
+
+      <div class="article-layout">
+        <article aria-labelledby="article-title">
+
+          <header class="article-header reveal">
+            <div class="article-header-meta">
+              <span class="article-cat-badge" id="article-cat">{{ARTICLE_CATEGORY}}</span>
+              <time class="article-date" datetime="{{ARTICLE_PUBLISHED_AT}}" id="article-date">{{ARTICLE_DATE_DISPLAY}}</time>
+              <span class="article-reading-time" id="article-reading-time">{{ARTICLE_READING_TIME}} min read</span>
+            </div>
+            <h1 class="article-title" id="article-title">{{ARTICLE_TITLE}}</h1>
+            <p class="article-excerpt-lead" id="article-excerpt">{{ARTICLE_EXCERPT}}</p>
+            <div class="article-tags" id="article-tags">
+              <!-- タグはJSで動的挿入 -->
+            </div>
+          </header>
+
+          <div class="article-body" id="article-body">
+            <!-- 記事本文はここに記述 または JSで注入 -->
+          </div>
+
+          <footer class="article-footer">
+            <div class="article-footer-tags" id="article-footer-tags"></div>
+            <a class="share-btn"
+               href="https://twitter.com/intent/tweet?url=https://astro-root.com/blog/{{ARTICLE_SLUG}}/&text={{ARTICLE_TITLE}}"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="X (Twitter) でシェアする">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Share on X
+            </a>
+          </footer>
+
+          <!-- 前後の記事ナビ -->
+          <nav class="article-nav" id="article-nav" aria-label="前後の記事">
+            <!-- JSで動的生成 -->
+          </nav>
+
+        </article>
+
+        <!-- 目次サイドバー -->
+        <aside class="article-sidebar" aria-label="目次">
+          <div class="toc-card">
+            <p class="toc-title">Table of Contents</p>
+            <nav class="toc-list" id="toc-list" aria-label="目次"></nav>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <span class="footer-logo">るーとの研究室</span>
+      <nav class="footer-links" aria-label="フッターナビゲーション">
+        <a href="/privacy">Privacy</a>
+        <a href="/contact">Contact</a>
+      </nav>
+      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/js/lab-common.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* ── 目次自動生成 ── */
+    function buildTOC() {
+      var body    = document.getElementById('article-body');
+      var tocList = document.getElementById('toc-list');
+      if (!body || !tocList) return;
+
+      var headings = body.querySelectorAll('h2, h3');
+      if (headings.length < 2) { var card = tocList.closest('.toc-card'); if(card) card.style.display='none'; return; }
+
+      headings.forEach(function(h, i) {
+        if (!h.id) h.id = 'heading-' + i;
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.className = 'toc-item' + (h.tagName === 'H3' ? ' toc-item-h3' : '');
+        a.textContent = h.textContent;
+        tocList.appendChild(a);
+      });
+
+      /* スクロール連動ハイライト */
+      var items  = tocList.querySelectorAll('.toc-item');
+      var hEls   = Array.from(headings);
+
+      window.addEventListener('scroll', function () {
+        var scrollY = window.scrollY + 120;
+        var current = hEls[0];
+        hEls.forEach(function(h) { if (h.offsetTop <= scrollY) current = h; });
+        items.forEach(function(a) {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
+        });
+      }, { passive: true });
+    }
+
+    /* ── 前後記事ナビ ── */
+    function buildNav(articles, currentSlug) {
+      var nav = document.getElementById('article-nav');
+      if (!nav) return;
+
+      var pub = articles.filter(function(a){ return a.status === 'published'; })
+                        .sort(function(a,b){ return (b.publishedAt||'').localeCompare(a.publishedAt||''); });
+      var idx = pub.findIndex(function(a){ return a.slug === currentSlug; });
+      if (idx === -1) return;
+
+      var prev = pub[idx + 1];
+      var next = pub[idx - 1];
+
+      var html = '';
+      if (prev) {
+        html += '<a class="article-nav-btn prev" href="/blog/' + prev.slug + '/">' +
+          '<span class="article-nav-label">Prev</span>' +
+          '<span class="article-nav-title">' + prev.title + '</span>' +
+        '</a>';
+      } else {
+        html += '<span></span>';
+      }
+
+      if (next) {
+        html += '<a class="article-nav-btn next" href="/blog/' + next.slug + '/">' +
+          '<span class="article-nav-label">Next</span>' +
+          '<span class="article-nav-title">' + next.title + '</span>' +
+        '</a>';
+      }
+
+      nav.innerHTML = html;
+    }
+
+    function init() {
+      buildTOC();
+
+      /* スラッグ取得 */
+      var slug = window.location.pathname.replace(/^\/blog\//, '').replace(/\/$/, '');
+      if (!slug || slug === '_template') return;
+
+      fetch('/assets/data/articles.json')
+        .then(function(r){ return r.json(); })
+        .then(function(data) { buildNav(data.articles || [], slug); })
+        .catch(function(){});
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>
