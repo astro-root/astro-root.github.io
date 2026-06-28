@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects | るーとの研究室</title>
+  <meta name="description" content="るーとの研究室が開発・公開しているWebツール一覧。クイズ大会支援ツール（Q-Score / Q-Room / Q-Mark / Q-Panel / Q-Cumber）とユーティリティツール群。" />
+  <meta name="author" content="るーと" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#020b18" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Projects | るーとの研究室" />
+  <meta property="og:description" content="クイズ大会支援ツール・ユーティリティツール群の一覧。" />
+  <meta property="og:url" content="https://astro-root.com/projects/" />
+  <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
+  <meta property="og:site_name" content="るーとの研究室" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@astro_root" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="canonical" href="https://astro-root.com/projects/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/variables.css" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/nav.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
+  <style>
+    /* ── レイアウト ── */
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1;
+      padding-top: calc(var(--nav-h) + 56px);
+      padding-bottom: 96px;
+    }
+
+    /* ── ページヘッダー ── */
+    .page-header {
+      margin-bottom: 56px;
+    }
+
+    .page-header-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .page-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .page-eyebrow-line {
+      width: 32px;
+      height: 1px;
+      background: var(--accent-blue);
+      opacity: 0.6;
+    }
+
+    .page-eyebrow-text {
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--accent-teal);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .page-desc {
+      font-size: 0.88rem;
+      color: var(--text-1);
+      line-height: 1.85;
+      max-width: 560px;
+    }
+
+    /* ── カテゴリフィルター ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-1);
+      cursor: pointer;
+      transition:
+        background var(--t),
+        border-color var(--t),
+        color var(--t);
+      min-height: 36px;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-m);
+      color: var(--text-0);
+    }
+
+    .filter-btn.active {
+      background: rgba(59, 158, 255, 0.12);
+      border-color: rgba(59, 158, 255, 0.45);
+      color: var(--accent-blue);
+    }
+
+    .filter-btn-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* ── カテゴリセクション ── */
+    .category-section {
+      margin-bottom: 72px;
+    }
+
+    .category-section[data-hidden="true"] {
+      display: none;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      border: 1px solid;
+    }
+
+    .category-label[data-cat="quiz"] {
+      color: var(--accent-blue);
+      border-color: rgba(59, 158, 255, 0.28);
+      background: rgba(59, 158, 255, 0.06);
+    }
+
+    .category-label[data-cat="utility"] {
+      color: var(--accent-teal);
+      border-color: rgba(0, 229, 184, 0.28);
+      background: rgba(0, 229, 184, 0.06);
+    }
+
+    .category-label[data-cat="other"] {
+      color: var(--accent-purple);
+      border-color: rgba(139, 114, 255, 0.28);
+      background: rgba(139, 114, 255, 0.06);
+    }
+
+    .category-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-0);
+    }
+
+    .category-count {
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--text-2);
+      letter-spacing: 0.12em;
+      margin-left: auto;
+    }
+
+    /* ── プロジェクトグリッド ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── プロジェクトカード ── */
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+      transition:
+        border-color var(--t),
+        background var(--t),
+        box-shadow var(--t),
+        transform var(--t) var(--ease);
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(59,158,255,0.04) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity var(--t);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      border-color: var(--border-m);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+      box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(59, 158, 255, 0.08),
+        0 4px 16px rgba(59, 158, 255, 0.08);
+    }
+
+    .project-card:hover::before {
+      opacity: 1;
+    }
+
+    .project-card[data-cat="utility"]:hover {
+      border-color: rgba(0, 229, 184, 0.28);
+    }
+
+    .project-card[data-cat="utility"]::before {
+      background: linear-gradient(135deg, rgba(0,229,184,0.04) 0%, transparent 60%);
+    }
+
+    /* カード上部 */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .card-room {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-2);
+      letter-spacing: 0.18em;
+    }
+
+    .card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .card-status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .card-status[data-status="active"]      { color: var(--accent-teal); }
+    .card-status[data-status="active"] .card-status-dot { background: var(--accent-teal); animation: statusPulse 2s ease-in-out infinite; }
+    .card-status[data-status="beta"]        { color: var(--accent-amber); }
+    .card-status[data-status="beta"] .card-status-dot   { background: var(--accent-amber); }
+    .card-status[data-status="wip"]         { color: var(--text-2); }
+    .card-status[data-status="wip"] .card-status-dot    { background: var(--text-2); }
+    .card-status[data-status="maintenance"] { color: var(--accent-purple); }
+    .card-status[data-status="maintenance"] .card-status-dot { background: var(--accent-purple); }
+
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /* カードアイコン */
+    .card-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+      transition: border-color var(--t);
+    }
+
+    .project-card:hover .card-icon-wrap {
+      border-color: var(--border-m);
+    }
+
+    .card-icon-wrap svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .card-icon-wrap[data-cat="quiz"]    { background: rgba(59, 158, 255, 0.06); }
+    .card-icon-wrap[data-cat="utility"] { background: rgba(0, 229, 184, 0.06); }
+    .card-icon-wrap[data-cat="other"]   { background: rgba(139, 114, 255, 0.06); }
+
+    /* カードテキスト */
+    .card-name {
+      font-family: var(--font-display);
+      font-size: 1.10rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-0);
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 0.80rem;
+      color: var(--text-1);
+      line-height: 1.75;
+      flex: 1;
+      margin-bottom: 20px;
+    }
+
+    /* タグ */
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .card-tag {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.10em;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      transition: border-color var(--t), color var(--t);
+    }
+
+    .project-card:hover .card-tag {
+      border-color: var(--border-m);
+      color: var(--text-1);
+    }
+
+    /* Launch ボタン */
+    .card-launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.10em;
+      color: var(--accent-blue);
+      text-decoration: none;
+      padding: 9px 16px;
+      border-radius: var(--r-sm);
+      border: 1px solid rgba(59, 158, 255, 0.25);
+      background: rgba(59, 158, 255, 0.06);
+      transition:
+        background var(--t),
+        border-color var(--t),
+        transform var(--t) var(--ease-spring);
+      align-self: flex-start;
+      margin-top: auto;
+    }
+
+    .card-launch:hover {
+      background: rgba(59, 158, 255, 0.14);
+      border-color: var(--accent-blue);
+      transform: translateX(3px);
+    }
+
+    .card-launch[data-cat="utility"] {
+      color: var(--accent-teal);
+      border-color: rgba(0, 229, 184, 0.25);
+      background: rgba(0, 229, 184, 0.06);
+    }
+
+    .card-launch[data-cat="utility"]:hover {
+      background: rgba(0, 229, 184, 0.14);
+      border-color: var(--accent-teal);
+    }
+
+    .card-launch-arrow {
+      display: inline-flex;
+      transition: transform var(--t) var(--ease-spring);
+    }
+
+    .card-launch:hover .card-launch-arrow {
+      transform: translateX(3px);
+    }
+
+    /* ── 統計バー ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 56px;
+      padding: 28px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--text-0) 0%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-2);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* ── ローディング ── */
+    .loading-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 80px 0;
+      font-family: var(--font-mono);
+      font-size: 0.70rem;
+      color: var(--text-2);
+      letter-spacing: 0.14em;
+    }
+
+    .loading-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      animation: loadingPulse 1.2s ease-in-out infinite;
+    }
+
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes loadingPulse {
+      0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
+      40%            { transform: scale(1.0); opacity: 1.0; }
+    }
+
+    /* ── エラー状態 ── */
+    .error-state {
+      display: none;
+      text-align: center;
+      padding: 80px 0;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-2);
+      letter-spacing: 0.10em;
+    }
+
+    /* ── フッター ── */
+    .back-to-lab {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-2);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color var(--t);
+      margin-top: 56px;
+    }
+
+    .back-to-lab:hover {
+      color: var(--accent-blue);
+    }
+
+    .back-to-lab svg {
+      width: 14px;
+      height: 14px;
+      transform: rotate(180deg);
+    }
+
+    /* ── レスポンシブ ── */
+    @media (max-width: 760px) {
+      main { padding-top: calc(var(--nav-h) + 36px); }
+      .projects-grid { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: repeat(3, 1fr); padding: 20px; gap: 10px; }
+      .stat-value { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-bar { grid-template-columns: 1fr; }
+      .filter-bar { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="scroll-progress" aria-hidden="true"></div>
+  <canvas id="star-canvas" aria-hidden="true"></canvas>
+  <div class="aurora-bg" aria-hidden="true">
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+  </div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
+  <header role="banner">
+    <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
+      <div class="container">
+        <div class="nav-inner">
+          <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
+            <div class="nav-logo-mark">
+              <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
+            </div>
+            <span>るーとの研究室</span>
+          </a>
+          <ul class="nav-links" role="list">
+            <li><a href="/">TOP</a></li>
+            <li><a href="/projects/" aria-current="page">PROJECTS</a></li>
+            <li><a href="/study/">STUDY</a></li>
+            <li><a href="/blog/">BLOG</a></li>
+            <li><a href="/about">ABOUT</a></li>
+            <li><a href="/contact">CONTACT</a></li>
+          </ul>
+          <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+    <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
+      <a href="/">TOP</a>
+      <a href="/projects/" aria-current="page">PROJECTS</a>
+      <a href="/study/">STUDY</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/lab/">LAB EQUIPMENT</a>
+      <a href="/astronomy/">ASTRONOMY</a>
+      <a href="/about">ABOUT</a>
+      <a href="/contact">CONTACT</a>
+      <a href="/privacy">PRIVACY POLICY</a>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <div class="container">
+
+      <!-- ページヘッダー -->
+      <header class="page-header reveal">
+        <div class="page-header-inner">
+          <div class="page-eyebrow">
+            <div class="page-eyebrow-line" aria-hidden="true"></div>
+            <span class="page-eyebrow-text">Research Lab / Projects</span>
+          </div>
+          <h1 class="page-title">Web <em>Tools</em></h1>
+          <p class="page-desc">
+            クイズ大会・早押しクイズのための本格的なWebツール群と、
+            日常業務を支援するユーティリティツールを開発・公開しています。
+          </p>
+        </div>
+      </header>
+
+      <!-- 統計バー -->
+      <div class="stats-bar reveal d1" id="stats-bar" aria-label="プロジェクト統計">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Total Projects</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-active">—</div>
+          <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-cats">—</div>
+          <div class="stat-label">Categories</div>
+        </div>
+      </div>
+
+      <!-- フィルターバー -->
+      <div class="filter-bar reveal d2" role="group" aria-label="カテゴリフィルター">
+        <button class="filter-btn active" data-filter="all" aria-pressed="true">
+          <span class="filter-btn-dot"></span>
+          All
+        </button>
+        <button class="filter-btn" data-filter="quiz" aria-pressed="false">
+          <span class="filter-btn-dot"></span>
+          Quiz Tools
+        </button>
+        <button class="filter-btn" data-filter="utility" aria-pressed="false">
+          <span class="filter-btn-dot"></span>
+          Utility
+        </button>
+      </div>
+
+      <!-- ローディング -->
+      <div class="loading-state" id="loading-state" aria-live="polite" aria-label="読み込み中">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <span>Loading projects...</span>
+      </div>
+
+      <!-- エラー -->
+      <div class="error-state" id="error-state" role="alert">
+        データの読み込みに失敗しました。ページを再読み込みしてください。
+      </div>
+
+      <!-- プロジェクト一覧 -->
+      <div id="projects-root"></div>
+
+      <!-- 研究室へ戻る -->
+      <a href="/" class="back-to-lab reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
+        </svg>
+        Back to Lab
+      </a>
+
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <span class="footer-logo">るーとの研究室</span>
+      <nav class="footer-links" aria-label="フッターナビゲーション">
+        <a href="/privacy">Privacy</a>
+        <a href="/contact">Contact</a>
+      </nav>
+      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/js/lab-common.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var STATUS_LABEL = {
+      active:      'Active',
+      beta:        'Beta',
+      wip:         'WIP',
+      maintenance: 'Maintenance',
+      archived:    'Archived'
+    };
+
+    var ICONS = {
+      quiz: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="6"/><path d="M22 32h20M22 22h20M22 42h12"/><circle cx="46" cy="42" r="6" fill="none"/><path d="M50 46l4 4"/></svg>',
+      utility: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="24" width="48" height="32" rx="4"/><path d="M20 24V16a12 12 0 0124 0v8"/><circle cx="32" cy="40" r="4" fill="currentColor"/></svg>',
+      other: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="32" cy="32" r="24"/><path d="M32 20v12l8 8"/></svg>'
+    };
+
+    var ARROW_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" class="card-launch-arrow" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>';
+
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+    }
+
+    function buildCard(p) {
+      var cat    = escHtml(p.category || 'other');
+      var status = p.status || 'active';
+      var tags   = (p.tags || []).map(function(t){
+        return '<span class="card-tag">' + escHtml(t) + '</span>';
+      }).join('');
+
+      return [
+        '<a class="project-card reveal" href="' + escHtml(p.url) + '"',
+        '   target="_blank" rel="noopener noreferrer"',
+        '   data-cat="' + cat + '"',
+        '   data-id="'  + escHtml(p.id) + '"',
+        '   aria-label="' + escHtml(p.name) + ' — 外部リンクで開く"',
+        '>',
+        '  <div class="card-top">',
+        '    <span class="card-room">' + escHtml(p.room || '') + '</span>',
+        '    <span class="card-status" data-status="' + escHtml(status) + '">',
+        '      <span class="card-status-dot"></span>',
+        '      ' + escHtml(STATUS_LABEL[status] || status),
+        '    </span>',
+        '  </div>',
+        '  <div class="card-icon-wrap" data-cat="' + cat + '">',
+        '    ' + (ICONS[cat] || ICONS.other),
+        '  </div>',
+        '  <h3 class="card-name">' + escHtml(p.name) + '</h3>',
+        '  <p class="card-desc">'  + escHtml(p.description) + '</p>',
+        '  <div class="card-tags">' + tags + '</div>',
+        '  <span class="card-launch" data-cat="' + cat + '">',
+        '    Launch ' + ARROW_SVG,
+        '  </span>',
+        '</a>'
+      ].join('\n');
+    }
+
+    function buildSection(cat, projects) {
+      var cards = projects.map(buildCard).join('\n');
+      return [
+        '<section class="category-section" data-category="' + escHtml(cat.id) + '" aria-labelledby="cat-' + escHtml(cat.id) + '">',
+        '  <div class="category-header">',
+        '    <span class="category-label" data-cat="' + escHtml(cat.id) + '">' + escHtml(cat.label) + '</span>',
+        '    <h2 class="category-title" id="cat-' + escHtml(cat.id) + '">' + escHtml(cat.labelJa) + '</h2>',
+        '    <span class="category-count">' + projects.length + ' projects</span>',
+        '  </div>',
+        '  <div class="projects-grid">',
+        cards,
+        '  </div>',
+        '</section>'
+      ].join('\n');
+    }
+
+    function updateStats(data) {
+      var total  = data.projects.length;
+      var active = data.projects.filter(function(p){ return p.status === 'active'; }).length;
+      var cats   = data.categories.length;
+
+      var elTotal  = document.getElementById('stat-total');
+      var elActive = document.getElementById('stat-active');
+      var elCats   = document.getElementById('stat-cats');
+      if (elTotal)  elTotal.textContent  = total;
+      if (elActive) elActive.textContent = active;
+      if (elCats)   elCats.textContent   = cats;
+    }
+
+    function renderProjects(data) {
+      var root = document.getElementById('projects-root');
+      if (!root) return;
+
+      var html = data.categories.map(function(cat) {
+        var catProjects = data.projects
+          .filter(function(p){ return p.category === cat.id; })
+          .sort(function(a, b){ return (a.order || 0) - (b.order || 0); });
+
+        if (catProjects.length === 0) return '';
+        return buildSection(cat, catProjects);
+      }).join('\n');
+
+      root.innerHTML = html;
+
+      if (window.LAB && window.LAB.reveal) {
+        window.LAB.reveal();
+      } else {
+        root.querySelectorAll('.reveal').forEach(function(el){
+          el.classList.add('visible');
+        });
+      }
+    }
+
+    function setupFilter(data) {
+      var btns = document.querySelectorAll('.filter-btn');
+
+      btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var filter = btn.dataset.filter;
+
+          btns.forEach(function(b){
+            b.classList.toggle('active', b === btn);
+            b.setAttribute('aria-pressed', String(b === btn));
+          });
+
+          document.querySelectorAll('.category-section').forEach(function(sec){
+            var show = filter === 'all' || sec.dataset.category === filter;
+            sec.dataset.hidden = String(!show);
+          });
+        });
+      });
+    }
+
+    function init() {
+      var loading = document.getElementById('loading-state');
+      var errEl   = document.getElementById('error-state');
+
+      fetch('/assets/data/projects.json')
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          if (loading) loading.style.display = 'none';
+          updateStats(data);
+          renderProjects(data);
+          setupFilter(data);
+        })
+        .catch(function(err) {
+          console.error('projects.json load error:', err);
+          if (loading) loading.style.display = 'none';
+          if (errEl)   errEl.style.display   = 'block';
+        });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>
