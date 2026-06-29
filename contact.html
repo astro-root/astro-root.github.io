@@ -25,198 +25,511 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  
   <link rel="canonical" href="https://astro-root.com/contact" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" /></noscript>
+  <!-- EmailJS：既存実装を完全保持 -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+  <link rel="stylesheet" href="/assets/css/variables.css" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/nav.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
   <style>
-    :root {
-      --bg-0:#020b18; --bg-1:#040f20; --bg-2:#071628;
-      --bg-card:rgba(5,14,28,0.82); --bg-card-hover:rgba(7,18,36,0.92);
-      --accent-blue:#3b9eff; --accent-teal:#00e5b8; --accent-purple:#8b72ff;
-      --text-0:#eef3ff; --text-1:#7d9ab8; --text-2:#6b8fa8;
-      --border:rgba(59,158,255,0.10); --border-m:rgba(59,158,255,0.22); --border-hover:rgba(59,158,255,0.50);
-      --glow-blue:rgba(59,158,255,0.18);
-      --font-display:'Syne','Noto Sans JP',sans-serif;
-      --font-mono:'JetBrains Mono','Noto Sans JP',monospace;
-      --font-body:'Noto Sans JP',sans-serif;
-      --r-sm:8px; --r-md:14px; --r-lg:22px; --r-xl:28px;
-      --ease:cubic-bezier(0.25,0.46,0.45,0.94);
-      --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
-      --t:0.28s; --t-fast:0.18s;
-      --nav-h:66px;
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
+
+    /* ── 封筒遷移アニメーション ── */
+    .page-enter { animation: pageEnterSlide 0.65s var(--ease-out) both; }
+
+    @keyframes pageEnterSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    html { scroll-behavior:smooth; font-size:16px; -webkit-text-size-adjust:100%; }
-    body { background:var(--bg-0); color:var(--text-0); font-family:var(--font-body); line-height:1.8; overflow-x:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-    @media (hover:none) { body { cursor:auto; } }
-    a { color:var(--accent-blue); text-decoration:none; transition:color var(--t); }
-    @media (hover:none) { a { cursor:pointer; } }
-    a:hover { color:var(--accent-teal); }
-    img { max-width:100%; display:block; }
-    ul, ol { list-style:none; }
-    button { font-family:inherit; }
-    @media (hover:none) { button { cursor:pointer; } }
-    input, textarea { font-family:inherit; }
-    ::-webkit-scrollbar { width:4px; }
-    ::-webkit-scrollbar-track { background:var(--bg-0); }
-    ::-webkit-scrollbar-thumb { background:var(--border-m); border-radius:99px; }
-    ::-webkit-scrollbar-thumb:hover { background:var(--accent-blue); }
-    :focus-visible { outline:2px solid var(--accent-blue); outline-offset:3px; border-radius:4px; }
-    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-    .skip-link { position:fixed; top:-100%; left:16px; z-index:9999; background:var(--accent-blue); color:var(--bg-0); padding:10px 20px; border-radius:0 0 var(--r-md) var(--r-md); font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.08em; font-weight:600; transition:top 0.2s var(--ease); }
-    .skip-link:focus { top:0; outline:none; }
 
-    #cursor-dot { opacity:0; position:fixed; pointer-events:none; z-index:10000; width:6px; height:6px; border-radius:50%; background:var(--accent-blue); box-shadow:0 0 10px var(--accent-blue),0 0 20px rgba(59,158,255,0.4); transform:translate(-50%,-50%); transition:width var(--t-fast) var(--ease),height var(--t-fast) var(--ease),background var(--t-fast); will-change:left,top; }
-    #cursor-ring { opacity:0; position:fixed; pointer-events:none; z-index:9999; width:36px; height:36px; border-radius:50%; border:1px solid rgba(59,158,255,0.45); transform:translate(-50%,-50%); transition:width 0.22s var(--ease),height 0.22s var(--ease),border-color 0.22s,opacity 0.22s; will-change:left,top; }
-    #cursor-dot.hover { width:10px; height:10px; background:var(--accent-teal); }
-    #cursor-ring.hover { width:54px; height:54px; border-color:rgba(0,229,184,0.5); }
-    #cursor-dot.clicking { width:4px; height:4px; }
-    #cursor-ring.clicking { width:28px; height:28px; }
-    #scroll-progress { position:fixed; top:0; left:0; z-index:9998; height:2px; width:0%; background:linear-gradient(90deg,var(--accent-blue) 0%,var(--accent-teal) 50%,var(--accent-purple) 100%); transition:width 0.1s linear; box-shadow:0 0 8px rgba(59,158,255,0.6); }
+    /* ── ページヘッダー ── */
+    .page-header { margin-bottom: 48px; }
+    .page-header-inner { display: flex; flex-direction: column; gap: 20px; }
+    .page-eyebrow { display: flex; align-items: center; gap: 14px; }
+    .page-eyebrow-line { width: 32px; height: 1px; background: var(--accent-blue); opacity: 0.6; }
+    .page-eyebrow-text { font-family: var(--font-mono); font-size: 0.60rem; color: var(--accent-teal); letter-spacing: 0.28em; text-transform: uppercase; }
+    .page-desc { font-size: 0.88rem; color: var(--text-1); line-height: 1.85; max-width: 520px; }
 
-    #star-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; display:block; }
-    .aurora-bg { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-    .aurora-orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0; animation:orbDrift 28s ease-in-out infinite alternate,orbIn 3s ease forwards; }
-    .aurora-orb:nth-child(1) { width:700px; height:700px; background:radial-gradient(circle,rgba(59,158,255,0.22) 0%,transparent 65%); top:-240px; right:-180px; animation-duration:22s; animation-delay:0.3s; }
-    .aurora-orb:nth-child(2) { width:560px; height:560px; background:radial-gradient(circle,rgba(0,229,184,0.18) 0%,transparent 65%); bottom:8%; left:-200px; animation-duration:30s; animation-delay:-12s; }
-    .aurora-orb:nth-child(3) { width:420px; height:420px; background:radial-gradient(circle,rgba(139,114,255,0.16) 0%,transparent 65%); top:50%; left:52%; animation-duration:38s; animation-delay:-20s; }
-    @keyframes orbDrift { 0%{transform:translate(0,0) scale(1) rotate(0deg);} 33%{transform:translate(30px,-20px) scale(1.08) rotate(2deg);} 66%{transform:translate(-20px,15px) scale(0.95) rotate(-1deg);} 100%{transform:translate(50px,40px) scale(1.14) rotate(3deg);} }
-    @keyframes orbIn { to{opacity:1;} }
-    .noise-overlay { position:fixed; inset:0; z-index:0; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.022; mix-blend-mode:overlay; }
-    .grid-overlay { position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(59,158,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(59,158,255,0.022) 1px,transparent 1px); background-size:72px 72px; }
+    /* ── 封筒SVGヒーロー ── */
+    .envelope-hero {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 48px;
+      animation: envelopeFadeIn 1s var(--ease-out) 0.2s both;
+    }
 
-    header { position:relative; z-index:500; }
-    main, footer { position:relative; z-index:1; }
+    @keyframes envelopeFadeIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
 
-    .container { width:100%; max-width:960px; margin:0 auto; padding:0 clamp(20px,5vw,56px); }
-    .container-wide { width:100%; max-width:1100px; margin:0 auto; padding:0 clamp(20px,5vw,64px); }
+    .envelope-svg-wrap {
+      width: clamp(160px, 30vw, 240px);
+      height: auto;
+      position: relative;
+    }
 
-    .nav { position:fixed; top:0; left:0; right:0; z-index:500; transition:background var(--t) var(--ease),border-color var(--t) var(--ease),backdrop-filter var(--t); border-bottom:1px solid transparent; }
-    .nav.scrolled { background:rgba(2,11,24,0.90); backdrop-filter:blur(24px) saturate(180%); -webkit-backdrop-filter:blur(24px) saturate(180%); border-bottom-color:var(--border); }
-    .nav-inner { display:flex; align-items:center; justify-content:space-between; height:var(--nav-h); }
-    .nav-logo { display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; font-size:0.93rem; letter-spacing:0.01em; transition:opacity var(--t) var(--ease); color:var(--text-0); }
-    .nav-logo:hover { opacity:0.75; color:var(--text-0); }
-    .nav-logo-img { width:30px; height:30px; border-radius:50%; border:1.5px solid var(--border-hover); overflow:hidden; flex-shrink:0; box-shadow:0 0 12px rgba(59,158,255,0.3); }
-    .nav-logo-img img { width:100%; height:100%; object-fit:cover; }
-    .nav-links { display:flex; align-items:center; gap:40px; }
-    .nav-links a { font-family:var(--font-mono); font-size:0.7rem; color:var(--text-1); letter-spacing:0.16em; text-transform:uppercase; position:relative; padding-bottom:4px; transition:color var(--t) var(--ease); min-height:44px; display:inline-flex; align-items:center; }
-    .nav-links a::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:1.5px; background:linear-gradient(90deg,var(--accent-blue),var(--accent-teal)); transform:scaleX(0); transform-origin:left; transition:transform var(--t) var(--ease-spring); border-radius:99px; }
-    .nav-links a:hover { color:var(--text-0); }
-    .nav-links a:hover::after { transform:scaleX(1); }
-    .nav-links a[aria-current="page"] { color:var(--accent-blue); }
-    .nav-links a[aria-current="page"]::after { transform:scaleX(1); }
-    .nav-toggle { display:none; flex-direction:column; gap:5px; background:none; border:none; padding:10px; border-radius:var(--r-sm); min-width:44px; min-height:44px; align-items:center; justify-content:center; }
-    .nav-toggle span { display:block; width:22px; height:1.5px; background:var(--text-0); transition:transform var(--t) var(--ease),opacity var(--t) var(--ease); transform-origin:center; }
-    .nav-toggle.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
-    .nav-toggle.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
-    .nav-toggle.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
-    .nav-mobile { display:none; position:fixed; top:var(--nav-h); left:0; right:0; background:rgba(2,11,24,0.97); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid var(--border); padding:8px 0; z-index:499; flex-direction:column; }
-    .nav-mobile.open { display:flex; animation:mobileSlideIn 0.22s var(--ease) forwards; }
-    @keyframes mobileSlideIn { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
-    .nav-mobile a { padding:14px clamp(20px,5vw,64px); font-family:var(--font-mono); font-size:0.78rem; color:var(--text-1); letter-spacing:0.12em; text-transform:uppercase; border-bottom:1px solid var(--border); transition:color var(--t) var(--ease),background var(--t) var(--ease),padding-left var(--t) var(--ease); min-height:52px; display:flex; align-items:center; }
-    .nav-mobile a::before { content:'—'; font-size:0.65rem; color:var(--accent-blue); opacity:0.35; margin-right:12px; transition:opacity var(--t),transform var(--t) var(--ease-spring); }
-    .nav-mobile a:last-child { border-bottom:none; }
-    .nav-mobile a:hover { color:var(--accent-blue); background:rgba(59,158,255,0.04); padding-left:calc(clamp(20px,5vw,64px) + 6px); }
-    .nav-mobile a:hover::before { opacity:1; transform:translateX(4px); }
-    .nav-mobile a[aria-current="page"] { color:var(--accent-blue); }
-    @media (max-width:780px) { .nav-links{display:none;} .nav-toggle{display:flex;} }
+    .envelope-svg-wrap svg {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 8px 24px rgba(59,158,255,0.18));
+    }
 
-    .reveal { opacity:1; transform:none; transition:opacity 0.7s var(--ease),transform 0.7s var(--ease); }
-    .reveal[data-pending] { opacity:0; transform:translateY(28px); }
-    .reveal.visible { opacity:1; transform:translateY(0); }
-    .d1{transition-delay:0.1s;} .d2{transition-delay:0.2s;}
+    /* 封筒フタの開閉アニメーション */
+    .env-flap {
+      transform-origin: top center;
+      animation: envFlapOpen 1.2s var(--ease-out) 0.8s both;
+    }
 
-    .page-hero { padding:calc(var(--nav-h) + 54px) 0 64px; text-align:center; }
-    .page-label { font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.28em; color:var(--accent-teal); text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; justify-content:center; gap:10px; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.2s; }
-    .page-label::before, .page-label::after { content:''; display:inline-block; width:28px; height:1px; background:linear-gradient(90deg,transparent,var(--accent-teal)); }
-    .page-label::after { background:linear-gradient(90deg,var(--accent-teal),transparent); }
-    .page-title { font-family:var(--font-display); font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; letter-spacing:-0.03em; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.4s; }
-    .page-sub { font-size:0.9rem; color:var(--text-1); margin-top:14px; line-height:2; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.6s; }
-    @keyframes heroUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes envFlapOpen {
+      0%   { transform: rotateX(0deg); }
+      40%  { transform: rotateX(-30deg); }
+      70%  { transform: rotateX(-12deg); }
+      100% { transform: rotateX(-18deg); }
+    }
 
-    .content-wrap { padding:0 0 100px; }
+    /* ── レイアウト ── */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
 
-    .contact-layout { display:grid; grid-template-columns:1.25fr 1.55fr; gap:clamp(20px,3vw,32px); align-items:start; }
-    @media (max-width:760px) { .contact-layout{grid-template-columns:1fr;} }
+    /* ── 左カラム：チャンネル + 注意書き ── */
+    .left-col { display: flex; flex-direction: column; gap: 20px; }
 
-    .channels-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-xl); padding:clamp(24px,4vw,40px); backdrop-filter:blur(14px); display:flex; flex-direction:column; gap:20px; position:relative; overflow:hidden; transition:border-color var(--t),box-shadow var(--t),transform var(--t) var(--ease); }
-    .channels-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--accent-teal),transparent); opacity:0.35; }
-    .channels-card:hover { border-color:var(--border-m); box-shadow:0 16px 40px rgba(59,158,255,0.07); transform:translateY(-3px); }
-    .channels-title { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--text-0); }
-    .channels-desc { font-size:0.86rem; color:var(--text-1); line-height:2; }
-    .channels-note { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.05em; color:var(--text-2); padding:10px 14px; background:rgba(59,158,255,0.03); border:1px solid var(--border); border-radius:var(--r-sm); }
-    .channels-list { display:flex; flex-direction:column; gap:9px; }
+    /* ── チャンネルカード ── */
+    .channels-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--t), box-shadow var(--t), transform var(--t) var(--ease);
+    }
 
-    .c-channel { display:flex; align-items:center; gap:12px; padding:13px 16px; background:var(--bg-card); border:1px solid var(--border-m); border-radius:var(--r-md); font-size:0.84rem; color:var(--text-1); transition:border-color var(--t),color var(--t),transform var(--t) var(--ease-spring),background var(--t); backdrop-filter:blur(10px); min-height:52px; }
-    .c-channel:hover { border-color:var(--accent-blue); color:var(--text-0); transform:translateX(5px); background:rgba(59,158,255,0.05); }
-    .c-channel .c-ext { margin-left:auto; font-size:0.7rem; color:var(--accent-blue); opacity:0.4; flex-shrink:0; transition:opacity var(--t),transform var(--t) var(--ease-spring); }
-    .c-channel:hover .c-ext { opacity:1; transform:translate(2px,-2px); }
-    .c-icon { width:38px; height:38px; background:rgba(59,158,255,0.08); border-radius:var(--r-sm); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; transition:background var(--t); }
-    .c-channel:hover .c-icon { background:rgba(59,158,255,0.16); }
-    .c-icon svg { width:16px; height:16px; fill:currentColor; }
+    .channels-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+      opacity: 0.4;
+    }
 
-    .form-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-xl); padding:clamp(28px,5vw,48px); backdrop-filter:blur(16px); position:relative; overflow:hidden; transition:border-color var(--t),box-shadow var(--t); }
-    .form-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,var(--accent-blue),var(--accent-teal)); opacity:0.4; }
-    .form-card:hover { border-color:var(--border-m); box-shadow:0 16px 40px rgba(59,158,255,0.07); }
-    .form-title { font-family:var(--font-display); font-size:1.15rem; font-weight:600; margin-bottom:6px; color:var(--text-0); }
-    .form-required-note { font-family:var(--font-mono); font-size:0.62rem; color:var(--text-2); letter-spacing:0.05em; margin-bottom:28px; }
-    .form-required-note span { color:#f87171; }
-    .form-row { margin-bottom:18px; }
-    .form-label { display:flex; align-items:center; gap:4px; font-family:var(--font-mono); font-size:0.62rem; color:var(--accent-teal); letter-spacing:0.17em; text-transform:uppercase; margin-bottom:8px; }
-    .form-label .req { color:#f87171; margin-left:2px; }
-    .form-label::after { display:none; }
-    .form-input, .form-textarea { width:100%; background:rgba(59,158,255,0.02); border:1px solid var(--border); border-radius:var(--r-sm); padding:12px 16px; color:var(--text-0); font-size:0.9rem; outline:none; transition:border-color var(--t),box-shadow var(--t),background var(--t); min-height:48px; }
-    .form-input::placeholder, .form-textarea::placeholder { color:var(--text-2); }
-    .form-input:hover, .form-textarea:hover { border-color:rgba(59,158,255,0.25); background:rgba(59,158,255,0.03); }
-    .form-input:focus, .form-textarea:focus { border-color:var(--accent-blue); box-shadow:0 0 0 3px rgba(59,158,255,0.10),0 0 16px rgba(59,158,255,0.06); background:rgba(59,158,255,0.04); }
-    .form-textarea { resize:vertical; min-height:128px; }
-    .form-submit { width:100%; padding:15px; background:linear-gradient(120deg,var(--accent-blue) 0%,var(--accent-teal) 100%); color:var(--bg-0); border:none; border-radius:var(--r-md); font-family:var(--font-mono); font-size:0.74rem; letter-spacing:0.16em; font-weight:600; text-transform:uppercase; margin-top:8px; transition:opacity var(--t),transform var(--t) var(--ease-spring),box-shadow var(--t); box-shadow:0 6px 24px rgba(59,158,255,0.22); min-height:52px; position:relative; overflow:hidden; }
-    .form-submit::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg,var(--accent-teal) 0%,var(--accent-purple) 100%); opacity:0; transition:opacity var(--t); }
-    .form-submit:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 16px 40px rgba(59,158,255,0.36); }
-    .form-submit:hover:not(:disabled)::after { opacity:0.25; }
-    .form-submit:disabled { opacity:0.45; }
-    .form-msg { margin-top:14px; padding:12px 16px; border-radius:var(--r-sm); font-family:var(--font-mono); font-size:0.7rem; display:none; }
-    .form-msg.ok { background:rgba(0,229,184,0.08); border:1px solid rgba(0,229,184,0.25); color:var(--accent-teal); }
-    .form-msg.ng { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); color:#f87171; }
+    .channels-card:hover {
+      border-color: var(--border-m);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.28);
+      transform: translateY(-2px);
+    }
 
-    .footer { border-top:1px solid var(--border); padding:48px 0; position:relative; }
-    .footer::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:200px; height:1px; background:linear-gradient(90deg,transparent,var(--accent-blue),transparent); }
-    .footer-inner { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
-    .footer-brand { display:flex; align-items:center; gap:10px; color:var(--text-0); text-decoration:none; }
-    a.footer-brand:hover { opacity:0.75; }
-    .footer-brand-icon { width:26px; height:26px; border-radius:50%; border:1.5px solid var(--border-m); overflow:hidden; box-shadow:0 0 8px rgba(59,158,255,0.2); }
-    .footer-brand-icon img { width:100%; height:100%; object-fit:cover; }
-    .footer-brand-name { font-family:var(--font-display); font-size:0.88rem; font-weight:700; }
-    .footer-nav { display:flex; flex-wrap:wrap; gap:24px; }
-    .footer-nav a { font-family:var(--font-mono); font-size:0.64rem; color:var(--text-2); letter-spacing:0.1em; text-transform:uppercase; transition:color var(--t) var(--ease); position:relative; padding-bottom:2px; min-height:44px; display:inline-flex; align-items:center; }
-    .footer-nav a::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:1px; background:var(--accent-teal); transform:scaleX(0); transform-origin:left; transition:transform var(--t) var(--ease-spring); }
-    .footer-nav a:hover { color:var(--accent-teal); }
-    .footer-nav a:hover::after { transform:scaleX(1); }
-    .footer-nav a[aria-current="page"] { color:var(--accent-blue); }
-    .footer-copy { font-family:var(--font-mono); font-size:0.64rem; color:var(--text-2); letter-spacing:0.08em; }
-    @media (max-width:600px) { .footer-inner{flex-direction:column;align-items:flex-start;gap:12px;} }
+    .channels-title {
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-0);
+      margin-bottom: 6px;
+    }
 
-    @media (prefers-reduced-motion:reduce) {
-      *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
-      .reveal { opacity:1; transform:none; }
-      body { cursor:auto; }
-      a, button { cursor:pointer; }
-      #cursor-dot, #cursor-ring { display:none; }
+    .channels-desc {
+      font-size: 0.78rem;
+      color: var(--text-1);
+      line-height: 1.75;
+      margin-bottom: 18px;
+    }
+
+    .channels-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .c-channel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(59,158,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      color: var(--text-1);
+      text-decoration: none;
+      font-size: 0.80rem;
+      transition:
+        border-color var(--t),
+        color var(--t),
+        background var(--t),
+        transform var(--t) var(--ease-spring);
+      min-height: 50px;
+    }
+
+    .c-channel:hover {
+      border-color: var(--border-m);
+      color: var(--text-0);
+      background: rgba(59,158,255,0.07);
+      transform: translateX(4px);
+    }
+
+    .c-icon {
+      width: 34px; height: 34px;
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      transition: border-color var(--t), background var(--t);
+    }
+
+    .c-channel:hover .c-icon {
+      border-color: var(--border-m);
+      background: rgba(59,158,255,0.08);
+    }
+
+    .c-icon svg { width: 15px; height: 15px; }
+
+    .c-label { flex: 1; min-width: 0; }
+
+    .c-name {
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      color: var(--accent-blue);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .c-sub {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      color: var(--text-2);
+      letter-spacing: 0.05em;
+    }
+
+    .c-ext {
+      margin-left: auto;
+      color: var(--text-2);
+      flex-shrink: 0;
+      font-size: 0.65rem;
+      transition: color var(--t), transform var(--t) var(--ease-spring);
+    }
+
+    .c-channel:hover .c-ext {
+      color: var(--accent-blue);
+      transform: translate(2px, -2px);
+    }
+
+    /* 注意書きカード */
+    .notice-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 18px 20px;
+    }
+
+    .notice-text {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-2);
+      letter-spacing: 0.05em;
+      line-height: 1.85;
+    }
+
+    .notice-text strong {
+      color: var(--accent-teal);
+      font-weight: 500;
+    }
+
+    /* ── フォームカード ── */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: clamp(24px, 4vw, 44px);
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+
+    .form-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+      border-radius: var(--r-xl) var(--r-xl) 0 0;
+      opacity: 0.5;
+    }
+
+    .form-card:hover {
+      border-color: var(--border-m);
+      box-shadow: 0 14px 40px rgba(59,158,255,0.06);
+    }
+
+    .form-header { margin-bottom: 28px; }
+
+    .form-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-0);
+      margin-bottom: 6px;
+    }
+
+    .form-required-note {
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--text-2);
+      letter-spacing: 0.06em;
+    }
+
+    .form-required-note .req { color: #f87171; }
+
+    /* フォーム行 */
+    .form-row { margin-bottom: 20px; }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--accent-teal);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-label .req { color: #f87171; }
+
+    /* 入力フィールド */
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      background: rgba(59,158,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 13px 16px;
+      color: var(--text-0);
+      font-size: 0.90rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition:
+        border-color var(--t),
+        box-shadow var(--t),
+        background var(--t);
+      min-height: 50px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder { color: var(--text-2); }
+
+    .form-input:hover,
+    .form-textarea:hover {
+      border-color: rgba(59,158,255,0.25);
+      background: rgba(59,158,255,0.03);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59,158,255,0.10), 0 0 16px rgba(59,158,255,0.06);
+      background: rgba(59,158,255,0.04);
+    }
+
+    /* バリデーションエラー */
+    .form-input[aria-invalid="true"],
+    .form-textarea[aria-invalid="true"] {
+      border-color: rgba(248,113,113,0.5);
+      background: rgba(248,113,113,0.03);
+    }
+
+    .form-input[aria-invalid="true"]:focus,
+    .form-textarea[aria-invalid="true"]:focus {
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.10);
+    }
+
+    .form-error {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: #f87171;
+      letter-spacing: 0.06em;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-error.visible { display: block; }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 136px;
+      line-height: 1.75;
+    }
+
+    /* 文字カウンター */
+    .form-counter {
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      color: var(--text-2);
+      letter-spacing: 0.06em;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .form-counter.warn { color: var(--accent-amber); }
+    .form-counter.over { color: #f87171; }
+
+    /* 送信ボタン */
+    .form-submit {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(120deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+      color: var(--bg-0);
+      border: none;
+      border-radius: var(--r-md);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 8px;
+      cursor: pointer;
+      transition:
+        opacity var(--t),
+        transform var(--t) var(--ease-spring),
+        box-shadow var(--t);
+      box-shadow: 0 6px 24px rgba(59,158,255,0.22);
+      min-height: 52px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .form-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, var(--accent-teal) 0%, var(--accent-purple) 100%);
+      opacity: 0;
+      transition: opacity var(--t);
+    }
+
+    .form-submit:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(59,158,255,0.32);
+    }
+
+    .form-submit:hover:not(:disabled)::after { opacity: 0.2; }
+
+    .form-submit:active:not(:disabled) { transform: translateY(-1px); }
+
+    .form-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .submit-icon { width: 16px; height: 16px; position: relative; z-index: 1; }
+    .submit-text { position: relative; z-index: 1; }
+
+    /* 送信ローダー */
+    .submit-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(2,11,24,0.3);
+      border-top-color: rgba(2,11,24,0.9);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+      position: relative; z-index: 1;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* メッセージ */
+    .form-msg {
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: var(--r-md);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .form-msg.ok {
+      display: flex;
+      background: rgba(0,229,184,0.06);
+      border: 1px solid rgba(0,229,184,0.25);
+      color: var(--accent-teal);
+    }
+
+    .form-msg.ng {
+      display: flex;
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.25);
+      color: #f87171;
+    }
+
+    .msg-icon { flex-shrink: 0; font-size: 0.85rem; line-height: 1; }
+
+    /* ── 戻るリンク ── */
+    .back-to-lab {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: 0.62rem;
+      color: var(--text-2); letter-spacing: 0.14em;
+      text-transform: uppercase; text-decoration: none;
+      transition: color var(--t); margin-top: 56px;
+    }
+
+    .back-to-lab:hover { color: var(--accent-blue); }
+    .back-to-lab svg { width: 14px; height: 14px; transform: rotate(180deg); }
+
+    /* ── レスポンシブ ── */
+    @media (max-width: 840px) {
+      .contact-layout { grid-template-columns: 1fr; }
+      .left-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .envelope-hero { margin-bottom: 32px; }
+    }
+
+    @media (max-width: 640px) {
+      main { padding-top: calc(var(--nav-h) + 36px); }
+      .left-col { grid-template-columns: 1fr; }
+      .envelope-svg-wrap { width: clamp(120px, 40vw, 180px); }
+      .c-channel { padding: 10px 12px; min-height: 46px; }
+      .form-card { padding: 20px; }
+    }
+
+    @media (max-width: 400px) {
+      .envelope-hero { margin-bottom: 24px; }
+      .form-input, .form-textarea { font-size: 0.85rem; }
     }
   </style>
 </head>
 <body>
-  <div id="cursor-dot" aria-hidden="true"></div>
-  <div id="cursor-ring" aria-hidden="true"></div>
   <div id="scroll-progress" aria-hidden="true"></div>
-  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
   <canvas id="star-canvas" aria-hidden="true"></canvas>
   <div class="aurora-bg" aria-hidden="true">
+    <div class="aurora-orb"></div>
     <div class="aurora-orb"></div>
     <div class="aurora-orb"></div>
     <div class="aurora-orb"></div>
@@ -224,18 +537,26 @@
   <div class="noise-overlay" aria-hidden="true"></div>
   <div class="grid-overlay" aria-hidden="true"></div>
 
+  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
   <header role="banner">
-    <nav class="nav" id="nav" aria-label="メインナビゲーション">
-      <div class="container-wide">
+    <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
+      <div class="container">
         <div class="nav-inner">
-          <a href="/" class="nav-logo" aria-label="るーとの研究室 TOPへ">
-            <div class="nav-logo-img"><img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" /></div>
+          <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
+            <div class="nav-logo-mark">
+              <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
+            </div>
             <span>るーとの研究室</span>
           </a>
           <ul class="nav-links" role="list">
             <li><a href="/">TOP</a></li>
+            <li><a href="/projects/">PROJECTS</a></li>
+            <li><a href="/study/">STUDY</a></li>
+            <li><a href="/blog/">BLOG</a></li>
             <li><a href="/about">ABOUT</a></li>
-            <li><a href="/privacy">PRIVACY POLICY</a></li>
             <li><a href="/contact" aria-current="page">CONTACT</a></li>
           </ul>
           <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
@@ -246,180 +567,476 @@
     </nav>
     <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
       <a href="/">TOP</a>
+      <a href="/projects/">PROJECTS</a>
+      <a href="/study/">STUDY</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/lab/">LAB EQUIPMENT</a>
+      <a href="/astronomy/">ASTRONOMY</a>
       <a href="/about">ABOUT</a>
-      <a href="/privacy">PRIVACY POLICY</a>
       <a href="/contact" aria-current="page">CONTACT</a>
+      <a href="/privacy">PRIVACY POLICY</a>
     </div>
   </header>
 
-  <main id="main-content">
-    <div class="page-hero">
-      <div class="container">
-        <p class="page-label">Get in Touch</p>
-        <h1 class="page-title">お問い合わせ</h1>
-        <p class="page-sub">
-          ツールのご質問・不具合報告・コラボレーションのご提案など、<br>
-          以下のフォームまたは各種SNSよりお気軽にご連絡ください。
-        </p>
+  <main id="main-content" class="page-enter">
+    <div class="container">
+
+      <!-- ページヘッダー -->
+      <header class="page-header reveal">
+        <div class="page-header-inner">
+          <div class="page-eyebrow">
+            <div class="page-eyebrow-line" aria-hidden="true"></div>
+            <span class="page-eyebrow-text">Research Lab / Contact</span>
+          </div>
+          <h1 class="page-title">Get in <em>Touch</em></h1>
+          <p class="page-desc">
+            ツールのご質問・不具合報告・コラボレーションのご提案など、
+            フォームまたは各種SNSよりお気軽にご連絡ください。
+          </p>
+        </div>
+      </header>
+
+      <!-- 封筒SVGヒーロー -->
+      <div class="envelope-hero" aria-hidden="true">
+        <div class="envelope-svg-wrap">
+          <svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="envBodyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(8,25,58,0.95)"/>
+                <stop offset="100%" stop-color="rgba(5,16,40,0.98)"/>
+              </linearGradient>
+              <linearGradient id="envEdgeGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="rgba(59,158,255,0)"/>
+                <stop offset="50%" stop-color="rgba(59,158,255,0.5)"/>
+                <stop offset="100%" stop-color="rgba(0,229,184,0)"/>
+              </linearGradient>
+              <filter id="envGlow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- 封筒本体 -->
+            <rect x="8" y="40" width="224" height="112" rx="6"
+                  fill="url(#envBodyGrad)"
+                  stroke="rgba(59,158,255,0.30)"
+                  stroke-width="1.5"/>
+
+            <!-- 封筒上辺グロー -->
+            <rect x="8" y="40" width="224" height="2" rx="1"
+                  fill="url(#envEdgeGrad)" opacity="0.6"/>
+
+            <!-- 封筒内部（底面V字） -->
+            <line x1="8" y1="152" x2="120" y2="100"
+                  stroke="rgba(59,158,255,0.12)" stroke-width="1"/>
+            <line x1="232" y1="152" x2="120" y2="100"
+                  stroke="rgba(59,158,255,0.12)" stroke-width="1"/>
+
+            <!-- 封筒フタ（開く） -->
+            <g class="env-flap" style="transform-origin:120px 40px;">
+              <path d="M8 40 L120 100 L232 40 Z"
+                    fill="rgba(6,20,48,0.96)"
+                    stroke="rgba(59,158,255,0.28)"
+                    stroke-width="1.2"
+                    stroke-linejoin="round"/>
+              <!-- フタのシール跡 -->
+              <circle cx="120" cy="78" r="8"
+                      fill="none"
+                      stroke="rgba(59,158,255,0.18)"
+                      stroke-width="1"/>
+              <circle cx="120" cy="78" r="4"
+                      fill="rgba(59,158,255,0.12)"/>
+            </g>
+
+            <!-- 封筒フラップ折り目 -->
+            <line x1="8" y1="40" x2="120" y2="96"
+                  stroke="rgba(59,158,255,0.10)" stroke-width="0.8"/>
+            <line x1="232" y1="40" x2="120" y2="96"
+                  stroke="rgba(59,158,255,0.10)" stroke-width="0.8"/>
+
+            <!-- 住所線（装飾） -->
+            <line x1="32" y1="118" x2="128" y2="118"
+                  stroke="rgba(59,158,255,0.20)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="32" y1="128" x2="112" y2="128"
+                  stroke="rgba(59,158,255,0.14)" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="32" y1="138" x2="100" y2="138"
+                  stroke="rgba(59,158,255,0.10)" stroke-width="1" stroke-linecap="round"/>
+
+            <!-- 切手（右上） -->
+            <rect x="175" y="108" width="36" height="32" rx="2"
+                  fill="rgba(59,158,255,0.06)"
+                  stroke="rgba(59,158,255,0.28)"
+                  stroke-width="1"
+                  stroke-dasharray="3,2"/>
+            <!-- 切手内：星 -->
+            <polygon points="193,115 194.8,120.5 200.5,120.5 195.8,123.8 197.5,129.5 193,126.2 188.5,129.5 190.2,123.8 185.5,120.5 191.2,120.5"
+                     fill="rgba(59,158,255,0.35)"/>
+
+            <!-- 上部の点滅光 -->
+            <circle cx="120" cy="40" r="2.5" fill="rgba(0,229,184,0.7)" filter="url(#envGlow)">
+              <animate attributeName="opacity" values="0.7;0.15;0.7" dur="3s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+        </div>
       </div>
-    </div>
 
-    <div class="content-wrap">
-      <div class="container">
-        <div class="contact-layout">
+      <!-- コンタクトレイアウト -->
+      <div class="contact-layout">
 
+        <!-- 左カラム -->
+        <div class="left-col">
+
+          <!-- チャンネルカード -->
           <div class="channels-card reveal">
             <p class="channels-title">連絡先チャンネル</p>
             <p class="channels-desc">フォームのほか、各種SNSでもご連絡いただけます。</p>
-            <div class="channels-note">学校生活の都合上、返信に数日お時間をいただく場合があります。ご了承ください。</div>
             <nav class="channels-list" aria-label="連絡先一覧">
-              <a href="https://x.com/astro_root" target="_blank" rel="noopener noreferrer" class="c-channel" aria-label="@astro_root（外部リンク）">
-                <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
-                @astro_root（個人）
+
+              <a class="c-channel"
+                 href="https://x.com/astro_root"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 aria-label="X (Twitter) @astro_root 個人アカウント（外部リンク）">
+                <div class="c-icon" style="color:#fff;">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </div>
+                <div class="c-label">
+                  <p class="c-name">@astro_root</p>
+                  <p class="c-sub">個人アカウント</p>
+                </div>
                 <span class="c-ext" aria-hidden="true">↗</span>
               </a>
-              <a href="https://x.com/root_qscore" target="_blank" rel="noopener noreferrer" class="c-channel" aria-label="@root_qscore（外部リンク）">
-                <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
-                @root_qscore（Q-Score公式）
+
+              <a class="c-channel"
+                 href="https://x.com/root_qscore"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 aria-label="X (Twitter) @root_qscore Q-Score公式（外部リンク）">
+                <div class="c-icon" style="color:#3b9eff;">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </div>
+                <div class="c-label">
+                  <p class="c-name">@root_qscore</p>
+                  <p class="c-sub">Q-Score 公式</p>
+                </div>
                 <span class="c-ext" aria-hidden="true">↗</span>
               </a>
-              <a href="https://line.me/R/ti/p/@468vemfe" target="_blank" rel="noopener noreferrer" class="c-channel" aria-label="LINE公式（外部リンク）">
-                <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.627.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg></span>
-                LINE 公式アカウント
+
+              <a class="c-channel"
+                 href="https://line.me/R/ti/p/@468vemfe"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 aria-label="LINE 公式アカウント（外部リンク）">
+                <div class="c-icon" style="color:#06c755;">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.627.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                  </svg>
+                </div>
+                <div class="c-label">
+                  <p class="c-name">LINE 公式</p>
+                  <p class="c-sub">Q-Score 通知・お知らせ</p>
+                </div>
                 <span class="c-ext" aria-hidden="true">↗</span>
               </a>
+
             </nav>
           </div>
 
-          <div class="form-card reveal d1">
-            <p class="form-title">メッセージを送る</p>
-            <p class="form-required-note"><span>*</span> は必須項目です</p>
-            <form id="contact-form" novalidate>
-              <div class="form-row">
-                <label for="from_name" class="form-label">お名前<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span></label>
-                <input type="text" id="from_name" name="from_name" class="form-input" placeholder="山田 太郎" required autocomplete="name" />
-              </div>
-              <div class="form-row">
-                <label for="from_email" class="form-label">メールアドレス<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span></label>
-                <input type="email" id="from_email" name="from_email" class="form-input" placeholder="example@email.com" required autocomplete="email" />
-              </div>
-              <div class="form-row">
-                <label for="subject" class="form-label">件名<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span></label>
-                <input type="text" id="subject" name="subject" class="form-input" placeholder="お問い合わせ件名" required />
-              </div>
-              <div class="form-row">
-                <label for="message" class="form-label">メッセージ<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span></label>
-                <textarea id="message" name="message" class="form-textarea" placeholder="ご用件をご記入ください" required></textarea>
-              </div>
-              <button type="submit" class="form-submit" id="submit-btn">送信する</button>
-              <div class="form-msg ok" id="msg-ok" role="status"></div>
-              <div class="form-msg ng" id="msg-ng" role="alert"></div>
-            </form>
+          <!-- 注意書き -->
+          <div class="notice-card reveal d1">
+            <p class="notice-text">
+              <strong>// Note</strong><br>
+              学校生活の都合上、返信に数日お時間をいただく場合があります。ご了承ください。<br><br>
+              フォームからの送信には EmailJS を使用しています。送信後、自動返信メールをご確認ください。
+            </p>
           </div>
 
         </div>
+
+        <!-- フォームカード -->
+        <div class="form-card reveal d2">
+          <div class="form-header">
+            <h2 class="form-title">メッセージを送る</h2>
+            <p class="form-required-note"><span class="req">*</span> は必須項目です</p>
+          </div>
+
+          <form id="contact-form" novalidate aria-label="お問い合わせフォーム">
+
+            <div class="form-row">
+              <label for="from_name" class="form-label">
+                お名前<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span>
+              </label>
+              <input
+                type="text"
+                id="from_name"
+                name="from_name"
+                class="form-input"
+                placeholder="山田 太郎"
+                required
+                autocomplete="name"
+                aria-required="true"
+                aria-describedby="from_name-error"
+              />
+              <p class="form-error" id="from_name-error" role="alert">お名前を入力してください。</p>
+            </div>
+
+            <div class="form-row">
+              <label for="from_email" class="form-label">
+                メールアドレス<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span>
+              </label>
+              <input
+                type="email"
+                id="from_email"
+                name="from_email"
+                class="form-input"
+                placeholder="example@email.com"
+                required
+                autocomplete="email"
+                aria-required="true"
+                aria-describedby="from_email-error"
+              />
+              <p class="form-error" id="from_email-error" role="alert">有効なメールアドレスを入力してください。</p>
+            </div>
+
+            <div class="form-row">
+              <label for="subject" class="form-label">
+                件名<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span>
+              </label>
+              <input
+                type="text"
+                id="subject"
+                name="subject"
+                class="form-input"
+                placeholder="お問い合わせ件名"
+                required
+                aria-required="true"
+                aria-describedby="subject-error"
+              />
+              <p class="form-error" id="subject-error" role="alert">件名を入力してください。</p>
+            </div>
+
+            <div class="form-row">
+              <label for="message" class="form-label">
+                メッセージ<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span>
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                class="form-textarea"
+                placeholder="ご用件をご記入ください"
+                required
+                maxlength="2000"
+                aria-required="true"
+                aria-describedby="message-error message-counter"
+              ></textarea>
+              <p class="form-error" id="message-error" role="alert">メッセージを入力してください。</p>
+              <p class="form-counter" id="message-counter" aria-live="polite">0 / 2000</p>
+            </div>
+
+            <button type="submit" class="form-submit" id="submit-btn">
+              <svg class="submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              <span class="submit-text">送信する</span>
+              <div class="submit-spinner" id="submit-spinner" aria-hidden="true"></div>
+            </button>
+
+            <div class="form-msg" id="msg-ok" role="status" aria-live="polite">
+              <span class="msg-icon">✓</span>
+              <span id="msg-ok-text">送信しました。自動返信メールをご確認ください。</span>
+            </div>
+            <div class="form-msg" id="msg-ng" role="alert" aria-live="assertive">
+              <span class="msg-icon">✕</span>
+              <span id="msg-ng-text">送信に失敗しました。しばらく経ってから再度お試しください。</span>
+            </div>
+
+          </form>
+        </div>
+
       </div>
+
+      <a href="/" class="back-to-lab reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
+        </svg>
+        Back to Lab
+      </a>
+
     </div>
   </main>
 
-  <footer class="footer" role="contentinfo">
-    <div class="container-wide">
-      <div class="footer-inner">
-        <a href="/" class="footer-brand" aria-label="るーとの研究室 TOPへ">
-          <div class="footer-brand-icon"><img src="/icon.png" alt="" aria-hidden="true" width="26" height="26" /></div>
-          <span class="footer-brand-name">るーとの研究室</span>
-        </a>
-        <nav class="footer-nav" aria-label="フッターナビゲーション">
-          <a href="/">TOP</a>
-          <a href="/about">ABOUT</a>
-          <a href="/privacy">PRIVACY POLICY</a>
-          <a href="/contact" aria-current="page">CONTACT</a>
-        </nav>
-        <p class="footer-copy">© 2026 Root. All rights reserved.</p>
-      </div>
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <span class="footer-logo">るーとの研究室</span>
+      <nav class="footer-links" aria-label="フッターナビゲーション">
+        <a href="/privacy">Privacy</a>
+        <a href="/contact" aria-current="page">Contact</a>
+      </nav>
+      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
     </div>
   </footer>
 
+  <script src="/assets/js/lab-common.js"></script>
   <script>
-  (function(){
-    if(typeof emailjs!=='undefined'){
-      emailjs.init({publicKey:'yxzdXxEsQp6Ulyn1w'});
-    } else {
-      var s=document.querySelector('script[src*="emailjs"]');
-      if(s)s.addEventListener('load',function(){emailjs.init({publicKey:'yxzdXxEsQp6Ulyn1w'});});
+  (function () {
+    'use strict';
+
+    /* ── EmailJS 初期化（既存実装を完全保持） ── */
+    (function initEmailJS() {
+      function tryInit() {
+        if (typeof emailjs !== 'undefined') {
+          emailjs.init({ publicKey: 'yxzdXxEsQp6Ulyn1w' });
+        }
+      }
+
+      var s = document.querySelector('script[src*="emailjs"]');
+      if (s) {
+        s.addEventListener('load', tryInit);
+        tryInit();
+      } else {
+        tryInit();
+      }
+    })();
+
+    /* ── 文字カウンター ── */
+    (function initCounter() {
+      var textarea = document.getElementById('message');
+      var counter  = document.getElementById('message-counter');
+      if (!textarea || !counter) return;
+
+      var MAX = 2000;
+
+      textarea.addEventListener('input', function () {
+        var len = textarea.value.length;
+        counter.textContent = len + ' / ' + MAX;
+        counter.className = 'form-counter' +
+          (len > MAX * 0.9 ? (len >= MAX ? ' over' : ' warn') : '');
+      });
+    })();
+
+    /* ── インラインバリデーション ── */
+    function validateField(input) {
+      var errorEl = document.getElementById(input.id + '-error');
+      var valid = input.checkValidity();
+
+      input.setAttribute('aria-invalid', String(!valid));
+      if (errorEl) {
+        errorEl.classList.toggle('visible', !valid);
+      }
+
+      return valid;
     }
-  })();
 
-  (function(){
-    var nav=document.getElementById('nav'),toggle=document.getElementById('nav-toggle'),mob=document.getElementById('nav-mobile');
-    window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>20);},{passive:true});
-    toggle.addEventListener('click',function(){var o=toggle.classList.toggle('open');mob.classList.toggle('open',o);toggle.setAttribute('aria-expanded',String(o));if(o){var fs=mob.querySelectorAll('a,button');var f=fs[0],l=fs[fs.length-1];if(f)f.focus();function tf(e){if(e.key==='Escape'){toggle.click();toggle.focus();return;}if(e.key!=='Tab')return;if(e.shiftKey){if(document.activeElement===f){e.preventDefault();l.focus();}}else{if(document.activeElement===l){e.preventDefault();f.focus();}}}mob.addEventListener('keydown',tf);mob._tf=tf;}else{if(mob._tf){mob.removeEventListener('keydown',mob._tf);delete mob._tf;}}});
-    mob.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){toggle.classList.remove('open');mob.classList.remove('open');toggle.setAttribute('aria-expanded','false');});});
-  })();
+    (function initValidation() {
+      var fields = document.querySelectorAll('.form-input, .form-textarea');
+      fields.forEach(function (field) {
+        field.addEventListener('blur', function () {
+          if (field.value.trim()) validateField(field);
+        });
+        field.addEventListener('input', function () {
+          if (field.getAttribute('aria-invalid') === 'true') validateField(field);
+        });
+      });
+    })();
 
-  (function(){
-    var form=document.getElementById('contact-form'),btn=document.getElementById('submit-btn'),ok=document.getElementById('msg-ok'),ng=document.getElementById('msg-ng');
-    if(!form)return;
-    form.addEventListener('submit',function(e){
-      e.preventDefault();
-      var n=form.from_name.value.trim(),em=form.from_email.value.trim(),s=form.subject.value.trim(),m=form.message.value.trim();
-      if(!n||!em||!s||!m){ng.textContent='✕ すべての項目を入力してください。';ng.style.display='block';ok.style.display='none';return;}
-      btn.disabled=true;btn.textContent='送信中…';ok.style.display='none';ng.style.display='none';
-      var p={from_name:n,from_email:em,subject:s,message:m,reply_to:em,to_name:n,to_email:em};
-      Promise.all([emailjs.send('astro_root','astro_root_notify',p),emailjs.send('astro_root','astro_root_autoreply',p)])
-        .then(function(){ok.textContent='✓ 送信しました。自動返信メールをご確認ください。';ok.style.display='block';ng.style.display='none';form.reset();})
-        .catch(function(){ng.textContent='✕ 送信に失敗しました。しばらく経ってから再度お試しください。';ng.style.display='block';ok.style.display='none';})
-        .finally(function(){btn.disabled=false;btn.textContent='送信する';});
-    });
-  })();
+    /* ── フォーム送信（既存のEmailJS実装を保持・UX改善） ── */
+    (function initForm() {
+      var form    = document.getElementById('contact-form');
+      var btn     = document.getElementById('submit-btn');
+      var spinner = document.getElementById('submit-spinner');
+      var submitText = btn ? btn.querySelector('.submit-text') : null;
+      var submitIcon = btn ? btn.querySelector('.submit-icon') : null;
+      var msgOk   = document.getElementById('msg-ok');
+      var msgNg   = document.getElementById('msg-ng');
+      var msgOkText = document.getElementById('msg-ok-text');
+      var msgNgText = document.getElementById('msg-ng-text');
 
-  (function(){
-    if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches)return;
-    var dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
-    if(!dot||!ring)return;
-    document.body.style.cursor='none';
-    document.querySelectorAll('a,button').forEach(function(el){el.style.cursor='none';});
-    dot.style.opacity='1';ring.style.opacity='1';
-    var mx=0,my=0,rx=0,ry=0,rafId=null,active=true;
-    document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
-    function animRing(){if(!active){rafId=null;return;}rx+=(mx-rx)*0.14;ry+=(my-ry)*0.14;ring.style.left=rx+'px';ring.style.top=ry+'px';rafId=requestAnimationFrame(animRing);}
-    rafId=requestAnimationFrame(animRing);
-    document.addEventListener('visibilitychange',function(){active=!document.hidden;if(active&&!rafId)rafId=requestAnimationFrame(animRing);});
-    var ia='a,button,input,textarea,[role="button"]';
-    document.addEventListener('mouseover',function(e){if(e.target.closest(ia)){dot.classList.add('hover');ring.classList.add('hover');}});
-    document.addEventListener('mouseout',function(e){if(e.target.closest(ia)){dot.classList.remove('hover');ring.classList.remove('hover');}});
-    document.addEventListener('mousedown',function(){dot.classList.add('clicking');ring.classList.add('clicking');});
-    document.addEventListener('mouseup',function(){dot.classList.remove('clicking');ring.classList.remove('clicking');});
-    document.addEventListener('mouseleave',function(){dot.style.opacity='0';ring.style.opacity='0';});
-    document.addEventListener('mouseenter',function(){dot.style.opacity='1';ring.style.opacity='1';});
-  })();
+      if (!form) return;
 
-  (function(){var bar=document.getElementById('scroll-progress');if(!bar)return;window.addEventListener('scroll',function(){var max=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(max>0?(window.scrollY/max)*100:0)+'%';},{passive:true});})();
+      function setLoading(loading) {
+        btn.disabled = loading;
+        if (spinner)    spinner.style.display   = loading ? 'block' : 'none';
+        if (submitText) submitText.textContent   = loading ? '送信中…' : '送信する';
+        if (submitIcon) submitIcon.style.display = loading ? 'none'  : 'block';
+      }
 
-  (function(){
-    var revealEls=document.querySelectorAll('.reveal');revealEls.forEach(function(el){el.dataset.pending='';});
-    var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');delete e.target.dataset.pending;obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
-    revealEls.forEach(function(el){obs.observe(el);});
-  })();
+      function showMsg(type, text) {
+        msgOk.className = 'form-msg';
+        msgNg.className = 'form-msg';
+        if (type === 'ok') {
+          if (msgOkText) msgOkText.textContent = text;
+          msgOk.className = 'form-msg ok';
+          msgOk.focus();
+        } else {
+          if (msgNgText) msgNgText.textContent = text;
+          msgNg.className = 'form-msg ng';
+          msgNg.focus();
+        }
+      }
 
-  (function(){
-    var canvas=document.getElementById('star-canvas');if(!canvas)return;
-    var ctx=canvas.getContext('2d'),stars=[],W=0,H=0,constellations=[],rafId=null,active=true;
-    function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
-    function mkStar(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.1+0.15,a:Math.random(),da:(Math.random()*0.003+0.001)*(Math.random()>0.5?1:-1),vy:-(Math.random()*0.035+0.005),bright:Math.random()>0.95};}
-    function buildConst(){constellations=[];var s=stars.filter(function(x){return x.bright;}).slice(0,10);for(var i=0;i<s.length-1;i++){if(Math.hypot(s[i+1].x-s[i].x,s[i+1].y-s[i].y)<240)constellations.push({a:s[i],b:s[i+1]});}}
-    var shooters=[];function mkShooter(){return{x:0,y:0,len:Math.random()*130+70,speed:Math.random()*8+5,angle:Math.PI/4+(Math.random()-0.5)*0.5,life:0,maxLife:Math.random()*45+28,active:false,timer:Math.random()*180+40};}function resetShooter(sh){sh.x=Math.random()*W*1.4-W*0.2;sh.y=Math.random()*H*0.45;sh.len=Math.random()*130+70;sh.speed=Math.random()*8+5;sh.angle=Math.PI/4+(Math.random()-0.5)*0.5;sh.maxLife=Math.random()*45+28;sh.life=0;sh.active=true;}function initShooters(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){shooters=[];return;}shooters=Array.from({length:5},function(_,i){var s=mkShooter();s.timer=i*80+20;return s;});}function init(){stars=Array.from({length:200},mkStar);buildConst();initShooters();}
-    function draw(){
-      if(!active){rafId=null;return;}
-      ctx.clearRect(0,0,W,H);
-      for(var ci=0;ci<constellations.length;ci++){var c=constellations[ci];ctx.beginPath();ctx.moveTo(c.a.x,c.a.y);ctx.lineTo(c.b.x,c.b.y);ctx.strokeStyle='rgba(59,158,255,0.04)';ctx.lineWidth=0.5;ctx.stroke();}
-      for(var shi=0;shi<shooters.length;shi++){var sh=shooters[shi];if(!sh.active){sh.timer--;if(sh.timer<=0)resetShooter(sh);continue;}sh.life++;sh.x+=Math.cos(sh.angle)*sh.speed;sh.y+=Math.sin(sh.angle)*sh.speed;var t=sh.life/sh.maxLife;var al=t<0.2?t/0.2:t>0.75?(1-t)/0.25:1;var tX=sh.x-Math.cos(sh.angle)*sh.len*Math.min(t*2.5,1);var tY=sh.y-Math.sin(sh.angle)*sh.len*Math.min(t*2.5,1);var sg=ctx.createLinearGradient(tX,tY,sh.x,sh.y);sg.addColorStop(0,'rgba(180,220,255,0)');sg.addColorStop(0.6,'rgba(200,230,255,'+(al*0.4)+')');sg.addColorStop(1,'rgba(245,252,255,'+(al*0.95)+')');ctx.beginPath();ctx.moveTo(tX,tY);ctx.lineTo(sh.x,sh.y);ctx.strokeStyle=sg;ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.arc(sh.x,sh.y,2*al,0,Math.PI*2);ctx.fillStyle='rgba(220,240,255,'+al+')';ctx.fill();if(sh.life>=sh.maxLife){sh.active=false;sh.timer=Math.random()*240+120;}}
-      for(var si=0;si<stars.length;si++){var s=stars[si];s.a+=s.da;if(s.a>1){s.a=1;s.da=-Math.abs(s.da);}if(s.a<0.04){s.a=0.04;s.da=Math.abs(s.da);}s.y+=s.vy;if(s.y<-4){s.y=H+4;s.x=Math.random()*W;}if(s.bright){var g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*3);g.addColorStop(0,'rgba(180,215,255,'+s.a+')');g.addColorStop(1,'rgba(180,215,255,0)');ctx.beginPath();ctx.arc(s.x,s.y,s.r*3,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();}ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba('+(s.bright?'200,230':'160,200')+',255,'+s.a+')';ctx.fill();}
-      rafId=requestAnimationFrame(draw);
-    }
-    document.addEventListener('visibilitychange',function(){active=!document.hidden;if(active&&!rafId)rafId=requestAnimationFrame(draw);});
-    var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){resize();init();},200);},{passive:true});
-    resize();init();rafId=requestAnimationFrame(draw);
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        /* 全フィールドバリデーション */
+        var fields  = form.querySelectorAll('.form-input, .form-textarea');
+        var allValid = true;
+        var firstInvalid = null;
+
+        fields.forEach(function (field) {
+          var ok = validateField(field);
+          if (!ok && !firstInvalid) firstInvalid = field;
+          if (!ok) allValid = false;
+        });
+
+        if (!allValid) {
+          if (firstInvalid) firstInvalid.focus();
+          return;
+        }
+
+        var n  = form.from_name.value.trim();
+        var em = form.from_email.value.trim();
+        var s  = form.subject.value.trim();
+        var m  = form.message.value.trim();
+
+        setLoading(true);
+        msgOk.className = 'form-msg';
+        msgNg.className = 'form-msg';
+
+        var params = {
+          from_name:  n,
+          from_email: em,
+          subject:    s,
+          message:    m,
+          reply_to:   em,
+          to_name:    n,
+          to_email:   em
+        };
+
+        /* 既存のEmailJS送信処理を完全保持 */
+        Promise.all([
+          emailjs.send('astro_root', 'astro_root_notify',    params),
+          emailjs.send('astro_root', 'astro_root_autoreply', params)
+        ])
+          .then(function () {
+            showMsg('ok', '✓ 送信しました。自動返信メールをご確認ください。');
+            form.reset();
+            var counter = document.getElementById('message-counter');
+            if (counter) counter.textContent = '0 / 2000';
+          })
+          .catch(function () {
+            showMsg('ng', '✕ 送信に失敗しました。しばらく経ってから再度お試しください。');
+          })
+          .finally(function () {
+            setLoading(false);
+          });
+      });
+    })();
+
   })();
   </script>
 </body>
