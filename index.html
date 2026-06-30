@@ -348,6 +348,107 @@
       .hero-overlay { top: calc(var(--nav-h) + 16px); }
       .hero-title { font-size: 1.4rem; }
     }
+
+    /* ══════════════════════════════════════════════
+       モバイル操作性改善
+       768px以下: SVG研究室を「眺めるだけ」の装飾に変更し、
+       実際の操作はカード型グリッドメニューに一本化する。
+       理由: 1枚の大きなSVGを縮小表示すると個々の設備が
+       タップ判定的にも視認的にも極小になり、
+       「どこを押せばいいかわからない」状態になるため。
+    ══════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+      .lab-viewport {
+        height: auto;
+        min-height: 46vh;
+        max-height: 52vh;
+        overflow: hidden;
+      }
+
+      /* SVG内の各設備はタップ不可・装飾専用に切り替え */
+      .lab-obj {
+        pointer-events: none;
+      }
+
+      .lab-obj:hover {
+        filter: none;
+      }
+
+      .lab-scene-svg {
+        object-fit: cover;
+        object-position: center 30%;
+      }
+
+      /* ツールチップはモバイルで不要（ホバー前提のUIのため） */
+      .lab-tooltip { display: none !important; }
+
+      /* 探索ヒントの文言をタップ前提に変更 */
+      .explore-hint { display: none; }
+
+      /* ヒーローオーバーレイをコンパクトに */
+      .hero-overlay {
+        top: calc(var(--nav-h) + 14px);
+        left: 16px;
+        right: 16px;
+      }
+
+      .hero-sub {
+        display: none;
+      }
+
+      /* モバイルメニューボタンを非表示にし、
+         代わりにグリッドメニューを常時インライン表示する */
+      .mobile-menu-btn { display: none !important; }
+
+      /* モバイルナビシートをモーダルではなく
+         ページ内コンテンツとして常時表示に変更 */
+      .mobile-nav-sheet {
+        position: static;
+        inset: auto;
+        display: flex !important;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        padding: 20px 16px 40px;
+        animation: none;
+        z-index: auto;
+      }
+
+      .mobile-nav-sheet-close { display: none; }
+
+      .mobile-nav-title {
+        margin-bottom: 16px;
+        text-align: center;
+        font-size: 0.62rem;
+      }
+
+      .mobile-nav-grid {
+        max-width: 480px;
+        margin: 0 auto;
+        gap: 10px;
+      }
+
+      .mobile-nav-item {
+        padding: 18px 12px;
+        min-height: 92px;
+        justify-content: center;
+      }
+
+      .mobile-nav-item-icon { width: 30px; height: 30px; }
+
+      .mobile-nav-item-label { font-size: 0.56rem; }
+
+      .mobile-nav-item-name { font-size: 0.78rem; }
+
+      /* body のスクロール固定を解除（モバイルではページ全体をスクロールする構成に変更） */
+      body { overflow: visible; height: auto; }
+    }
+
+    @media (max-width: 420px) {
+      .mobile-nav-grid { grid-template-columns: 1fr 1fr; }
+      .lab-viewport { min-height: 38vh; max-height: 42vh; }
+    }
   </style>
 </head>
 <body>
@@ -1013,7 +1114,7 @@
     <!-- モバイルナビゲーションシート -->
     <div class="mobile-nav-sheet" id="mobile-nav-sheet" role="dialog" aria-modal="true" aria-label="研究室ナビゲーション">
       <button class="mobile-nav-sheet-close" id="mobile-nav-close" aria-label="メニューを閉じる">&#x2715;</button>
-      <p class="mobile-nav-title">Research Lab — Navigation</p>
+      <p class="mobile-nav-title">タップして移動</p>
       <nav class="mobile-nav-grid" aria-label="研究室メニュー">
         <a href="/projects/" class="mobile-nav-item">
           <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
