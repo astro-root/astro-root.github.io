@@ -518,6 +518,45 @@
       .article-card { grid-template-columns: 1fr; }
       .article-card-arrow { display: none; }
     }
+
+    .error-state {
+      display: none;
+      text-align: center;
+      padding: 80px 0;
+    }
+
+    .error-state-text {
+      max-width: 420px;
+      margin: 0 auto 18px;
+      color: var(--text-1);
+      font-size: var(--fs-xs);
+      line-height: 1.8;
+    }
+
+    .retry-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border-m);
+      background: rgba(75,169,255,0.08);
+      color: var(--accent-blue);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: var(--ls-wide);
+      cursor: pointer;
+      transition: background var(--t), border-color var(--t), transform var(--t) var(--ease-spring);
+      min-height: 42px;
+    }
+
+    .retry-btn:hover {
+      background: rgba(75,169,255,0.16);
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+
+    .retry-btn svg { width: 14px; height: 14px; }
   </style>
 </head>
 <body>
@@ -622,7 +661,16 @@
         <div class="loading-dot"></div>
         <div class="loading-dot"></div>
         <div class="loading-dot"></div>
-        <span>Loading articles...</span>
+        <span>記事データを読み込み中...</span>
+      </div>
+
+      <!-- エラー -->
+      <div class="error-state" id="error-state" role="alert">
+        <p class="error-state-text">通信エラー — 記事データの取得に失敗しました。研究室サーバーとの接続をご確認の上、再試行してください。</p>
+        <button type="button" class="retry-btn" id="retry-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          再試行
+        </button>
       </div>
 
       <!-- メインレイアウト -->
@@ -965,9 +1013,14 @@
     }
 
     /* ── メイン ── */
-    function init() {
+    function loadBlog() {
       var loading = document.getElementById('loading-state');
+      var errEl   = document.getElementById('error-state');
       var layout  = document.getElementById('blog-layout');
+
+      if (loading) loading.style.display = 'flex';
+      if (errEl)   errEl.style.display   = 'none';
+      if (layout)  layout.style.display  = 'none';
 
       Promise.all([
         fetch('/assets/data/articles.json').then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }),
@@ -994,18 +1047,19 @@
       .catch(function(err) {
         console.error('Blog data load error:', err);
         if (loading) loading.style.display = 'none';
-        if (layout) {
-          layout.style.display = '';
-          var grid = document.getElementById('articles-grid');
-          if (grid) grid.innerHTML = buildEmpty();
-        }
+        if (errEl)   errEl.style.display   = 'block';
       });
     }
 
+    var retryBtnBlog = document.getElementById('retry-btn');
+    if (retryBtnBlog) {
+      retryBtnBlog.addEventListener('click', loadBlog);
+    }
+
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
+      document.addEventListener('DOMContentLoaded', loadBlog);
     } else {
-      init();
+      loadBlog();
     }
   })();
   </script>
