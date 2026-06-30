@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 
+Disallow: /admin/
 Disallow: /q-score/api/
 Disallow: /q-panel/api/
 Disallow: /q-mark/api/
