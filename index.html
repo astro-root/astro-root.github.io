@@ -35,56 +35,43 @@
   {"@context":"https://schema.org","@type":"Person","name":"るーと","alternateName":"astro_root","url":"https://astro-root.com/","image":"https://astro-root.com/icon.png","sameAs":["https://x.com/astro_root","https://x.com/root_qscore","https://x.com/AstroHigh_Info"]}
   </script>
   <style>
-    /* ══════════════════════════════════════════════
-       全体レイアウト：縦長スクロール式
-       PC・モバイル共通のDOM構造、幅のみレスポンシブに変化
-    ══════════════════════════════════════════════ */
-    main {
-      padding-top: var(--nav-h);
+    /* ── ページ固有スタイル ── */
+    body { overflow: hidden; height: 100vh; }
+
+    /* 研究室ビューポート */
+    .lab-viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      cursor: default;
     }
 
-    /* ── トップヒーロー ── */
-    .hero-section {
-      min-height: 56vh;
+    /* 研究室SVGラッパー */
+    .lab-scene-wrap {
+      position: absolute;
+      inset: 0;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 60px 20px 40px;
-      position: relative;
     }
 
-    .hero-eyebrow {
-      font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
-      color: var(--accent-teal);
-      letter-spacing: var(--ls-wide);
-      text-transform: uppercase;
-      margin-bottom: 14px;
-      animation: heroFadeIn 0.9s var(--ease-out) 0.1s both;
+    .lab-scene-svg {
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
     }
 
-    .hero-title {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 7vw, 3.4rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      background: linear-gradient(135deg, var(--text-0) 0%, var(--accent-blue) 60%, var(--accent-teal) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 14px;
-      animation: heroFadeIn 0.9s var(--ease-out) 0.25s both;
-    }
-
-    .hero-sub {
-      font-size: var(--fs-sm);
-      color: var(--text-1);
-      line-height: 1.8;
-      max-width: 480px;
-      animation: heroFadeIn 0.9s var(--ease-out) 0.4s both;
+    /* ── ヒーローオーバーレイ（左上） ── */
+    .hero-overlay {
+      position: absolute;
+      top: calc(var(--nav-h) + 24px);
+      left: clamp(20px, 5vw, 64px);
+      z-index: 20;
+      pointer-events: none;
+      animation: heroFadeIn 1s var(--ease-out) 0.4s both;
     }
 
     @keyframes heroFadeIn {
@@ -92,301 +79,375 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .scroll-cue {
-      margin-top: 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      animation: heroFadeIn 1s var(--ease-out) 0.7s both;
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--accent-teal);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
     }
 
-    .scroll-cue-text {
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--text-0) 0%, var(--accent-blue) 60%, var(--accent-teal) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .hero-sub {
+      font-size: 0.75rem;
+      color: var(--text-1);
+      line-height: 1.8;
+    }
+
+    /* ── ヒントラベル（右下） ── */
+    .explore-hint {
+      position: absolute;
+      bottom: 28px;
+      right: clamp(20px, 5vw, 64px);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: heroFadeIn 1.2s var(--ease-out) 1.2s both;
+      pointer-events: none;
+    }
+
+    .explore-hint-text {
       font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
+      font-size: 0.58rem;
       color: var(--text-2);
-      letter-spacing: var(--ls-wide);
+      letter-spacing: 0.18em;
       text-transform: uppercase;
     }
 
-    .scroll-cue-icon {
-      width: 22px;
-      height: 22px;
-      color: var(--accent-blue);
-      animation: scrollBounce 1.8s ease-in-out infinite;
-    }
-
-    @keyframes scrollBounce {
-      0%, 100% { transform: translateY(0); opacity: 0.5; }
-      50%       { transform: translateY(8px); opacity: 1; }
-    }
-
-    /* ══════════════════════════════════════════════
-       設備セクション共通スタイル
-    ══════════════════════════════════════════════ */
-    .equip-section {
-      padding: 56px 0;
-      border-top: 1px solid var(--border);
-      position: relative;
-    }
-
-    .equip-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: center;
-      max-width: var(--container-max);
-      margin: 0 auto;
-      padding: 0 var(--container-pad);
-    }
-
-    .equip-section:nth-child(even) .equip-inner {
-      direction: rtl;
-    }
-
-    .equip-section:nth-child(even) .equip-inner > * {
-      direction: ltr;
-    }
-
-    /* ── SVGビジュアル側 ── */
-    .equip-visual {
-      position: relative;
-    }
-
-    .equip-visual-card {
-      display: block;
-      width: 100%;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-2xl);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 32px;
-      text-decoration: none;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition:
-        border-color var(--t),
-        background var(--t),
-        box-shadow var(--t),
-        transform var(--t) var(--ease);
-    }
-
-    .equip-visual-card:hover,
-    .equip-visual-card:focus-visible {
-      border-color: var(--accent-blue);
-      background: var(--bg-card-hover);
-      transform: translateY(-4px);
-      box-shadow: 0 20px 50px rgba(75,169,255,0.16);
-      outline: none;
-    }
-
-    .equip-visual-card svg {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    /* ── クリッカブル・アピール（パルス + 矢印 + ラベル） ── */
-    .tap-hint {
-      position: absolute;
-      bottom: 18px;
-      right: 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(4,12,24,0.85);
-      border: 1px solid var(--accent-blue);
-      border-radius: 99px;
-      padding: 7px 14px 7px 10px;
-      backdrop-filter: blur(8px);
-      pointer-events: none;
-      z-index: 5;
-      transition: transform var(--t) var(--ease-spring), box-shadow var(--t);
-      box-shadow: 0 0 0 0 rgba(75,169,255,0.4);
-    }
-
-    .equip-visual-card:hover .tap-hint,
-    .equip-visual-card:focus-visible .tap-hint {
-      transform: scale(1.08);
-      box-shadow: 0 0 0 6px rgba(75,169,255,0.10);
-    }
-
-    .tap-hint-dot {
-      width: 8px;
-      height: 8px;
+    .explore-hint-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--accent-blue);
-      flex-shrink: 0;
-      position: relative;
+      animation: hintPulse 2s ease-in-out infinite;
     }
 
-    .tap-hint-dot::before {
-      content: "";
-      position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      border: 1.5px solid var(--accent-blue);
-      animation: tapPulse 1.8s ease-out infinite;
+    @keyframes hintPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.3; transform: scale(0.6); }
     }
 
-    @keyframes tapPulse {
-      0%   { transform: scale(0.5); opacity: 0.9; }
-      80%  { transform: scale(2.2); opacity: 0; }
-      100% { transform: scale(2.2); opacity: 0; }
-    }
-
-    .tap-hint-text {
-      font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
-      color: var(--accent-blue);
-      letter-spacing: var(--ls-label);
-      text-transform: uppercase;
+    /* ── ツールチップ ── */
+    .lab-tooltip {
+      position: fixed;
+      z-index: 200;
+      background: rgba(4, 12, 24, 0.92);
+      border: 1px solid var(--border-m);
+      border-radius: var(--r-md);
+      padding: 10px 16px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
       white-space: nowrap;
     }
 
-    .tap-hint-arrow {
-      width: 12px;
-      height: 12px;
-      color: var(--accent-blue);
-      transition: transform var(--t) var(--ease-spring);
+    .lab-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .equip-visual-card:hover .tap-hint-arrow,
-    .equip-visual-card:focus-visible .tap-hint-arrow {
-      transform: translateX(3px);
-    }
-
-    /* 番号バッジ（地図のピンのような目印） */
-    .equip-num {
-      position: absolute;
-      top: 18px;
-      left: 18px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal));
-      color: var(--bg-0);
+    .lab-tooltip-name {
       font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 5;
-      box-shadow: 0 4px 14px rgba(75,169,255,0.35);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-0);
+      margin-bottom: 2px;
     }
 
-    /* ── テキスト側 ── */
-    .equip-body {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .equip-label {
+    .lab-tooltip-dest {
       font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
+      font-size: 0.60rem;
       color: var(--accent-teal);
-      letter-spacing: var(--ls-wide);
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
-    .equip-name {
-      font-family: var(--font-display);
-      font-size: clamp(1.4rem, 3.4vw, 2rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--text-0);
-      line-height: 1.25;
+    /* ── クリッカブル設備：ホバーエフェクト ── */
+    .lab-obj {
+      cursor: pointer;
+      transition: filter 0.22s var(--ease);
     }
 
-    .equip-desc {
-      font-size: var(--fs-sm);
-      color: var(--text-1);
-      line-height: 1.85;
-      max-width: 440px;
+    .lab-obj:hover {
+      filter: brightness(1.3) drop-shadow(0 0 8px rgba(59,158,255,0.6));
     }
 
-    .equip-link {
-      display: inline-flex;
+    .lab-obj:focus-visible {
+      outline: none;
+      filter: brightness(1.4) drop-shadow(0 0 12px rgba(59,158,255,0.9));
+    }
+
+    /* ── モバイル用ナビゲーションメニュー ── */
+    .mobile-menu-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      display: none;
       align-items: center;
-      gap: 9px;
-      align-self: flex-start;
-      margin-top: 8px;
-      padding: 12px 22px;
-      border-radius: var(--r-md);
-      background: rgba(75,169,255,0.10);
-      border: 1px solid rgba(75,169,255,0.35);
-      color: var(--accent-blue);
+      gap: 8px;
+      background: rgba(4,12,24,0.90);
+      border: 1px solid var(--border-m);
+      border-radius: 99px;
+      padding: 10px 22px;
       font-family: var(--font-mono);
-      font-size: var(--fs-xs);
-      letter-spacing: var(--ls-wide);
-      text-decoration: none;
-      transition:
-        background var(--t),
-        border-color var(--t),
-        transform var(--t) var(--ease-spring);
+      font-size: 0.65rem;
+      color: var(--accent-blue);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: background var(--t), border-color var(--t);
     }
 
-    .equip-link:hover {
-      background: rgba(75,169,255,0.20);
+    .mobile-menu-btn:hover {
+      background: rgba(59,158,255,0.10);
       border-color: var(--accent-blue);
-      transform: translateX(4px);
     }
 
-    .equip-link svg { width: 14px; height: 14px; }
+    .mobile-menu-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+
+    /* モバイルメニュー（全画面グリッド） */
+    .mobile-nav-sheet {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(2,11,24,0.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 40px 24px;
+    }
+
+    .mobile-nav-sheet.open {
+      display: flex;
+      animation: sheetIn 0.28s var(--ease-out) forwards;
+    }
+
+    @keyframes sheetIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .mobile-nav-sheet-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: 1px solid var(--border-m);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: var(--text-1);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color var(--t), color var(--t);
+    }
+
+    .mobile-nav-sheet-close:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-0);
+    }
+
+    .mobile-nav-title {
+      font-family: var(--font-mono);
+      font-size: 0.60rem;
+      color: var(--accent-teal);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .mobile-nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .mobile-nav-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px 16px;
+      text-align: center;
+      text-decoration: none;
+      color: var(--text-0);
+      transition: border-color var(--t), background var(--t), transform var(--t) var(--ease);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mobile-nav-item:hover {
+      border-color: var(--border-m);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .mobile-nav-item-icon {
+      width: 36px;
+      height: 36px;
+      color: var(--accent-blue);
+    }
+
+    .mobile-nav-item-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--accent-teal);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .mobile-nav-item-name {
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 780px) {
+      .mobile-menu-btn { display: flex; }
+      .explore-hint { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-overlay { top: calc(var(--nav-h) + 16px); }
+      .hero-title { font-size: 1.4rem; }
+    }
 
     /* ══════════════════════════════════════════════
-       レスポンシブ：PC/モバイル共通DOM、幅のみ変化
+       モバイル操作性改善
+       768px以下: SVG研究室を「眺めるだけ」の装飾に変更し、
+       実際の操作はカード型グリッドメニューに一本化する。
+       理由: 1枚の大きなSVGを縮小表示すると個々の設備が
+       タップ判定的にも視認的にも極小になり、
+       「どこを押せばいいかわからない」状態になるため。
     ══════════════════════════════════════════════ */
-    @media (max-width: 900px) {
-      .equip-inner {
-        grid-template-columns: 1fr;
-        gap: 24px;
+    @media (max-width: 768px) {
+
+      .lab-viewport {
+        height: auto;
+        min-height: 46vh;
+        max-height: 52vh;
+        overflow: hidden;
       }
 
-      .equip-section:nth-child(even) .equip-inner {
-        direction: ltr;
+      /* SVG内の各設備はタップ不可・装飾専用に切り替え */
+      .lab-obj {
+        pointer-events: none;
       }
 
-      .equip-visual-card { padding: 24px; }
+      .lab-obj:hover {
+        filter: none;
+      }
+
+      .lab-scene-svg {
+        object-fit: cover;
+        object-position: center 30%;
+      }
+
+      /* ツールチップはモバイルで不要（ホバー前提のUIのため） */
+      .lab-tooltip { display: none !important; }
+
+      /* 探索ヒントの文言をタップ前提に変更 */
+      .explore-hint { display: none; }
+
+      /* ヒーローオーバーレイをコンパクトに */
+      .hero-overlay {
+        top: calc(var(--nav-h) + 14px);
+        left: 16px;
+        right: 16px;
+      }
+
+      .hero-sub {
+        display: none;
+      }
+
+      /* モバイルメニューボタンを非表示にし、
+         代わりにグリッドメニューを常時インライン表示する */
+      .mobile-menu-btn { display: none !important; }
+
+      /* モバイルナビシートをモーダルではなく
+         ページ内コンテンツとして常時表示に変更 */
+      .mobile-nav-sheet {
+        position: static;
+        inset: auto;
+        display: flex !important;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        padding: 20px 16px 40px;
+        animation: none;
+        z-index: auto;
+      }
+
+      .mobile-nav-sheet-close { display: none; }
+
+      .mobile-nav-title {
+        margin-bottom: 16px;
+        text-align: center;
+        font-size: 0.62rem;
+      }
+
+      .mobile-nav-grid {
+        max-width: 480px;
+        margin: 0 auto;
+        gap: 10px;
+      }
+
+      .mobile-nav-item {
+        padding: 18px 12px;
+        min-height: 92px;
+        justify-content: center;
+      }
+
+      .mobile-nav-item-icon { width: 30px; height: 30px; }
+
+      .mobile-nav-item-label { font-size: 0.56rem; }
+
+      .mobile-nav-item-name { font-size: 0.78rem; }
+
+      /* body のスクロール固定を解除（モバイルではページ全体をスクロールする構成に変更） */
+      body { overflow: visible; height: auto; }
     }
 
-    @media (max-width: 600px) {
-      .hero-section { min-height: 42vh; padding: 44px 16px 32px; }
-      .equip-section { padding: 40px 0; }
-      .equip-visual-card { padding: 18px; border-radius: var(--r-xl); }
-      .tap-hint { bottom: 12px; right: 12px; padding: 6px 12px 6px 8px; }
-      .tap-hint-text { font-size: 0.62rem; }
-      .equip-num { width: 30px; height: 30px; font-size: 0.8rem; top: 12px; left: 12px; }
-    }
-
-    @media (max-width: 400px) {
-      .equip-desc { font-size: var(--fs-xs); }
-    }
-
-    /* ── フッターCTA ── */
-    .footer-cta {
-      padding: 60px 20px;
-      text-align: center;
-      border-top: 1px solid var(--border);
-    }
-
-    .footer-cta-text {
-      font-family: var(--font-mono);
-      font-size: var(--fs-xs);
-      color: var(--text-2);
-      letter-spacing: var(--ls-normal);
-      margin-bottom: 18px;
-    }
-
-    .footer-cta-links {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
+    @media (max-width: 420px) {
+      .mobile-nav-grid { grid-template-columns: 1fr 1fr; }
+      .lab-viewport { min-height: 38vh; max-height: 42vh; }
     }
   </style>
 </head>
@@ -444,438 +505,810 @@
   </header>
 
   <main id="main-content">
-
-    <!-- ── ヒーロー ── -->
-    <section class="hero-section">
-      <p class="hero-eyebrow">高校生 · Web Engineer · 天文学研究者</p>
+    <!-- ヒーローオーバーレイ -->
+    <div class="hero-overlay" aria-hidden="true">
+      <p class="hero-eyebrow">高校生&ensp;·&ensp;Web Engineer&ensp;·&ensp;天文学研究者</p>
       <h1 class="hero-title">るーとの研究室</h1>
-      <p class="hero-sub">スクロールして設備を見ていくと、各コンテンツへのリンクが見つかります</p>
-      <div class="scroll-cue" aria-hidden="true">
-        <span class="scroll-cue-text">Scroll</span>
-        <svg class="scroll-cue-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
+      <p class="hero-sub">設備をクリックして研究室を探索してください</p>
+    </div>
+
+    <!-- 探索ヒント -->
+    <div class="explore-hint" aria-hidden="true">
+      <div class="explore-hint-dot"></div>
+      <span class="explore-hint-text">Click equipment to explore</span>
+    </div>
+
+    <!-- 研究室ビューポート -->
+    <div class="lab-viewport" id="lab-viewport">
+      <div class="lab-scene-wrap">
+
+        <!-- ══════════════════════════════════════════════
+             研究室 メインSVG
+             viewBox: 1600 x 900 (16:9 基準)
+             設備配置:
+               PC(ノートPC)       → /projects/   (Web Tools)
+               本棚               → /study/
+               ホワイトボード     → /blog/
+               天体望遠鏡         → /astronomy/
+               研究机             → /projects/
+               サーバーラック     → /lab/
+               キャビネット       → /research-log/
+               封筒               → /contact
+               ドア               → /about
+        ══════════════════════════════════════════════ -->
+        <svg
+          class="lab-scene-svg"
+          viewBox="0 0 1600 900"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="るーとの研究室 — クリックで各コンテンツへ移動"
+          id="lab-svg"
+        >
+          <defs>
+            <!-- グラデーション定義 -->
+            <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(2,11,24,0)"/>
+              <stop offset="100%" stop-color="rgba(2,16,38,0.6)"/>
+            </linearGradient>
+            <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(4,18,42,0.95)"/>
+              <stop offset="100%" stop-color="rgba(3,13,30,0.98)"/>
+            </linearGradient>
+            <linearGradient id="deskGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(8,28,60,0.9)"/>
+              <stop offset="100%" stop-color="rgba(5,18,40,0.95)"/>
+            </linearGradient>
+            <linearGradient id="monitorGlow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(59,158,255,0.12)"/>
+              <stop offset="100%" stop-color="rgba(59,158,255,0)"/>
+            </linearGradient>
+            <linearGradient id="windowGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(2,8,20,0.95)"/>
+              <stop offset="100%" stop-color="rgba(4,14,34,0.98)"/>
+            </linearGradient>
+            <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(180,215,255,0.9)"/>
+              <stop offset="100%" stop-color="rgba(180,215,255,0)"/>
+            </radialGradient>
+            <radialGradient id="monitorLight" cx="50%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="rgba(59,158,255,0.08)"/>
+              <stop offset="100%" stop-color="rgba(59,158,255,0)"/>
+            </radialGradient>
+            <radialGradient id="lampLight" cx="50%" cy="100%" r="80%">
+              <stop offset="0%" stop-color="rgba(255,200,100,0.18)"/>
+              <stop offset="100%" stop-color="rgba(255,200,100,0)"/>
+            </radialGradient>
+            <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glow-soft" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="monitorClip">
+              <rect x="541" y="401" width="278" height="164" rx="2"/>
+            </clipPath>
+            <clipPath id="laptopClip">
+              <rect x="736" y="551" width="190" height="118" rx="2"/>
+            </clipPath>
+            <clipPath id="windowClip">
+              <rect x="51" y="51" width="298" height="388" rx="4"/>
+            </clipPath>
+          </defs>
+
+          <!-- ══════ 背景・壁・床 ══════ -->
+          <rect x="0" y="0" width="1600" height="900" fill="url(#wallGrad)"/>
+          <!-- 天井ライン -->
+          <line x1="0" y1="60" x2="1600" y2="60" stroke="rgba(59,158,255,0.08)" stroke-width="1"/>
+          <!-- 床 -->
+          <rect x="0" y="780" width="1600" height="120" fill="rgba(3,10,22,0.8)"/>
+          <line x1="0" y1="780" x2="1600" y2="780" stroke="rgba(59,158,255,0.12)" stroke-width="1.5"/>
+          <!-- 床グリッド線 -->
+          <line x1="0" y1="820" x2="1600" y2="820" stroke="rgba(59,158,255,0.04)" stroke-width="1"/>
+          <line x1="0" y1="860" x2="1600" y2="860" stroke="rgba(59,158,255,0.04)" stroke-width="1"/>
+          <!-- 壁パネルライン -->
+          <line x1="380" y1="60" x2="380" y2="780" stroke="rgba(59,158,255,0.06)" stroke-width="1"/>
+          <line x1="1100" y1="60" x2="1100" y2="780" stroke="rgba(59,158,255,0.06)" stroke-width="1"/>
+          <!-- 天井ライト -->
+          <rect x="480" y="58" width="200" height="4" rx="2" fill="rgba(255,220,160,0.20)"/>
+          <rect x="900" y="58" width="200" height="4" rx="2" fill="rgba(255,220,160,0.20)"/>
+          <!-- ライト光 -->
+          <ellipse cx="580" cy="80" rx="130" ry="40" fill="rgba(255,220,160,0.04)"/>
+          <ellipse cx="1000" cy="80" rx="130" ry="40" fill="rgba(255,220,160,0.04)"/>
+          <!-- 部屋コーナー影 -->
+          <rect x="0" y="0" width="50" height="900" fill="rgba(0,0,0,0.25)"/>
+          <rect x="1550" y="0" width="50" height="900" fill="rgba(0,0,0,0.25)"/>
+
+          <!-- ══════ 星空の窓（左上 — 装飾） ══════ -->
+          <rect x="51" y="51" width="298" height="388" rx="4" fill="url(#windowGrad)" stroke="rgba(59,158,255,0.20)" stroke-width="2"/>
+          <!-- 窓枠 -->
+          <line x1="200" y1="51" x2="200" y2="439" stroke="rgba(59,158,255,0.15)" stroke-width="2.5"/>
+          <line x1="51" y1="235" x2="349" y2="235" stroke="rgba(59,158,255,0.15)" stroke-width="2.5"/>
+          <!-- 窓枠装飾 -->
+          <rect x="48" y="48" width="304" height="394" rx="5" fill="none" stroke="rgba(59,158,255,0.30)" stroke-width="3"/>
+          <!-- 星 -->
+          <circle cx="90" cy="90" r="1.5" fill="rgba(220,240,255,0.9)"/>
+          <circle cx="155" cy="75" r="1" fill="rgba(200,225,255,0.7)"/>
+          <circle cx="280" cy="100" r="1.8" fill="rgba(220,240,255,0.85)"/>
+          <circle cx="120" cy="160" r="1.2" fill="rgba(200,225,255,0.6)"/>
+          <circle cx="310" cy="150" r="1" fill="rgba(200,225,255,0.5)"/>
+          <circle cx="80" cy="200" r="0.8" fill="rgba(200,225,255,0.6)"/>
+          <circle cx="240" cy="180" r="1.5" fill="rgba(220,240,255,0.8)"/>
+          <circle cx="170" cy="290" r="1" fill="rgba(200,225,255,0.5)"/>
+          <circle cx="320" cy="270" r="1.3" fill="rgba(200,225,255,0.65)"/>
+          <circle cx="100" cy="330" r="0.9" fill="rgba(200,225,255,0.5)"/>
+          <circle cx="260" cy="370" r="1.1" fill="rgba(200,225,255,0.55)"/>
+          <circle cx="140" cy="400" r="0.8" fill="rgba(200,225,255,0.45)"/>
+          <!-- 明るい星（グロー） -->
+          <circle cx="200" cy="130" r="3" fill="rgba(220,240,255,0.15)"/>
+          <circle cx="200" cy="130" r="1.8" fill="rgba(240,250,255,0.9)"/>
+          <circle cx="90" cy="310" r="2.5" fill="rgba(180,215,255,0.12)"/>
+          <circle cx="90" cy="310" r="1.5" fill="rgba(200,230,255,0.85)"/>
+          <!-- 星雲 -->
+          <ellipse cx="280" cy="220" rx="30" ry="20" fill="rgba(139,114,255,0.06)"/>
+          <ellipse cx="130" cy="350" rx="25" ry="15" fill="rgba(59,158,255,0.05)"/>
+          <!-- 月 -->
+          <circle cx="290" cy="95" r="22" fill="rgba(200,220,255,0.08)" stroke="rgba(200,220,255,0.15)" stroke-width="1"/>
+          <circle cx="298" cy="90" r="20" fill="rgba(2,8,20,0.9)"/>
+          <!-- 窓ガラス反射 -->
+          <line x1="55" y1="60" x2="80" y2="120" stroke="rgba(255,255,255,0.03)" stroke-width="8"/>
+          <!-- アニメーション星 -->
+          <circle cx="180" cy="100" r="1.2" fill="rgba(220,240,255,0.8)">
+            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="330" cy="200" r="1" fill="rgba(200,225,255,0.7)">
+            <animate attributeName="opacity" values="0.7;0.15;0.7" dur="4.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="100" cy="140" r="0.8" fill="rgba(200,225,255,0.6)">
+            <animate attributeName="opacity" values="0.6;0.1;0.6" dur="2.8s" repeatCount="indefinite"/>
+          </circle>
+          <!-- 窓下枠 -->
+          <rect x="40" y="438" width="320" height="14" rx="3" fill="rgba(8,25,55,0.9)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+
+          <!-- ══════ ドア（右端 → /about） ══════ -->
+          <g class="lab-obj" id="obj-door" tabindex="0" role="button" aria-label="ドア — Aboutページへ">
+            <rect x="1460" y="280" width="128" height="500" rx="4" fill="rgba(6,20,46,0.92)" stroke="rgba(59,158,255,0.25)" stroke-width="2"/>
+            <!-- ドアパネル -->
+            <rect x="1472" y="300" width="104" height="210" rx="3" fill="rgba(4,14,34,0.8)" stroke="rgba(59,158,255,0.14)" stroke-width="1"/>
+            <rect x="1472" y="524" width="104" height="238" rx="3" fill="rgba(4,14,34,0.8)" stroke="rgba(59,158,255,0.14)" stroke-width="1"/>
+            <!-- ドアノブ -->
+            <circle cx="1468" cy="535" r="8" fill="rgba(59,158,255,0.3)" stroke="rgba(59,158,255,0.6)" stroke-width="1.5"/>
+            <circle cx="1468" cy="535" r="4" fill="rgba(59,158,255,0.7)"/>
+            <!-- ドア上部ライト -->
+            <rect x="1488" y="268" width="64" height="14" rx="3" fill="rgba(59,158,255,0.08)" stroke="rgba(59,158,255,0.20)" stroke-width="1"/>
+            <!-- ABOUT ラベル -->
+            <text x="1524" y="412" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="rgba(59,158,255,0.50)" letter-spacing="4">ABOUT</text>
+            <!-- ドアヒンジ -->
+            <rect x="1581" y="310" width="6" height="20" rx="2" fill="rgba(59,158,255,0.25)"/>
+            <rect x="1581" y="490" width="6" height="20" rx="2" fill="rgba(59,158,255,0.25)"/>
+            <rect x="1581" y="680" width="6" height="20" rx="2" fill="rgba(59,158,255,0.25)"/>
+          </g>
+
+          <!-- ══════ 本棚（左 → /study/） ══════ -->
+          <g class="lab-obj" id="obj-bookshelf" tabindex="0" role="button" aria-label="本棚 — Studyページへ">
+            <!-- 棚フレーム -->
+            <rect x="52" y="452" width="298" height="328" rx="3" fill="rgba(5,16,38,0.92)" stroke="rgba(59,158,255,0.22)" stroke-width="1.5"/>
+            <!-- 棚板 x4 -->
+            <rect x="52" y="524" width="298" height="6" rx="1" fill="rgba(8,28,64,0.95)" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <rect x="52" y="604" width="298" height="6" rx="1" fill="rgba(8,28,64,0.95)" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <rect x="52" y="684" width="298" height="6" rx="1" fill="rgba(8,28,64,0.95)" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <rect x="52" y="770" width="298" height="6" rx="1" fill="rgba(8,28,64,0.95)" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <!-- 棚1段目：本 -->
+            <rect x="62"  y="468" width="20" height="54" rx="1" fill="rgba(59,158,255,0.45)" stroke="rgba(59,158,255,0.60)" stroke-width="0.8"/>
+            <rect x="84"  y="472" width="16" height="50" rx="1" fill="rgba(0,229,184,0.38)" stroke="rgba(0,229,184,0.55)" stroke-width="0.8"/>
+            <rect x="102" y="465" width="22" height="57" rx="1" fill="rgba(139,114,255,0.42)" stroke="rgba(139,114,255,0.60)" stroke-width="0.8"/>
+            <rect x="126" y="470" width="14" height="52" rx="1" fill="rgba(59,158,255,0.30)" stroke="rgba(59,158,255,0.45)" stroke-width="0.8"/>
+            <rect x="142" y="468" width="18" height="54" rx="1" fill="rgba(255,180,60,0.35)" stroke="rgba(255,180,60,0.50)" stroke-width="0.8"/>
+            <rect x="162" y="474" width="12" height="48" rx="1" fill="rgba(0,229,184,0.28)" stroke="rgba(0,229,184,0.42)" stroke-width="0.8"/>
+            <rect x="176" y="466" width="24" height="56" rx="1" fill="rgba(59,158,255,0.38)" stroke="rgba(59,158,255,0.55)" stroke-width="0.8"/>
+            <rect x="202" y="471" width="16" height="51" rx="1" fill="rgba(139,114,255,0.30)" stroke="rgba(139,114,255,0.45)" stroke-width="0.8"/>
+            <rect x="220" y="467" width="20" height="55" rx="1" fill="rgba(255,100,80,0.30)" stroke="rgba(255,100,80,0.45)" stroke-width="0.8"/>
+            <rect x="242" y="470" width="14" height="52" rx="1" fill="rgba(59,158,255,0.35)" stroke="rgba(59,158,255,0.50)" stroke-width="0.8"/>
+            <rect x="258" y="473" width="18" height="49" rx="1" fill="rgba(0,229,184,0.32)" stroke="rgba(0,229,184,0.48)" stroke-width="0.8"/>
+            <rect x="278" y="465" width="22" height="57" rx="1" fill="rgba(139,114,255,0.38)" stroke="rgba(139,114,255,0.55)" stroke-width="0.8"/>
+            <rect x="302" y="468" width="16" height="54" rx="1" fill="rgba(59,158,255,0.28)" stroke="rgba(59,158,255,0.42)" stroke-width="0.8"/>
+            <rect x="320" y="471" width="22" height="51" rx="1" fill="rgba(255,180,60,0.28)" stroke="rgba(255,180,60,0.42)" stroke-width="0.8"/>
+            <!-- 棚2段目：本 -->
+            <rect x="62"  y="548" width="18" height="50" rx="1" fill="rgba(0,229,184,0.40)" stroke="rgba(0,229,184,0.56)" stroke-width="0.8"/>
+            <rect x="82"  y="551" width="24" height="47" rx="1" fill="rgba(59,158,255,0.35)" stroke="rgba(59,158,255,0.52)" stroke-width="0.8"/>
+            <rect x="108" y="547" width="14" height="51" rx="1" fill="rgba(139,114,255,0.35)" stroke="rgba(139,114,255,0.52)" stroke-width="0.8"/>
+            <rect x="124" y="549" width="20" height="49" rx="1" fill="rgba(255,80,60,0.28)" stroke="rgba(255,80,60,0.42)" stroke-width="0.8"/>
+            <rect x="146" y="546" width="16" height="52" rx="1" fill="rgba(59,158,255,0.40)" stroke="rgba(59,158,255,0.58)" stroke-width="0.8"/>
+            <rect x="164" y="552" width="22" height="46" rx="1" fill="rgba(0,229,184,0.30)" stroke="rgba(0,229,184,0.45)" stroke-width="0.8"/>
+            <!-- ブックエンド -->
+            <rect x="188" y="544" width="4" height="54" rx="1" fill="rgba(59,158,255,0.20)"/>
+            <!-- 装飾品：地球儀っぽい球体 -->
+            <circle cx="220" cy="570" r="22" fill="rgba(4,14,34,0.9)" stroke="rgba(59,158,255,0.35)" stroke-width="1.5"/>
+            <ellipse cx="220" cy="570" rx="22" ry="8" fill="none" stroke="rgba(59,158,255,0.20)" stroke-width="1"/>
+            <ellipse cx="220" cy="570" rx="8" ry="22" fill="none" stroke="rgba(59,158,255,0.20)" stroke-width="1"/>
+            <circle cx="220" cy="570" r="5" fill="rgba(59,158,255,0.35)">
+              <animate attributeName="opacity" values="0.35;0.7;0.35" dur="4s" repeatCount="indefinite"/>
+            </circle>
+            <rect x="256" y="548" width="18" height="50" rx="1" fill="rgba(139,114,255,0.38)" stroke="rgba(139,114,255,0.55)" stroke-width="0.8"/>
+            <rect x="276" y="551" width="14" height="47" rx="1" fill="rgba(59,158,255,0.30)" stroke="rgba(59,158,255,0.45)" stroke-width="0.8"/>
+            <rect x="292" y="547" width="20" height="51" rx="1" fill="rgba(0,229,184,0.28)" stroke="rgba(0,229,184,0.42)" stroke-width="0.8"/>
+            <rect x="314" y="549" width="24" height="49" rx="1" fill="rgba(255,180,60,0.30)" stroke="rgba(255,180,60,0.45)" stroke-width="0.8"/>
+            <!-- 棚3段目 -->
+            <rect x="62"  y="628" width="22" height="50" rx="1" fill="rgba(59,158,255,0.32)" stroke="rgba(59,158,255,0.48)" stroke-width="0.8"/>
+            <rect x="86"  y="631" width="16" height="47" rx="1" fill="rgba(255,80,60,0.30)" stroke="rgba(255,80,60,0.45)" stroke-width="0.8"/>
+            <rect x="104" y="627" width="20" height="51" rx="1" fill="rgba(0,229,184,0.35)" stroke="rgba(0,229,184,0.52)" stroke-width="0.8"/>
+            <rect x="126" y="630" width="14" height="48" rx="1" fill="rgba(139,114,255,0.32)" stroke="rgba(139,114,255,0.48)" stroke-width="0.8"/>
+            <rect x="142" y="626" width="18" height="52" rx="1" fill="rgba(59,158,255,0.38)" stroke="rgba(59,158,255,0.55)" stroke-width="0.8"/>
+            <!-- 装飾品：試験管ラック -->
+            <rect x="168" y="630" width="60" height="48" rx="2" fill="rgba(4,14,34,0.8)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <rect x="175" y="635" width="8" height="36" rx="4" fill="rgba(59,158,255,0.25)" stroke="rgba(59,158,255,0.40)" stroke-width="1"/>
+            <rect x="187" y="638" width="8" height="33" rx="4" fill="rgba(0,229,184,0.22)" stroke="rgba(0,229,184,0.38)" stroke-width="1"/>
+            <rect x="199" y="636" width="8" height="35" rx="4" fill="rgba(139,114,255,0.22)" stroke="rgba(139,114,255,0.38)" stroke-width="1"/>
+            <rect x="211" y="639" width="8" height="32" rx="4" fill="rgba(59,158,255,0.18)" stroke="rgba(59,158,255,0.32)" stroke-width="1"/>
+            <rect x="168" y="668" width="60" height="6" rx="1" fill="rgba(8,28,64,0.9)" stroke="rgba(59,158,255,0.15)" stroke-width="0.8"/>
+            <rect x="238" y="628" width="16" height="50" rx="1" fill="rgba(255,180,60,0.28)" stroke="rgba(255,180,60,0.42)" stroke-width="0.8"/>
+            <rect x="256" y="631" width="22" height="47" rx="1" fill="rgba(59,158,255,0.28)" stroke="rgba(59,158,255,0.42)" stroke-width="0.8"/>
+            <rect x="280" y="627" width="18" height="51" rx="1" fill="rgba(0,229,184,0.30)" stroke="rgba(0,229,184,0.45)" stroke-width="0.8"/>
+            <rect x="300" y="629" width="14" height="49" rx="1" fill="rgba(139,114,255,0.28)" stroke="rgba(139,114,255,0.42)" stroke-width="0.8"/>
+            <rect x="316" y="630" width="22" height="48" rx="1" fill="rgba(59,158,255,0.35)" stroke="rgba(59,158,255,0.50)" stroke-width="0.8"/>
+            <!-- 棚4段目 -->
+            <rect x="62"  y="708" width="40" height="56" rx="1" fill="rgba(4,14,34,0.85)" stroke="rgba(59,158,255,0.25)" stroke-width="1"/>
+            <text x="82" y="736" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(59,158,255,0.55)">PHY</text>
+            <text x="82" y="748" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(59,158,255,0.40)">SCS</text>
+            <rect x="106" y="711" width="38" height="53" rx="1" fill="rgba(4,14,34,0.85)" stroke="rgba(0,229,184,0.25)" stroke-width="1"/>
+            <text x="125" y="737" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(0,229,184,0.55)">AST</text>
+            <text x="125" y="749" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(0,229,184,0.40)">RON</text>
+            <rect x="148" y="709" width="34" height="55" rx="1" fill="rgba(4,14,34,0.85)" stroke="rgba(139,114,255,0.25)" stroke-width="1"/>
+            <text x="165" y="736" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(139,114,255,0.55)">MAT</text>
+            <text x="165" y="748" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(139,114,255,0.40)">HEM</text>
+            <rect x="190" y="712" width="30" height="52" rx="1" fill="rgba(59,158,255,0.30)" stroke="rgba(59,158,255,0.45)" stroke-width="0.8"/>
+            <rect x="222" y="710" width="26" height="54" rx="1" fill="rgba(0,229,184,0.25)" stroke="rgba(0,229,184,0.40)" stroke-width="0.8"/>
+            <rect x="250" y="713" width="22" height="51" rx="1" fill="rgba(139,114,255,0.28)" stroke="rgba(139,114,255,0.42)" stroke-width="0.8"/>
+            <rect x="274" y="709" width="32" height="55" rx="1" fill="rgba(59,158,255,0.25)" stroke="rgba(59,158,255,0.38)" stroke-width="0.8"/>
+            <rect x="308" y="711" width="28" height="53" rx="1" fill="rgba(0,229,184,0.28)" stroke="rgba(0,229,184,0.42)" stroke-width="0.8"/>
+            <!-- STUDY ラベル -->
+            <text x="200" y="460" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="rgba(59,158,255,0.35)" letter-spacing="4">STUDY</text>
+          </g>
+
+          <!-- ══════ ホワイトボード（中央上 → /blog/） ══════ -->
+          <g class="lab-obj" id="obj-whiteboard" tabindex="0" role="button" aria-label="ホワイトボード — Blogページへ">
+            <!-- ボード本体 -->
+            <rect x="400" y="68" width="560" height="330" rx="4" fill="rgba(4,14,32,0.88)" stroke="rgba(59,158,255,0.28)" stroke-width="2"/>
+            <!-- ボード内側 -->
+            <rect x="412" y="80" width="536" height="306" rx="2" fill="rgba(3,10,24,0.95)"/>
+            <!-- ボード上フレーム -->
+            <rect x="400" y="62" width="560" height="12" rx="3" fill="rgba(8,25,58,0.95)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <!-- ボード下フレーム -->
+            <rect x="400" y="394" width="560" height="12" rx="3" fill="rgba(8,25,58,0.95)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <!-- ボード足 -->
+            <rect x="530" y="406" width="8" height="30" rx="2" fill="rgba(8,25,58,0.9)"/>
+            <rect x="822" y="406" width="8" height="30" rx="2" fill="rgba(8,25,58,0.9)"/>
+            <!-- ホワイトボード内容：Blog記事イメージ -->
+            <text x="680" y="108" text-anchor="middle" font-family="Syne,sans-serif" font-size="14" font-weight="800" fill="rgba(59,158,255,0.7)" letter-spacing="3">BLOG</text>
+            <!-- 記事カード1 -->
+            <rect x="420" y="118" width="244" height="116" rx="3" fill="rgba(5,18,42,0.8)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <rect x="430" y="126" width="60" height="8" rx="4" fill="rgba(0,229,184,0.20)"/>
+            <rect x="430" y="140" width="200" height="6" rx="3" fill="rgba(59,158,255,0.15)"/>
+            <rect x="430" y="152" width="170" height="6" rx="3" fill="rgba(59,158,255,0.10)"/>
+            <rect x="430" y="164" width="190" height="6" rx="3" fill="rgba(59,158,255,0.10)"/>
+            <rect x="430" y="176" width="140" height="6" rx="3" fill="rgba(59,158,255,0.08)"/>
+            <text x="430" y="222" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(59,158,255,0.35)">2026.06.20</text>
+            <!-- 記事カード2 -->
+            <rect x="696" y="118" width="244" height="116" rx="3" fill="rgba(5,18,42,0.8)" stroke="rgba(139,114,255,0.18)" stroke-width="1"/>
+            <rect x="706" y="126" width="55" height="8" rx="4" fill="rgba(139,114,255,0.20)"/>
+            <rect x="706" y="140" width="200" height="6" rx="3" fill="rgba(139,114,255,0.12)"/>
+            <rect x="706" y="152" width="180" height="6" rx="3" fill="rgba(139,114,255,0.09)"/>
+            <rect x="706" y="164" width="160" height="6" rx="3" fill="rgba(139,114,255,0.08)"/>
+            <rect x="706" y="176" width="190" height="6" rx="3" fill="rgba(139,114,255,0.08)"/>
+            <text x="706" y="222" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(139,114,255,0.35)">2026.06.14</text>
+            <!-- 水平区切り線 -->
+            <line x1="420" y1="248" x2="940" y2="248" stroke="rgba(59,158,255,0.08)" stroke-width="1"/>
+            <!-- タグ群 -->
+            <rect x="420" y="258" width="48" height="16" rx="8" fill="rgba(59,158,255,0.12)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <text x="444" y="270" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(59,158,255,0.7)">Tech</text>
+            <rect x="476" y="258" width="62" height="16" rx="8" fill="rgba(0,229,184,0.10)" stroke="rgba(0,229,184,0.22)" stroke-width="1"/>
+            <text x="507" y="270" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(0,229,184,0.7)">Astronomy</text>
+            <rect x="546" y="258" width="44" height="16" rx="8" fill="rgba(139,114,255,0.10)" stroke="rgba(139,114,255,0.22)" stroke-width="1"/>
+            <text x="568" y="270" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(139,114,255,0.7)">Quiz</text>
+            <rect x="598" y="258" width="46" height="16" rx="8" fill="rgba(255,180,60,0.10)" stroke="rgba(255,180,60,0.22)" stroke-width="1"/>
+            <text x="621" y="270" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(255,180,60,0.7)">Diary</text>
+            <!-- 書き込みメモ -->
+            <text x="420" y="310" font-family="JetBrains Mono,monospace" font-size="10" fill="rgba(59,158,255,0.25)">// Coming soon...</text>
+            <!-- マーカートレー -->
+            <rect x="412" y="378" width="536" height="10" rx="2" fill="rgba(8,25,58,0.6)" stroke="rgba(59,158,255,0.12)" stroke-width="1"/>
+            <rect x="430" y="380" width="28" height="7" rx="3" fill="rgba(59,158,255,0.35)"/>
+            <rect x="462" y="380" width="28" height="7" rx="3" fill="rgba(0,229,184,0.35)"/>
+            <rect x="494" y="380" width="28" height="7" rx="3" fill="rgba(139,114,255,0.35)"/>
+            <rect x="526" y="380" width="18" height="7" rx="3" fill="rgba(200,200,200,0.25)"/>
+          </g>
+
+          <!-- ══════ 天体望遠鏡（左中央 → /astronomy/） ══════ -->
+          <g class="lab-obj" id="obj-telescope" tabindex="0" role="button" aria-label="天体望遠鏡 — Astronomyページへ">
+            <!-- 三脚 -->
+            <line x1="380" y1="680" x2="320" y2="780" stroke="rgba(59,158,255,0.35)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="380" y1="680" x2="380" y2="780" stroke="rgba(59,158,255,0.35)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="380" y1="680" x2="440" y2="780" stroke="rgba(59,158,255,0.35)" stroke-width="3" stroke-linecap="round"/>
+            <!-- 三脚横バー -->
+            <line x1="340" y1="740" x2="420" y2="740" stroke="rgba(59,158,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+            <!-- マウント -->
+            <ellipse cx="380" cy="682" rx="24" ry="10" fill="rgba(6,22,52,0.9)" stroke="rgba(59,158,255,0.40)" stroke-width="1.5"/>
+            <!-- 鏡筒本体 -->
+            <rect x="344" y="600" width="72" height="86" rx="8" fill="rgba(6,20,46,0.92)" stroke="rgba(59,158,255,0.45)" stroke-width="2" transform="rotate(-20 380 643)"/>
+            <!-- 接眼レンズ -->
+            <ellipse cx="348" cy="656" rx="12" ry="9" fill="rgba(4,14,32,0.95)" stroke="rgba(59,158,255,0.55)" stroke-width="2" transform="rotate(-20 380 643)"/>
+            <!-- 対物レンズ -->
+            <ellipse cx="414" cy="630" rx="14" ry="10" fill="rgba(2,8,20,0.95)" stroke="rgba(59,158,255,0.50)" stroke-width="2" transform="rotate(-20 380 643)"/>
+            <ellipse cx="414" cy="630" rx="8" ry="6" fill="rgba(59,158,255,0.18)" transform="rotate(-20 380 643)"/>
+            <!-- ファインダー -->
+            <rect x="360" y="610" width="36" height="10" rx="3" fill="rgba(6,20,46,0.9)" stroke="rgba(59,158,255,0.30)" stroke-width="1" transform="rotate(-20 380 643)"/>
+            <!-- 鏡筒グロー -->
+            <ellipse cx="380" cy="643" rx="44" ry="55" fill="rgba(59,158,255,0.04)"/>
+            <!-- 光線（望遠鏡→窓の星へ） -->
+            <line x1="414" y1="622" x2="280" y2="130" stroke="rgba(59,158,255,0.08)" stroke-width="1" stroke-dasharray="6,6"/>
+            <!-- ASTRONOMY ラベル -->
+            <text x="380" y="800" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="rgba(59,158,255,0.35)" letter-spacing="3">ASTRONOMY</text>
+          </g>
+
+          <!-- ══════ サーバーラック（右上 → /lab/） ══════ -->
+          <g class="lab-obj" id="obj-server" tabindex="0" role="button" aria-label="サーバーラック — Lab Equipmentページへ">
+            <!-- ラックフレーム -->
+            <rect x="1108" y="80" width="130" height="500" rx="4" fill="rgba(4,14,32,0.94)" stroke="rgba(59,158,255,0.28)" stroke-width="2"/>
+            <!-- ラック上部 -->
+            <rect x="1108" y="80" width="130" height="20" rx="4" fill="rgba(6,22,52,0.95)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <!-- ユニット群 -->
+            <!-- サーバー1 -->
+            <rect x="1116" y="106" width="114" height="28" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <rect x="1120" y="112" width="60" height="16" rx="1" fill="rgba(2,8,20,0.9)"/>
+            <circle cx="1216" cy="120" r="4" fill="rgba(0,229,184,0.8)">
+              <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="1205" cy="120" r="4" fill="rgba(59,158,255,0.6)">
+              <animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <!-- サーバー2 -->
+            <rect x="1116" y="140" width="114" height="28" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <rect x="1120" y="146" width="70" height="16" rx="1" fill="rgba(2,8,20,0.9)"/>
+            <circle cx="1216" cy="154" r="4" fill="rgba(0,229,184,0.7)">
+              <animate attributeName="opacity" values="0.7;0.15;0.7" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
+            <!-- サーバー3 -->
+            <rect x="1116" y="174" width="114" height="28" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <rect x="1120" y="180" width="50" height="16" rx="1" fill="rgba(2,8,20,0.9)"/>
+            <circle cx="1216" cy="188" r="4" fill="rgba(255,180,60,0.7)">
+              <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <!-- スイッチ -->
+            <rect x="1116" y="208" width="114" height="18" rx="2" fill="rgba(5,18,42,0.85)" stroke="rgba(0,229,184,0.20)" stroke-width="1"/>
+            <rect x="1122" y="212" width="6" height="10" rx="1" fill="rgba(0,229,184,0.35)"/>
+            <rect x="1131" y="212" width="6" height="10" rx="1" fill="rgba(0,229,184,0.30)"/>
+            <rect x="1140" y="212" width="6" height="10" rx="1" fill="rgba(0,229,184,0.25)"/>
+            <rect x="1149" y="212" width="6" height="10" rx="1" fill="rgba(59,158,255,0.35)"/>
+            <rect x="1158" y="212" width="6" height="10" rx="1" fill="rgba(59,158,255,0.25)"/>
+            <rect x="1167" y="212" width="6" height="10" rx="1" fill="rgba(59,158,255,0.30)"/>
+            <!-- 仕切り -->
+            <rect x="1116" y="230" width="114" height="4" rx="1" fill="rgba(59,158,255,0.10)"/>
+            <!-- NAS -->
+            <rect x="1116" y="238" width="114" height="48" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(139,114,255,0.22)" stroke-width="1"/>
+            <rect x="1122" y="244" width="24" height="36" rx="2" fill="rgba(4,14,32,0.9)" stroke="rgba(139,114,255,0.18)" stroke-width="1"/>
+            <rect x="1150" y="244" width="24" height="36" rx="2" fill="rgba(4,14,32,0.9)" stroke="rgba(139,114,255,0.18)" stroke-width="1"/>
+            <circle cx="1134" cy="262" r="8" fill="rgba(139,114,255,0.10)" stroke="rgba(139,114,255,0.28)" stroke-width="1"/>
+            <circle cx="1162" cy="262" r="8" fill="rgba(139,114,255,0.10)" stroke="rgba(139,114,255,0.28)" stroke-width="1"/>
+            <circle cx="1216" cy="252" r="3" fill="rgba(0,229,184,0.6)">
+              <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="1216" cy="262" r="3" fill="rgba(59,158,255,0.5)">
+              <animate attributeName="opacity" values="0.1;0.5;0.1" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <!-- パッチパネル -->
+            <rect x="1116" y="290" width="114" height="18" rx="2" fill="rgba(5,18,42,0.85)" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <!-- ケーブル配線 -->
+            <path d="M1160 308 Q1160 340 1140 360 Q1120 380 1130 420" fill="none" stroke="rgba(0,229,184,0.25)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M1180 308 Q1190 350 1175 390 Q1160 430 1170 460" fill="none" stroke="rgba(59,158,255,0.22)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M1200 308 Q1215 360 1205 400 Q1195 440 1210 480" fill="none" stroke="rgba(139,114,255,0.20)" stroke-width="2" stroke-linecap="round"/>
+            <!-- ラック下部 -->
+            <rect x="1108" y="576" width="130" height="8" rx="2" fill="rgba(6,22,52,0.95)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <!-- LAB ラベル -->
+            <text x="1173" y="603" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="rgba(59,158,255,0.35)" letter-spacing="4">LAB</text>
+          </g>
+
+          <!-- ══════ 大型モニター（中央 → /projects/ Web Tools） ══════ -->
+          <g class="lab-obj" id="obj-monitor" tabindex="0" role="button" aria-label="大型モニター — Projectsページへ">
+            <!-- モニター本体 -->
+            <rect x="530" y="390" width="300" height="186" rx="6" fill="rgba(3,10,24,0.96)" stroke="rgba(59,158,255,0.35)" stroke-width="2.5"/>
+            <!-- ベゼル -->
+            <rect x="538" y="398" width="284" height="170" rx="4" fill="rgba(2,8,20,0.98)"/>
+            <!-- 画面コンテンツ -->
+            <rect x="541" y="401" width="278" height="164" rx="2" fill="rgba(2,8,20,1)"/>
+            <!-- ターミナル画面 -->
+            <rect x="541" y="401" width="278" height="14" rx="2" fill="rgba(6,20,46,0.95)"/>
+            <circle cx="549" cy="408" r="3" fill="rgba(255,80,60,0.7)"/>
+            <circle cx="559" cy="408" r="3" fill="rgba(255,180,60,0.7)"/>
+            <circle cx="569" cy="408" r="3" fill="rgba(0,229,184,0.7)"/>
+            <text x="680" y="410" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(59,158,255,0.5)">astro-root — projects</text>
+            <!-- コード行 -->
+            <text x="550" y="428" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(0,229,184,0.85)">$ ls projects/</text>
+            <text x="550" y="442" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(59,158,255,0.70)">Q-Score/   Q-Room/   Q-Mark/</text>
+            <text x="550" y="455" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(59,158,255,0.70)">Q-Panel/   Q-Cumber/ ShiftLink/</text>
+            <text x="550" y="468" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(59,158,255,0.60)">LineGO/    Typing/</text>
+            <text x="550" y="486" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(0,229,184,0.85)">$ cd Q-Score</text>
+            <text x="550" y="500" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(0,229,184,0.85)">$ npm run dev</text>
+            <text x="550" y="514" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(139,114,255,0.70)">  VITE v5.0  ready</text>
+            <text x="550" y="527" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(59,158,255,0.50)">  Local: http://localhost:5173/</text>
+            <!-- カーソル点滅 -->
+            <rect x="550" y="538" width="6" height="10" rx="1" fill="rgba(0,229,184,0.9)">
+              <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+            </rect>
+            <!-- モニタースタンド -->
+            <rect x="666" y="576" width="28" height="40" rx="2" fill="rgba(6,20,46,0.92)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <rect x="636" y="614" width="88" height="10" rx="4" fill="rgba(6,20,46,0.92)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <!-- モニターグロー -->
+            <ellipse cx="680" cy="490" rx="160" ry="100" fill="rgba(59,158,255,0.03)"/>
+            <!-- PROJECTS ラベル -->
+            <text x="680" y="645" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="rgba(59,158,255,0.35)" letter-spacing="3">PROJECTS</text>
+          </g>
+
+          <!-- ══════ 研究机（中央下 → /projects/） ══════ -->
+          <g class="lab-obj" id="obj-desk" tabindex="0" role="button" aria-label="研究机 — Projectsページへ">
+            <!-- 天板 -->
+            <rect x="430" y="650" width="620" height="38" rx="4" fill="url(#deskGrad)" stroke="rgba(59,158,255,0.28)" stroke-width="1.5"/>
+            <!-- 天板エッジ光 -->
+            <rect x="430" y="650" width="620" height="3" rx="2" fill="rgba(59,158,255,0.12)"/>
+            <!-- 机脚 左 -->
+            <rect x="450" y="688" width="16" height="92" rx="2" fill="rgba(5,16,38,0.92)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <!-- 机脚 右 -->
+            <rect x="1014" y="688" width="16" height="92" rx="2" fill="rgba(5,16,38,0.92)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <!-- 横棒 -->
+            <rect x="450" y="752" width="580" height="8" rx="2" fill="rgba(5,16,38,0.88)" stroke="rgba(59,158,255,0.14)" stroke-width="1"/>
+            <!-- 机の上のもの: キーボード -->
+            <rect x="600" y="634" width="220" height="16" rx="3" fill="rgba(6,20,48,0.88)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <rect x="606" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="617" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="628" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="639" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="650" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="661" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="672" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="683" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="694" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="705" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="716" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="727" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="738" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="749" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="760" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="771" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="782" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="793" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <rect x="804" y="637" width="8" height="8" rx="1" fill="rgba(59,158,255,0.15)"/>
+            <!-- マウス -->
+            <rect x="836" y="631" width="30" height="22" rx="12" fill="rgba(6,20,48,0.88)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <line x1="851" y1="631" x2="851" y2="643" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <!-- コーヒーカップ -->
+            <rect x="460" y="624" width="30" height="28" rx="3" fill="rgba(5,18,42,0.88)" stroke="rgba(59,158,255,0.20)" stroke-width="1"/>
+            <rect x="490" y="630" width="10" height="14" rx="5" fill="none" stroke="rgba(59,158,255,0.20)" stroke-width="1"/>
+            <rect x="460" y="624" width="30" height="8" rx="3" fill="rgba(59,158,255,0.08)"/>
+            <path d="M468 618 Q470 610 472 618" fill="none" stroke="rgba(200,200,200,0.12)" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M476 616 Q478 608 480 616" fill="none" stroke="rgba(200,200,200,0.10)" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- 机の収納引き出し -->
+            <rect x="870" y="656" width="140" height="24" rx="2" fill="rgba(5,16,38,0.9)" stroke="rgba(59,158,255,0.14)" stroke-width="1"/>
+            <circle cx="940" cy="668" r="5" fill="rgba(59,158,255,0.20)" stroke="rgba(59,158,255,0.35)" stroke-width="1"/>
+            <rect x="870" y="682" width="140" height="6" rx="1" fill="rgba(5,16,38,0.9)" stroke="rgba(59,158,255,0.10)" stroke-width="1"/>
+          </g>
+
+          <!-- ══════ ノートPC（机の上 → /projects/ Web Tools） ══════ -->
+          <g class="lab-obj" id="obj-laptop" tabindex="0" role="button" aria-label="ノートPC — Web Toolsページへ">
+            <!-- 液晶部分 -->
+            <rect x="720" y="550" width="210" height="132" rx="4" fill="rgba(3,10,24,0.96)" stroke="rgba(59,158,255,0.32)" stroke-width="1.8" transform="perspective(800) rotateX(-8deg)"/>
+            <!-- 画面 -->
+            <rect x="730" y="558" width="190" height="116" rx="2" fill="rgba(2,8,18,0.99)"/>
+            <!-- 画面内容 -->
+            <rect x="730" y="558" width="190" height="12" rx="2" fill="rgba(5,18,42,0.95)"/>
+            <circle cx="737" cy="564" r="2.5" fill="rgba(255,80,60,0.6)"/>
+            <circle cx="744" cy="564" r="2.5" fill="rgba(255,180,60,0.6)"/>
+            <circle cx="751" cy="564" r="2.5" fill="rgba(0,229,184,0.6)"/>
+            <text x="825" y="566" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="6" fill="rgba(59,158,255,0.45)">Q-Score — live</text>
+            <!-- スコアボード表示 -->
+            <rect x="736" y="578" width="178" height="88" rx="1" fill="rgba(2,8,20,0.98)"/>
+            <text x="825" y="592" text-anchor="middle" font-family="Syne,sans-serif" font-size="9" font-weight="800" fill="rgba(59,158,255,0.75)">Q-SCORE</text>
+            <line x1="736" y1="596" x2="914" y2="596" stroke="rgba(59,158,255,0.12)" stroke-width="1"/>
+            <text x="742" y="608" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(0,229,184,0.8)">A  ●●●●●○  5pt</text>
+            <text x="742" y="620" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(59,158,255,0.7)">B  ●●●○○○  3pt</text>
+            <text x="742" y="632" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(139,114,255,0.65)">C  ●●○○○○  2pt</text>
+            <circle cx="886" cy="646" r="6" fill="rgba(0,229,184,0.12)" stroke="rgba(0,229,184,0.35)" stroke-width="1">
+              <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="886" cy="646" r="3" fill="rgba(0,229,184,0.7)">
+              <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
+            </circle>
+            <!-- 本体 -->
+            <rect x="714" y="678" width="232" height="12" rx="2" fill="rgba(6,20,46,0.92)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+            <!-- ヒンジ -->
+            <rect x="714" y="686" width="232" height="4" rx="1" fill="rgba(59,158,255,0.10)"/>
+            <!-- キーボード部 -->
+            <rect x="714" y="690" width="232" height="46" rx="3" fill="rgba(5,16,38,0.88)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <!-- タッチパッド -->
+            <rect x="792" y="700" width="76" height="26" rx="3" fill="rgba(4,14,32,0.8)" stroke="rgba(59,158,255,0.14)" stroke-width="1"/>
+            <!-- グロー -->
+            <ellipse cx="825" cy="614" rx="110" ry="65" fill="rgba(59,158,255,0.025)"/>
+          </g>
+
+          <!-- ══════ キャビネット（右下 → /research-log/） ══════ -->
+          <g class="lab-obj" id="obj-cabinet" tabindex="0" role="button" aria-label="キャビネット — Research Logへ">
+            <!-- 本体 -->
+            <rect x="1244" y="540" width="180" height="240" rx="4" fill="rgba(4,14,32,0.92)" stroke="rgba(59,158,255,0.22)" stroke-width="1.5"/>
+            <!-- 引き出し1 -->
+            <rect x="1254" y="552" width="160" height="50" rx="2" fill="rgba(5,18,42,0.88)" stroke="rgba(59,158,255,0.16)" stroke-width="1"/>
+            <circle cx="1334" cy="577" r="7" fill="rgba(59,158,255,0.18)" stroke="rgba(59,158,255,0.35)" stroke-width="1"/>
+            <text x="1260" y="566" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(59,158,255,0.40)">2026 研究記録</text>
+            <!-- 引き出し2 -->
+            <rect x="1254" y="608" width="160" height="50" rx="2" fill="rgba(5,18,42,0.85)" stroke="rgba(59,158,255,0.14)" stroke-width="1"/>
+            <circle cx="1334" cy="633" r="7" fill="rgba(59,158,255,0.16)" stroke="rgba(59,158,255,0.30)" stroke-width="1"/>
+            <text x="1260" y="622" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(59,158,255,0.35)">2025 研究記録</text>
+            <!-- 引き出し3 -->
+            <rect x="1254" y="664" width="160" height="50" rx="2" fill="rgba(5,18,42,0.82)" stroke="rgba(59,158,255,0.12)" stroke-width="1"/>
+            <circle cx="1334" cy="689" r="7" fill="rgba(59,158,255,0.14)" stroke="rgba(59,158,255,0.26)" stroke-width="1"/>
+            <text x="1260" y="678" font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(59,158,255,0.30)">ARCHIVE</text>
+            <!-- 天板 -->
+            <rect x="1240" y="534" width="188" height="10" rx="3" fill="rgba(6,22,52,0.95)" stroke="rgba(59,158,255,0.20)" stroke-width="1"/>
+            <!-- 天板上のもの：書類、封筒 -->
+            <rect x="1252" y="510" width="60" height="26" rx="2" fill="rgba(5,18,42,0.88)" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <line x1="1252" y1="520" x2="1312" y2="520" stroke="rgba(59,158,255,0.10)" stroke-width="1"/>
+            <line x1="1252" y1="528" x2="1312" y2="528" stroke="rgba(59,158,255,0.08)" stroke-width="1"/>
+            <!-- RESEARCH LOG ラベル -->
+            <text x="1334" y="800" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(59,158,255,0.35)" letter-spacing="2">RESEARCH LOG</text>
+          </g>
+
+          <!-- ══════ 封筒（キャビネット上 → /contact） ══════ -->
+          <g class="lab-obj" id="obj-envelope" tabindex="0" role="button" aria-label="封筒 — Contactページへ">
+            <!-- 封筒本体 -->
+            <rect x="1322" y="505" width="78" height="54" rx="3" fill="rgba(5,18,42,0.90)" stroke="rgba(59,158,255,0.32)" stroke-width="1.5"/>
+            <!-- 封筒フラップ（V字） -->
+            <polyline points="1322,505 1361,532 1400,505" fill="none" stroke="rgba(59,158,255,0.25)" stroke-width="1.5"/>
+            <!-- 封筒折り線 -->
+            <line x1="1322" y1="559" x2="1361" y2="534" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <line x1="1400" y1="559" x2="1361" y2="534" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+            <!-- 住所線 -->
+            <line x1="1332" y1="543" x2="1372" y2="543" stroke="rgba(59,158,255,0.18)" stroke-width="1"/>
+            <line x1="1332" y1="549" x2="1366" y2="549" stroke="rgba(59,158,255,0.12)" stroke-width="1"/>
+            <!-- グロー -->
+            <ellipse cx="1361" cy="532" rx="45" ry="30" fill="rgba(59,158,255,0.04)">
+              <animate attributeName="opacity" values="1;0.4;1" dur="4s" repeatCount="indefinite"/>
+            </ellipse>
+            <!-- CONTACT ラベル -->
+            <text x="1361" y="500" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(59,158,255,0.40)" letter-spacing="3">CONTACT</text>
+          </g>
+
+          <!-- ══════ 実験器具・配線（右下装飾） ══════ -->
+          <!-- 配線バンドル -->
+          <path d="M1108 400 Q1080 450 1050 480 Q1020 510 1030 550" fill="none" stroke="rgba(0,229,184,0.20)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M1108 420 Q1075 470 1060 510 Q1045 550 1060 590" fill="none" stroke="rgba(59,158,255,0.18)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M1108 440 Q1070 490 1065 540 Q1060 590 1075 620" fill="none" stroke="rgba(139,114,255,0.16)" stroke-width="2" stroke-linecap="round"/>
+          <!-- デスクサイドのケーブル -->
+          <path d="M930 648 Q940 700 935 750 Q930 780 945 780" fill="none" stroke="rgba(59,158,255,0.15)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M940 648 Q955 710 950 760 Q945 780 960 780" fill="none" stroke="rgba(0,229,184,0.12)" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- 実験器具（フラスコ） -->
+          <path d="M1050 690 L1050 730 L1030 770 Q1025 780 1040 780 L1080 780 Q1095 780 1090 770 L1070 730 L1070 690" fill="rgba(4,14,32,0.88)" stroke="rgba(59,158,255,0.28)" stroke-width="1.5"/>
+          <rect x="1044" y="684" width="26" height="8" rx="2" fill="rgba(6,22,52,0.9)" stroke="rgba(59,158,255,0.22)" stroke-width="1"/>
+          <!-- フラスコ液体 -->
+          <path d="M1035 765 Q1025 780 1040 780 L1080 780 Q1095 780 1090 765" fill="rgba(0,229,184,0.18)"/>
+          <path d="M1033 760 L1087 760" stroke="rgba(0,229,184,0.25)" stroke-width="1"/>
+          <!-- ビーカー -->
+          <rect x="1100" y="705" width="36" height="54" rx="3" fill="rgba(4,14,32,0.88)" stroke="rgba(59,158,255,0.25)" stroke-width="1.5"/>
+          <rect x="1100" y="740" width="36" height="19" rx="2" fill="rgba(59,158,255,0.12)"/>
+          <line x1="1096" y1="716" x2="1140" y2="716" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+          <!-- 実験机 -->
+          <rect x="1020" y="778" width="210" height="8" rx="2" fill="rgba(5,16,38,0.92)" stroke="rgba(59,158,255,0.15)" stroke-width="1"/>
+
+          <!-- ══════ 床の反射 ══════ -->
+          <rect x="0" y="780" width="1600" height="4" fill="rgba(59,158,255,0.05)"/>
+
+          <!-- ══════ 走査線オーバーレイ（雰囲気演出） ══════ -->
+          <rect x="0" y="0" width="1600" height="900" fill="url(#floorGrad)" opacity="0.4" pointer-events="none"/>
+
         </svg>
       </div>
-    </section>
-
-    <!-- ══════ 1. 大型モニター → Projects ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/projects/" aria-label="大型モニター — Projectsページへ">
-            <span class="equip-num" aria-hidden="true">1</span>
-            <svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="大型モニターのイラスト">
-              <rect x="20" y="20" width="320" height="190" rx="8" fill="rgba(3,10,24,0.96)" stroke="rgba(75,169,255,0.40)" stroke-width="2.5"/>
-              <rect x="32" y="32" width="296" height="166" rx="4" fill="rgba(2,8,20,1)"/>
-              <rect x="32" y="32" width="296" height="16" rx="2" fill="rgba(6,20,46,0.95)"/>
-              <circle cx="44" cy="40" r="3.5" fill="rgba(255,80,60,0.7)"/>
-              <circle cx="56" cy="40" r="3.5" fill="rgba(255,180,60,0.7)"/>
-              <circle cx="68" cy="40" r="3.5" fill="rgba(30,235,192,0.7)"/>
-              <text x="180" y="42" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(75,169,255,0.55)">astro-root — projects</text>
-              <text x="44" y="68" font-family="JetBrains Mono,monospace" font-size="10" fill="rgba(30,235,192,0.9)">$ ls projects/</text>
-              <text x="44" y="86" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(75,169,255,0.75)">Q-Score/  Q-Room/  Q-Mark/</text>
-              <text x="44" y="102" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(75,169,255,0.75)">Q-Panel/  Q-Cumber/</text>
-              <text x="44" y="126" font-family="JetBrains Mono,monospace" font-size="10" fill="rgba(30,235,192,0.9)">$ npm run dev</text>
-              <text x="44" y="144" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(156,135,255,0.75)">VITE ready in 320ms</text>
-              <rect x="44" y="158" width="7" height="12" rx="1" fill="rgba(30,235,192,0.9)">
-                <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
-              </rect>
-              <rect x="156" y="210" width="48" height="14" rx="3" fill="rgba(6,20,46,0.9)" stroke="rgba(75,169,255,0.25)" stroke-width="1"/>
-              <rect x="120" y="224" width="120" height="10" rx="4" fill="rgba(6,20,46,0.9)" stroke="rgba(75,169,255,0.25)" stroke-width="1"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 01 / 大型モニター</p>
-          <h2 class="equip-name">公開Webツール</h2>
-          <p class="equip-desc">クイズ大会支援ツール群（Q-Score・Q-Room・Q-Mark・Q-Panel・Q-Cumber）をはじめ、開発・公開しているWebツールの一覧です。</p>
-          <a class="equip-link" href="/projects/">
-            Projectsを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 2. ノートPC → Web Tools詳細 ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/projects/" aria-label="ノートPC — Web Toolsページへ">
-            <span class="equip-num" aria-hidden="true">2</span>
-            <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ノートPCのイラスト">
-              <rect x="60" y="20" width="240" height="150" rx="6" fill="rgba(3,10,24,0.96)" stroke="rgba(75,169,255,0.36)" stroke-width="2"/>
-              <rect x="70" y="28" width="220" height="132" rx="3" fill="rgba(2,8,18,0.99)"/>
-              <rect x="70" y="28" width="220" height="14" rx="2" fill="rgba(5,18,42,0.95)"/>
-              <circle cx="80" cy="35" r="2.8" fill="rgba(255,80,60,0.6)"/>
-              <circle cx="90" cy="35" r="2.8" fill="rgba(255,180,60,0.6)"/>
-              <circle cx="100" cy="35" r="2.8" fill="rgba(30,235,192,0.6)"/>
-              <text x="180" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(75,169,255,0.5)">Q-Score — live</text>
-              <text x="180" y="64" text-anchor="middle" font-family="Syne,sans-serif" font-size="13" font-weight="800" fill="rgba(75,169,255,0.85)">Q-SCORE</text>
-              <line x1="80" y1="74" x2="280" y2="74" stroke="rgba(75,169,255,0.15)" stroke-width="1"/>
-              <text x="86" y="90" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(30,235,192,0.85)">A  ●●●●●○  5pt</text>
-              <text x="86" y="104" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(75,169,255,0.75)">B  ●●●○○○  3pt</text>
-              <text x="86" y="118" font-family="JetBrains Mono,monospace" font-size="9" fill="rgba(156,135,255,0.7)">C  ●●○○○○  2pt</text>
-              <circle cx="255" cy="136" r="8" fill="rgba(30,235,192,0.14)" stroke="rgba(30,235,192,0.4)" stroke-width="1.2">
-                <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
-              </circle>
-              <rect x="40" y="170" width="280" height="14" rx="3" fill="rgba(6,20,46,0.92)" stroke="rgba(75,169,255,0.24)" stroke-width="1"/>
-              <rect x="40" y="184" width="280" height="46" rx="4" fill="rgba(5,16,38,0.88)" stroke="rgba(75,169,255,0.18)" stroke-width="1"/>
-              <rect x="138" y="194" width="84" height="28" rx="3" fill="rgba(4,14,32,0.8)" stroke="rgba(75,169,255,0.16)" stroke-width="1"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 02 / ノートPC</p>
-          <h2 class="equip-name">クイズツール詳細</h2>
-          <p class="equip-desc">早押しクイズ大会用のリアルタイム得点表示システム「Q-Score」をはじめとした各ツールの詳細・導入方法をProjectsページでご覧いただけます。</p>
-          <a class="equip-link" href="/projects/">
-            ツール詳細を見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 3. 本棚 → Study ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/study/" aria-label="本棚 — Studyページへ">
-            <span class="equip-num" aria-hidden="true">3</span>
-            <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="本棚のイラスト">
-              <rect x="30" y="20" width="300" height="200" rx="4" fill="rgba(5,16,38,0.92)" stroke="rgba(75,169,255,0.30)" stroke-width="2"/>
-              <rect x="30" y="86" width="300" height="6" rx="1" fill="rgba(8,28,64,0.95)" stroke="rgba(75,169,255,0.18)" stroke-width="1"/>
-              <rect x="30" y="150" width="300" height="6" rx="1" fill="rgba(8,28,64,0.95)" stroke="rgba(75,169,255,0.18)" stroke-width="1"/>
-              <rect x="42" y="32" width="20" height="52" rx="1" fill="rgba(75,169,255,0.45)"/>
-              <rect x="65" y="36" width="16" height="48" rx="1" fill="rgba(30,235,192,0.4)"/>
-              <rect x="84" y="30" width="22" height="54" rx="1" fill="rgba(156,135,255,0.42)"/>
-              <rect x="109" y="34" width="14" height="50" rx="1" fill="rgba(75,169,255,0.32)"/>
-              <rect x="126" y="32" width="18" height="52" rx="1" fill="rgba(255,194,92,0.36)"/>
-              <rect x="147" y="38" width="13" height="46" rx="1" fill="rgba(30,235,192,0.3)"/>
-              <rect x="163" y="30" width="24" height="54" rx="1" fill="rgba(75,169,255,0.4)"/>
-              <rect x="190" y="36" width="16" height="48" rx="1" fill="rgba(156,135,255,0.32)"/>
-              <rect x="40" y="100" width="42" height="44" rx="2" fill="rgba(4,14,32,0.85)" stroke="rgba(75,169,255,0.25)" stroke-width="1"/>
-              <text x="61" y="118" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(75,169,255,0.55)">PHY</text>
-              <text x="61" y="130" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(75,169,255,0.4)">SICS</text>
-              <rect x="86" y="103" width="40" height="41" rx="2" fill="rgba(4,14,32,0.85)" stroke="rgba(30,235,192,0.25)" stroke-width="1"/>
-              <text x="106" y="119" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(30,235,192,0.55)">AST</text>
-              <text x="106" y="131" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(30,235,192,0.4)">RON</text>
-              <circle cx="270" cy="118" r="24" fill="rgba(4,14,32,0.9)" stroke="rgba(75,169,255,0.35)" stroke-width="1.5"/>
-              <ellipse cx="270" cy="118" rx="24" ry="9" fill="none" stroke="rgba(75,169,255,0.2)" stroke-width="1"/>
-              <ellipse cx="270" cy="118" rx="9" ry="24" fill="none" stroke="rgba(75,169,255,0.2)" stroke-width="1"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 03 / 本棚</p>
-          <h2 class="equip-name">学習ノート</h2>
-          <p class="equip-desc">物理学・天文学・数学の学習ノートと、JavaScript / TypeScriptによるインタラクティブなシミュレーション集です。</p>
-          <a class="equip-link" href="/study/">
-            Studyを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 4. ホワイトボード → Blog ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/blog/" aria-label="ホワイトボード — Blogページへ">
-            <span class="equip-num" aria-hidden="true">4</span>
-            <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ホワイトボードのイラスト">
-              <rect x="20" y="16" width="320" height="168" rx="4" fill="rgba(4,14,32,0.88)" stroke="rgba(75,169,255,0.32)" stroke-width="2"/>
-              <rect x="32" y="28" width="296" height="144" rx="2" fill="rgba(3,10,24,0.95)"/>
-              <text x="180" y="50" text-anchor="middle" font-family="Syne,sans-serif" font-size="15" font-weight="800" fill="rgba(75,169,255,0.75)" letter-spacing="3">BLOG</text>
-              <rect x="44" y="62" width="124" height="62" rx="3" fill="rgba(5,18,42,0.8)" stroke="rgba(75,169,255,0.2)" stroke-width="1"/>
-              <rect x="52" y="70" width="32" height="7" rx="3" fill="rgba(30,235,192,0.22)"/>
-              <rect x="52" y="84" width="102" height="5" rx="2" fill="rgba(75,169,255,0.16)"/>
-              <rect x="52" y="94" width="86" height="5" rx="2" fill="rgba(75,169,255,0.12)"/>
-              <rect x="52" y="104" width="96" height="5" rx="2" fill="rgba(75,169,255,0.10)"/>
-              <rect x="192" y="62" width="124" height="62" rx="3" fill="rgba(5,18,42,0.8)" stroke="rgba(156,135,255,0.2)" stroke-width="1"/>
-              <rect x="200" y="70" width="28" height="7" rx="3" fill="rgba(156,135,255,0.22)"/>
-              <rect x="200" y="84" width="102" height="5" rx="2" fill="rgba(156,135,255,0.14)"/>
-              <rect x="200" y="94" width="80" height="5" rx="2" fill="rgba(156,135,255,0.10)"/>
-              <rect x="44" y="138" width="46" height="16" rx="8" fill="rgba(75,169,255,0.12)" stroke="rgba(75,169,255,0.25)" stroke-width="1"/>
-              <text x="67" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(75,169,255,0.75)">Tech</text>
-              <rect x="96" y="138" width="68" height="16" rx="8" fill="rgba(30,235,192,0.1)" stroke="rgba(30,235,192,0.25)" stroke-width="1"/>
-              <text x="130" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(30,235,192,0.75)">Astronomy</text>
-              <rect x="170" y="138" width="48" height="16" rx="8" fill="rgba(156,135,255,0.1)" stroke="rgba(156,135,255,0.25)" stroke-width="1"/>
-              <text x="194" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(156,135,255,0.75)">Quiz</text>
-              <rect x="32" y="178" width="296" height="6" rx="2" fill="rgba(8,25,58,0.6)"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 04 / ホワイトボード</p>
-          <h2 class="equip-name">Blog</h2>
-          <p class="equip-desc">Webエンジニアリング・天文学・クイズ・日常の記録など、研究室からの発信を綴っています。</p>
-          <a class="equip-link" href="/blog/">
-            Blogを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 5. 天体望遠鏡 → Astronomy ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/astronomy/" aria-label="天体望遠鏡 — Astronomyページへ">
-            <span class="equip-num" aria-hidden="true">5</span>
-            <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="天体望遠鏡のイラスト">
-              <rect width="360" height="240" fill="rgba(2,8,20,0.4)"/>
-              <circle cx="60" cy="40" r="1.3" fill="rgba(220,235,255,0.7)"/>
-              <circle cx="280" cy="30" r="1" fill="rgba(220,235,255,0.6)"/>
-              <circle cx="320" cy="60" r="1.5" fill="rgba(220,235,255,0.75)"/>
-              <circle cx="100" cy="60" r="1" fill="rgba(220,235,255,0.5)"/>
-              <line x1="40" y1="190" x2="150" y2="120" stroke="rgba(75,169,255,0.4)" stroke-width="3" stroke-linecap="round"/>
-              <ellipse cx="62" cy="194" rx="26" ry="11" fill="rgba(6,22,52,0.9)" stroke="rgba(75,169,255,0.4)" stroke-width="1.5"/>
-              <rect x="110" y="100" width="80" height="46" rx="9" fill="rgba(6,20,46,0.92)" stroke="rgba(75,169,255,0.5)" stroke-width="2.2" transform="rotate(-22 150 123)"/>
-              <ellipse cx="116" cy="138" rx="13" ry="10" fill="rgba(4,14,32,0.95)" stroke="rgba(75,169,255,0.55)" stroke-width="2" transform="rotate(-22 150 123)"/>
-              <ellipse cx="186" cy="108" rx="15" ry="11" fill="rgba(2,8,20,0.95)" stroke="rgba(75,169,255,0.5)" stroke-width="2" transform="rotate(-22 150 123)"/>
-              <ellipse cx="186" cy="108" rx="8" ry="6" fill="rgba(75,169,255,0.22)" transform="rotate(-22 150 123)"/>
-              <line x1="186" y1="100" x2="300" y2="40" stroke="rgba(75,169,255,0.12)" stroke-width="1.5" stroke-dasharray="5,5"/>
-              <circle cx="305" cy="36" r="2.5" fill="rgba(255,220,160,0.9)"/>
-              <circle cx="305" cy="36" r="6" fill="rgba(255,220,160,0.15)"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 05 / 天体望遠鏡</p>
-          <h2 class="equip-name">Astronomy</h2>
-          <p class="equip-desc">天体観測記録・天体カタログ・星座図など、天文学に関するコンテンツをまとめています。</p>
-          <a class="equip-link" href="/astronomy/">
-            Astronomyを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 6. サーバーラック → Lab Equipment ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/lab/" aria-label="サーバーラック — Lab Equipmentページへ">
-            <span class="equip-num" aria-hidden="true">6</span>
-            <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="サーバーラックのイラスト">
-              <rect x="120" y="14" width="120" height="212" rx="5" fill="rgba(4,14,32,0.94)" stroke="rgba(75,169,255,0.30)" stroke-width="2"/>
-              <rect x="120" y="14" width="120" height="18" rx="4" fill="rgba(6,22,52,0.95)" stroke="rgba(75,169,255,0.24)" stroke-width="1"/>
-              <rect x="130" y="40" width="100" height="26" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(75,169,255,0.22)" stroke-width="1"/>
-              <rect x="136" y="46" width="54" height="14" rx="1" fill="rgba(2,8,20,0.9)"/>
-              <circle cx="216" cy="53" r="3.5" fill="rgba(30,235,192,0.85)"><animate attributeName="opacity" values="0.85;0.2;0.85" dur="1.5s" repeatCount="indefinite"/></circle>
-              <circle cx="206" cy="53" r="3.5" fill="rgba(75,169,255,0.65)"><animate attributeName="opacity" values="0.2;0.85;0.2" dur="2s" repeatCount="indefinite"/></circle>
-              <rect x="130" y="70" width="100" height="26" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(75,169,255,0.18)" stroke-width="1"/>
-              <rect x="136" y="76" width="62" height="14" rx="1" fill="rgba(2,8,20,0.9)"/>
-              <circle cx="216" cy="83" r="3.5" fill="rgba(30,235,192,0.75)"><animate attributeName="opacity" values="0.75;0.15;0.75" dur="2.2s" repeatCount="indefinite"/></circle>
-              <rect x="130" y="100" width="100" height="16" rx="2" fill="rgba(5,18,42,0.85)" stroke="rgba(30,235,192,0.2)" stroke-width="1"/>
-              <rect x="138" y="104" width="5" height="8" rx="1" fill="rgba(30,235,192,0.35)"/>
-              <rect x="146" y="104" width="5" height="8" rx="1" fill="rgba(30,235,192,0.3)"/>
-              <rect x="154" y="104" width="5" height="8" rx="1" fill="rgba(75,169,255,0.32)"/>
-              <rect x="162" y="104" width="5" height="8" rx="1" fill="rgba(75,169,255,0.28)"/>
-              <rect x="130" y="124" width="100" height="42" rx="2" fill="rgba(5,18,42,0.9)" stroke="rgba(156,135,255,0.2)" stroke-width="1"/>
-              <rect x="138" y="130" width="22" height="30" rx="2" fill="rgba(4,14,32,0.9)" stroke="rgba(156,135,255,0.18)" stroke-width="1"/>
-              <rect x="166" y="130" width="22" height="30" rx="2" fill="rgba(4,14,32,0.9)" stroke="rgba(156,135,255,0.18)" stroke-width="1"/>
-              <circle cx="149" cy="145" r="7" fill="rgba(156,135,255,0.08)" stroke="rgba(156,135,255,0.25)" stroke-width="1"/>
-              <circle cx="177" cy="145" r="7" fill="rgba(156,135,255,0.08)" stroke="rgba(156,135,255,0.25)" stroke-width="1"/>
-              <path d="M230 80 Q260 100 256 140" fill="none" stroke="rgba(30,235,192,0.22)" stroke-width="2" stroke-linecap="round"/>
-              <path d="M230 100 Q270 130 260 170" fill="none" stroke="rgba(75,169,255,0.2)" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 06 / サーバーラック</p>
-          <h2 class="equip-name">Lab Equipment</h2>
-          <p class="equip-desc">研究室で使用している技術スタック（Frontend・Runtime・Backend・Hosting・Developmentなど）を紹介しています。</p>
-          <a class="equip-link" href="/lab/">
-            Lab Equipmentを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 7. キャビネット → Research Log ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/research-log/" aria-label="キャビネット — Research Logページへ">
-            <span class="equip-num" aria-hidden="true">7</span>
-            <svg viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="キャビネットのイラスト">
-              <rect x="80" y="40" width="200" height="170" rx="5" fill="rgba(4,14,32,0.92)" stroke="rgba(75,169,255,0.26)" stroke-width="2"/>
-              <rect x="94" y="54" width="172" height="44" rx="2" fill="rgba(5,18,42,0.88)" stroke="rgba(75,169,255,0.18)" stroke-width="1"/>
-              <circle cx="240" cy="76" r="7" fill="rgba(75,169,255,0.2)" stroke="rgba(75,169,255,0.4)" stroke-width="1"/>
-              <text x="104" y="72" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(75,169,255,0.45)">2026 研究記録</text>
-              <rect x="94" y="106" width="172" height="44" rx="2" fill="rgba(5,18,42,0.85)" stroke="rgba(75,169,255,0.15)" stroke-width="1"/>
-              <circle cx="240" cy="128" r="7" fill="rgba(75,169,255,0.18)" stroke="rgba(75,169,255,0.34)" stroke-width="1"/>
-              <text x="104" y="124" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(75,169,255,0.4)">2025 研究記録</text>
-              <rect x="94" y="158" width="172" height="44" rx="2" fill="rgba(5,18,42,0.82)" stroke="rgba(75,169,255,0.12)" stroke-width="1"/>
-              <circle cx="240" cy="180" r="7" fill="rgba(75,169,255,0.16)" stroke="rgba(75,169,255,0.30)" stroke-width="1"/>
-              <text x="104" y="176" font-family="JetBrains Mono,monospace" font-size="8" fill="rgba(75,169,255,0.35)">ARCHIVE</text>
-              <rect x="74" y="30" width="212" height="12" rx="3" fill="rgba(6,22,52,0.95)" stroke="rgba(75,169,255,0.22)" stroke-width="1"/>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 07 / キャビネット</p>
-          <h2 class="equip-name">Research Log</h2>
-          <p class="equip-desc">開発・学習・天文観測・イベント参加などの活動記録を、時系列のタイムラインで公開しています。</p>
-          <a class="equip-link" href="/research-log/">
-            Research Logを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 8. 封筒 → Contact ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/contact" aria-label="封筒 — Contactページへ">
-            <span class="equip-num" aria-hidden="true">8</span>
-            <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="封筒のイラスト">
-              <rect x="60" y="40" width="240" height="120" rx="6" fill="rgba(8,25,58,0.95)" stroke="rgba(75,169,255,0.30)" stroke-width="1.5"/>
-              <polyline points="60,40 180,108 300,40" fill="rgba(6,20,48,0.96)" stroke="rgba(75,169,255,0.28)" stroke-width="1.2" stroke-linejoin="round"/>
-              <line x1="60" y1="160" x2="180" y2="112" stroke="rgba(75,169,255,0.12)" stroke-width="1"/>
-              <line x1="300" y1="160" x2="180" y2="112" stroke="rgba(75,169,255,0.12)" stroke-width="1"/>
-              <line x1="84" y1="128" x2="150" y2="128" stroke="rgba(75,169,255,0.2)" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="84" y1="138" x2="132" y2="138" stroke="rgba(75,169,255,0.14)" stroke-width="1.2" stroke-linecap="round"/>
-              <rect x="220" y="100" width="44" height="34" rx="2" fill="rgba(75,169,255,0.06)" stroke="rgba(75,169,255,0.28)" stroke-width="1" stroke-dasharray="3,2"/>
-              <circle cx="180" cy="40" r="3" fill="rgba(30,235,192,0.8)"><animate attributeName="opacity" values="0.8;0.15;0.8" dur="3s" repeatCount="indefinite"/></circle>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 08 / 封筒</p>
-          <h2 class="equip-name">Contact</h2>
-          <p class="equip-desc">ツールのご質問・不具合報告・コラボレーションのご提案など、お気軽にご連絡ください。</p>
-          <a class="equip-link" href="/contact">
-            お問い合わせ
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ 9. ドア → About ══════ -->
-    <section class="equip-section">
-      <div class="equip-inner">
-        <div class="equip-visual">
-          <a class="equip-visual-card" href="/about" aria-label="ドア — Aboutページへ">
-            <span class="equip-num" aria-hidden="true">9</span>
-            <svg viewBox="0 0 240 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ドアのイラスト" style="max-width:220px;margin:0 auto;">
-              <rect x="50" y="20" width="140" height="220" rx="4" fill="rgba(6,20,46,0.92)" stroke="rgba(75,169,255,0.28)" stroke-width="2"/>
-              <rect x="62" y="36" width="116" height="92" rx="3" fill="rgba(4,14,34,0.8)" stroke="rgba(75,169,255,0.16)" stroke-width="1"/>
-              <rect x="62" y="138" width="116" height="92" rx="3" fill="rgba(4,14,34,0.8)" stroke="rgba(75,169,255,0.16)" stroke-width="1"/>
-              <circle cx="68" cy="142" r="8" fill="rgba(75,169,255,0.32)" stroke="rgba(75,169,255,0.6)" stroke-width="1.5"/>
-              <circle cx="68" cy="142" r="4" fill="rgba(75,169,255,0.75)"/>
-              <text x="120" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="rgba(75,169,255,0.5)" letter-spacing="4">ABOUT</text>
-            </svg>
-            <div class="tap-hint">
-              <span class="tap-hint-dot"></span>
-              <span class="tap-hint-text">Tap to open</span>
-              <svg class="tap-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </div>
-          </a>
-        </div>
-        <div class="equip-body">
-          <p class="equip-label">設備 09 / ドア</p>
-          <h2 class="equip-name">About</h2>
-          <p class="equip-desc">高校生Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールをご覧いただけます。</p>
-          <a class="equip-link" href="/about">
-            プロフィールを見る
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── フッターCTA ── -->
-    <section class="footer-cta reveal">
-      <p class="footer-cta-text">全ての設備を見終わりましたか？</p>
-      <div class="footer-cta-links">
-        <a href="/projects/" class="btn btn-primary">Projectsへ</a>
-        <a href="/contact" class="btn btn-ghost">お問い合わせ</a>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="site-footer" role="contentinfo">
-    <div class="footer-inner">
-      <span class="footer-logo">るーとの研究室</span>
-      <nav class="footer-links" aria-label="フッターナビゲーション">
-        <a href="/privacy">Privacy</a>
-        <a href="/contact">Contact</a>
-      </nav>
-      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
     </div>
-  </footer>
+
+    <!-- モバイル用メニューボタン -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobile-nav-sheet">
+      <div class="mobile-menu-dot"></div>
+      <span>Explore</span>
+    </button>
+
+    <!-- モバイルナビゲーションシート -->
+    <div class="mobile-nav-sheet" id="mobile-nav-sheet" role="dialog" aria-modal="true" aria-label="研究室ナビゲーション">
+      <button class="mobile-nav-sheet-close" id="mobile-nav-close" aria-label="メニューを閉じる">&#x2715;</button>
+      <p class="mobile-nav-title">タップして移動</p>
+      <nav class="mobile-nav-grid" aria-label="研究室メニュー">
+        <a href="/projects/" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="8" y="16" width="48" height="32" rx="4"/>
+            <path d="M16 28h8M16 34h14"/>
+            <circle cx="44" cy="32" r="6" stroke-width="1.5"/>
+          </svg>
+          <span class="mobile-nav-item-label">Monitor</span>
+          <span class="mobile-nav-item-name">Projects</span>
+        </a>
+        <a href="/study/" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="10" y="8" width="44" height="56" rx="3"/>
+            <path d="M18 20h28M18 28h28M18 36h20"/>
+          </svg>
+          <span class="mobile-nav-item-label">Bookshelf</span>
+          <span class="mobile-nav-item-name">Study</span>
+        </a>
+        <a href="/blog/" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="6" y="10" width="52" height="44" rx="4"/>
+            <path d="M14 22h36M14 30h28M14 38h20"/>
+          </svg>
+          <span class="mobile-nav-item-label">Whiteboard</span>
+          <span class="mobile-nav-item-name">Blog</span>
+        </a>
+        <a href="/astronomy/" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M10 48L40 28M36 16l18 10M24 54v-8M16 54h16"/>
+            <circle cx="44" cy="20" r="6"/>
+          </svg>
+          <span class="mobile-nav-item-label">Telescope</span>
+          <span class="mobile-nav-item-name">Astronomy</span>
+        </a>
+        <a href="/lab/" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="18" y="8" width="28" height="48" rx="3"/>
+            <rect x="22" y="14" width="20" height="8" rx="1"/>
+            <rect x="22" y="26" width="20" height="8" rx="1"/>
+            <rect x="22" y="38" width="20" height="8" rx="1"/>
+          </svg>
+          <span class="mobile-nav-item-label">Server Rack</span>
+          <span class="mobile-nav-item-name">Lab Equipment</span>
+        </a>
+        <a href="/research-log/" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="8" y="8" width="48" height="48" rx="4"/>
+            <path d="M8 24h48M8 40h48M24 8v48"/>
+          </svg>
+          <span class="mobile-nav-item-label">Cabinet</span>
+          <span class="mobile-nav-item-name">Research Log</span>
+        </a>
+        <a href="/contact" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="6" y="14" width="52" height="36" rx="4"/>
+            <path d="M6 18l26 18L58 18"/>
+          </svg>
+          <span class="mobile-nav-item-label">Envelope</span>
+          <span class="mobile-nav-item-name">Contact</span>
+        </a>
+        <a href="/about" class="mobile-nav-item">
+          <svg class="mobile-nav-item-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="12" y="4" width="40" height="56" rx="3"/>
+            <circle cx="32" cy="22" r="8"/>
+            <path d="M16 46c0-8.8 7.2-16 16-16s16 7.2 16 16"/>
+          </svg>
+          <span class="mobile-nav-item-label">Door</span>
+          <span class="mobile-nav-item-name">About</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- ツールチップ -->
+    <div class="lab-tooltip" id="lab-tooltip" aria-hidden="true">
+      <div class="lab-tooltip-name" id="tooltip-name"></div>
+      <div class="lab-tooltip-dest" id="tooltip-dest"></div>
+    </div>
+  </main>
 
   <script src="/assets/js/lab-common.js"></script>
   <script>
   (function () {
-    "use strict";
+    'use strict';
 
-    /* equip-section にも reveal を付与してスクロール連動アニメーション化 */
-    document.querySelectorAll(".equip-section, .equip-visual, .equip-body").forEach(function (el) {
-      el.classList.add("reveal");
+    var OBJECTS = {
+      'obj-monitor':    { name: '大型モニター',    dest: '→ Projects',      href: '/projects/' },
+      'obj-laptop':     { name: 'ノートPC',         dest: '→ Web Tools',     href: '/projects/' },
+      'obj-bookshelf':  { name: '本棚',             dest: '→ Study',         href: '/study/' },
+      'obj-whiteboard': { name: 'ホワイトボード',   dest: '→ Blog',          href: '/blog/' },
+      'obj-telescope':  { name: '天体望遠鏡',       dest: '→ Astronomy',     href: '/astronomy/' },
+      'obj-server':     { name: 'サーバーラック',   dest: '→ Lab Equipment', href: '/lab/' },
+      'obj-cabinet':    { name: 'キャビネット',     dest: '→ Research Log',  href: '/research-log/' },
+      'obj-envelope':   { name: '封筒',             dest: '→ Contact',       href: '/contact' },
+      'obj-door':       { name: 'ドア',             dest: '→ About',         href: '/about' }
+    };
+
+    var tooltip   = document.getElementById('lab-tooltip');
+    var tipName   = document.getElementById('tooltip-name');
+    var tipDest   = document.getElementById('tooltip-dest');
+    var mouseX    = 0;
+    var mouseY    = 0;
+    var tipVisible = false;
+
+    document.addEventListener('mousemove', function (e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (tipVisible) positionTooltip();
+    }, { passive: true });
+
+    function positionTooltip () {
+      var tw = tooltip.offsetWidth || 160;
+      var th = tooltip.offsetHeight || 52;
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+      var x = mouseX + 16;
+      var y = mouseY - th / 2;
+      if (x + tw > vw - 12) x = mouseX - tw - 12;
+      if (y < 12)           y = 12;
+      if (y + th > vh - 12) y = vh - th - 12;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top  = y + 'px';
+    }
+
+    function showTooltip (info) {
+      tipName.textContent = info.name;
+      tipDest.textContent = info.dest;
+      positionTooltip();
+      tooltip.classList.add('visible');
+      tipVisible = true;
+    }
+
+    function hideTooltip () {
+      tooltip.classList.remove('visible');
+      tipVisible = false;
+    }
+
+    Object.keys(OBJECTS).forEach(function (id) {
+      var el   = document.getElementById(id);
+      var info = OBJECTS[id];
+      if (!el) return;
+
+      el.addEventListener('mouseenter', function () { showTooltip(info); });
+      el.addEventListener('mouseleave', hideTooltip);
+
+      el.addEventListener('click', function () {
+        window.location.href = info.href;
+      });
+
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          window.location.href = info.href;
+        }
+      });
+
+      el.addEventListener('focus', function () { showTooltip(info); });
+      el.addEventListener('blur',  hideTooltip);
     });
 
-    if (window.LAB && window.LAB.reveal) {
-      window.LAB.reveal();
-    } else if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("visible"); });
+    var mobileBtn   = document.getElementById('mobile-menu-btn');
+    var mobileSheet = document.getElementById('mobile-nav-sheet');
+    var mobileClose = document.getElementById('mobile-nav-close');
+
+    if (mobileBtn && mobileSheet) {
+      mobileBtn.addEventListener('click', function () {
+        mobileSheet.classList.add('open');
+        mobileBtn.setAttribute('aria-expanded', 'true');
+        if (mobileClose) mobileClose.focus();
       });
-    } else {
-      document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("visible"); });
+
+      if (mobileClose) {
+        mobileClose.addEventListener('click', function () {
+          mobileSheet.classList.remove('open');
+          mobileBtn.setAttribute('aria-expanded', 'false');
+          mobileBtn.focus();
+        });
+      }
+
+      mobileSheet.addEventListener('click', function (e) {
+        if (e.target === mobileSheet) {
+          mobileSheet.classList.remove('open');
+          mobileBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mobileSheet.classList.contains('open')) {
+          mobileSheet.classList.remove('open');
+          mobileBtn.setAttribute('aria-expanded', 'false');
+          mobileBtn.focus();
+        }
+      });
     }
+
   })();
   </script>
 </body>
