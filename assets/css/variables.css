@@ -25,12 +25,22 @@
   --font-mono: "JetBrains Mono", "Noto Sans JP", monospace;
   --font-body: "Noto Sans JP", sans-serif;
 
-  --fs-2xs: 0.70rem;
-  --fs-xs:  0.78rem;
-  --fs-sm:  0.86rem;
-  --fs-base:0.94rem;
+  --fs-2xs: 0.72rem;
+  --fs-xs:  0.80rem;
+  --fs-sm:  0.88rem;
+  --fs-base:0.95rem;
   --fs-md:  1.05rem;
   --fs-lg:  1.25rem;
+
+  /*
+    letter-spacingスケール:
+    monoフォント中心に過剰なトラッキング(0.2〜0.3em)を多用していたため
+    可読性重視で全体を縮小。英単語ラベルでも自然に読めるレベルに統一。
+  */
+  --ls-tight:  0.02em;
+  --ls-normal: 0.04em;
+  --ls-wide:   0.07em;
+  --ls-label:  0.10em;
 
   --r-xs: 4px;
   --r-sm: 8px;
@@ -47,9 +57,9 @@
   --t-fast: 0.16s;
   --t-slow: 0.5s;
 
-  --nav-h: 66px;
+  --nav-h: 64px;
   --container-max: 1120px;
-  --container-pad: clamp(20px, 5vw, 64px);
+  --container-pad: clamp(18px, 5vw, 64px);
 
   --z-bg: 0;
   --z-base: 1;
@@ -59,6 +69,10 @@
   --z-toast: 900;
   --z-cursor: 9999;
   --z-progress: 9998;
+}
+
+@media (max-width: 480px) {
+  :root { --nav-h: 58px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -11,8 +11,21 @@ html {
   text-size-adjust: 100%;
 }
 
-@media (max-width: 480px) {
-  html { font-size: 16.5px; }
+/*
+  レスポンシブ基準フォントサイズの段階的縮小。
+  768px(タブレット)、600px(大型スマホ)、400px(小型スマホ)の
+  3段階で読みやすさを最優先に調整する。
+*/
+@media (max-width: 768px) {
+  html { font-size: 16px; }
+}
+
+@media (max-width: 600px) {
+  html { font-size: 15.5px; }
+}
+
+@media (max-width: 400px) {
+  html { font-size: 15px; }
 }
 
 body {
@@ -25,6 +38,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+  英数字部分の可読性向上:
+  font-feature-settingsでリガチャ・等幅数字を有効化し、
+  JetBrains Monoの本来の可読性を引き出す。
+*/
+.font-mono,
+[class*="-mono"],
+code, pre {
+  font-feature-settings: "liga" 1, "calt" 1, "zero" 1;
 }
 
 p { font-size: var(--fs-base); line-height: 1.8; }
@@ -99,7 +124,7 @@ input, textarea, select {
   border-radius: 0 0 var(--r-md) var(--r-md);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--ls-normal);
   font-weight: 600;
   transition: top 0.2s var(--ease);
 }
@@ -343,7 +368,7 @@ input, textarea, select {
   align-items: center;
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
-  letter-spacing: 0.22em;
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
   border: 1px solid rgba(30,235,192,0.28);
   color: var(--accent-teal);
@@ -354,10 +379,10 @@ input, textarea, select {
 
 .page-title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(1.9rem, 5vw, 3.5rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
 }
 
 .page-title em {
@@ -373,10 +398,10 @@ input, textarea, select {
   border-radius: var(--r-sm);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  letter-spacing: 0.07em;
+  letter-spacing: var(--ls-wide);
   font-weight: 500;
   transition: all var(--t) var(--ease-spring);
-  min-height: 42px;
+  min-height: 44px;
   cursor: pointer;
   border: none;
 }
@@ -418,4 +443,51 @@ footer {
 header {
   position: relative;
   z-index: var(--z-nav);
+}
+
+/*
+  ==========================================================
+  グローバル letter-spacing 是正レイヤー
+  ==========================================================
+  各ページのインラインCSSで個別に letter-spacing: 0.10em〜0.30em が
+  多数指定されているため、ここで font-mono を使う要素全般に対し
+  上限を再設定して可読性を底上げする。
+  個別ページのインライン指定が後勝ちする箇所もあるため、
+  根本対応は各ページ側でも var(--ls-*) への置き換えを推奨。
+*/
+[style*="letter-spacing"] {
+  /* インライン指定があっても read-only な参考用クラスは影響しない。
+     実際の上書きは各ページ側のCSSで var(--ls-label) 等を使うことで行う。 */
+}
+
+.nav-links a,
+.nav-mobile a,
+.footer-links a,
+.filter-btn,
+.tab-btn {
+  letter-spacing: var(--ls-label) !important;
+}
+
+.page-eyebrow-text,
+.section-label,
+.card-room,
+.card-subcat,
+.article-cat-badge,
+.catalog-type,
+.sim-card-label,
+.log-type-badge {
+  letter-spacing: var(--ls-wide) !important;
+}
+
+/*
+  ==========================================================
+  レスポンシブ・タイポグラフィ調整（全ページ共通）
+  ==========================================================
+*/
+@media (max-width: 768px) {
+  h1, h2, h3 { word-break: break-word; overflow-wrap: break-word; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
 }
