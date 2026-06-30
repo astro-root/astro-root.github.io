@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | るーとの研究室</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#020b18" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/variables.css" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <style>
+    body { display: flex; min-height: 100vh; }
+
+    /* ── サイドバー ── */
+    .admin-sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: rgba(4,12,24,0.92);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .admin-logo {
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-0);
+      padding: 8px 12px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .admin-logo span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--accent-teal);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .admin-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-1);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      text-align: left;
+      transition: background var(--t), color var(--t);
+      width: 100%;
+    }
+
+    .admin-nav-btn:hover { background: rgba(75,169,255,0.06); color: var(--text-0); }
+
+    .admin-nav-btn.active {
+      background: rgba(75,169,255,0.10);
+      color: var(--accent-blue);
+    }
+
+    .admin-nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .admin-nav-spacer { flex: 1; }
+
+    .admin-logout {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: border-color var(--t), color var(--t);
+    }
+
+    .admin-logout:hover { border-color: #f87171; color: #f87171; }
+    .admin-logout svg { width: 16px; height: 16px; }
+
+    /* ── メインエリア ── */
+    .admin-main {
+      flex: 1;
+      padding: 32px clamp(20px, 4vw, 48px);
+      max-width: 1100px;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .admin-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-0);
+    }
+
+    .admin-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--r-sm);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border: 1px solid var(--border-m);
+      background: rgba(75,169,255,0.06);
+      color: var(--accent-blue);
+      transition: background var(--t), border-color var(--t), transform var(--t) var(--ease-spring);
+      min-height: 40px;
+    }
+
+    .admin-btn:hover {
+      background: rgba(75,169,255,0.14);
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+
+    .admin-btn svg { width: 14px; height: 14px; }
+
+    /* ── 統計カード ── */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .admin-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px;
+    }
+
+    .admin-stat-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-0);
+      margin-bottom: 4px;
+    }
+
+    .admin-stat-label {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── テーブル ── */
+    .admin-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .admin-panel-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .admin-panel-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-0);
+    }
+
+    .admin-table-wrap { overflow-x: auto; }
+
+    .admin-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+
+    .admin-table th {
+      text-align: left;
+      padding: 12px 22px;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--accent-teal);
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .admin-table td {
+      padding: 14px 22px;
+      font-size: var(--fs-sm);
+      color: var(--text-1);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .admin-table tr:last-child td { border-bottom: none; }
+
+    .admin-table tr:hover td { background: rgba(75,169,255,0.03); }
+
+    .row-title { color: var(--text-0); font-weight: 500; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      padding: 3px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.08em;
+    }
+
+    .status-pill[data-s="published"] { color: var(--accent-teal); background: rgba(30,235,192,0.08); }
+    .status-pill[data-s="draft"]     { color: var(--accent-amber); background: rgba(255,194,92,0.08); }
+    .status-pill[data-s="wip"]       { color: var(--text-2); background: rgba(255,255,255,0.04); }
+
+    .row-actions { display: flex; gap: 6px; white-space: nowrap; }
+
+    .icon-btn {
+      width: 32px; height: 32px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: border-color var(--t), color var(--t);
+    }
+
+    .icon-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+    .icon-btn.danger:hover { border-color: #f87171; color: #f87171; }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    .empty-row td {
+      text-align: center;
+      padding: 40px 22px;
+      color: var(--text-2);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+    }
+
+    /* ── モーダル ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2,8,18,0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      width: 100%;
+      max-width: 560px;
+      max-height: 86vh;
+      overflow-y: auto;
+      background: var(--bg-1);
+      border: 1px solid var(--border-m);
+      border-radius: var(--r-xl);
+      padding: 28px;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-0);
+      margin-bottom: 20px;
+    }
+
+    .modal-row { margin-bottom: 16px; }
+
+    .modal-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--accent-teal);
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .modal-input, .modal-textarea, .modal-select {
+      width: 100%;
+      background: rgba(75,169,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 11px 14px;
+      color: var(--text-0);
+      font-size: var(--fs-sm);
+      outline: none;
+      transition: border-color var(--t);
+      min-height: 44px;
+    }
+
+    .modal-input:focus, .modal-textarea:focus, .modal-select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .modal-textarea { resize: vertical; min-height: 100px; }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .modal-btn-cancel, .modal-btn-save {
+      padding: 11px 20px;
+      border-radius: var(--r-sm);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      min-height: 42px;
+    }
+
+    .modal-btn-cancel {
+      background: transparent;
+      border: 1px solid var(--border-m);
+      color: var(--text-1);
+    }
+
+    .modal-btn-save {
+      background: linear-gradient(120deg, var(--accent-blue), var(--accent-teal));
+      border: none;
+      color: var(--bg-0);
+      font-weight: 600;
+    }
+
+    /* ── レスポンシブ ── */
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 14px 16px;
+      }
+      .admin-logo { display: none; }
+      .admin-nav-spacer { display: none; }
+      .admin-nav-btn { width: auto; padding: 8px 12px; }
+      .admin-main { padding: 20px 16px; }
+      .admin-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .admin-stats { grid-template-columns: 1fr; }
+      .admin-table th, .admin-table td { padding: 10px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="admin-sidebar" aria-label="管理画面ナビゲーション">
+    <div class="admin-logo">
+      Lab Admin
+      <span>Control Panel</span>
+    </div>
+
+    <button class="admin-nav-btn active" data-view="overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      Overview
+    </button>
+    <button class="admin-nav-btn" data-view="articles">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/></svg>
+      Blog Articles
+    </button>
+    <button class="admin-nav-btn" data-view="study">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Study Items
+    </button>
+    <button class="admin-nav-btn" data-view="logs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Research Log
+    </button>
+
+    <div class="admin-nav-spacer"></div>
+
+    <button class="admin-logout" id="logout-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </nav>
+
+  <main class="admin-main">
+
+    <!-- Overview -->
+    <section id="view-overview" class="admin-view">
+      <div class="admin-header">
+        <h1 class="admin-title">Overview</h1>
+      </div>
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="stat-articles">0</div>
+          <div class="admin-stat-label">Blog Articles</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="stat-study">0</div>
+          <div class="admin-stat-label">Study Items</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="stat-logs">0</div>
+          <div class="admin-stat-label">Research Logs</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="stat-published">0</div>
+          <div class="admin-stat-label">Published</div>
+        </div>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-panel-header">
+          <span class="admin-panel-title">データ管理について</span>
+        </div>
+        <div style="padding:22px;font-size:var(--fs-sm);color:var(--text-1);line-height:1.85;">
+          このダッシュボードはブラウザの LocalStorage にデータを保存しています。
+          編集内容は同一ブラウザ内でのみ有効です。<br><br>
+          公開サイトに反映するには「JSONを書き出す」ボタンで内容をコピーし、
+          <code style="color:var(--accent-teal);">assets/data/*.json</code> ファイルに貼り付けてコミットしてください。<br><br>
+          将来 Firebase Firestore へ移行する際は、<code style="color:var(--accent-teal);">admin-store.js</code> 内部の実装のみ
+          差し替えれば、この画面のコードは変更不要な設計になっています。
+        </div>
+      </div>
+    </section>
+
+    <!-- Articles -->
+    <section id="view-articles" class="admin-view" hidden>
+      <div class="admin-header">
+        <h1 class="admin-title">Blog Articles</h1>
+        <div style="display:flex;gap:8px;">
+          <button class="admin-btn" id="export-articles">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            JSON書き出し
+          </button>
+          <button class="admin-btn" id="add-article">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新規記事
+          </button>
+        </div>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-panel-header">
+          <span class="admin-panel-title">記事一覧</span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>タイトル</th><th>カテゴリ</th><th>状態</th><th>公開日</th><th>操作</th></tr>
+            </thead>
+            <tbody id="articles-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Study -->
+    <section id="view-study" class="admin-view" hidden>
+      <div class="admin-header">
+        <h1 class="admin-title">Study Items</h1>
+        <div style="display:flex;gap:8px;">
+          <button class="admin-btn" id="export-study">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            JSON書き出し
+          </button>
+          <button class="admin-btn" id="add-study">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新規アイテム
+          </button>
+        </div>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-panel-header">
+          <span class="admin-panel-title">Studyアイテム一覧</span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>タイトル</th><th>カテゴリ</th><th>難易度</th><th>状態</th><th>操作</th></tr>
+            </thead>
+            <tbody id="study-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Research Log -->
+    <section id="view-logs" class="admin-view" hidden>
+      <div class="admin-header">
+        <h1 class="admin-title">Research Log</h1>
+        <div style="display:flex;gap:8px;">
+          <button class="admin-btn" id="export-logs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            JSON書き出し
+          </button>
+          <button class="admin-btn" id="add-log">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新規ログ
+          </button>
+        </div>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-panel-header">
+          <span class="admin-panel-title">ログ一覧</span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>タイトル</th><th>タイプ</th><th>日付</th><th>操作</th></tr>
+            </thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 編集モーダル（共通） -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <h2 class="modal-title" id="modal-title">編集</h2>
+      <form id="modal-form"></form>
+    </div>
+  </div>
+
+  <!-- JSON書き出しモーダル -->
+  <div class="modal-overlay" id="export-overlay">
+    <div class="modal-box">
+      <h2 class="modal-title">JSON書き出し</h2>
+      <p style="font-size:var(--fs-xs);color:var(--text-1);margin-bottom:14px;">
+        以下の内容をコピーして対象のJSONファイルに貼り付けてください。
+      </p>
+      <textarea class="modal-textarea" id="export-textarea" style="min-height:300px;font-family:var(--font-mono);font-size:0.7rem;" readonly></textarea>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-cancel" id="export-close">閉じる</button>
+        <button type="button" class="modal-btn-save" id="export-copy">コピー</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin-auth.js"></script>
+  <script src="/admin/js/admin-store.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    AdminAuth.requireAuth();
+
+    /* ── ビュー切り替え ── */
+    var navBtns = document.querySelectorAll(".admin-nav-btn");
+    var views   = document.querySelectorAll(".admin-view");
+
+    navBtns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var target = btn.dataset.view;
+        navBtns.forEach(function (b) { b.classList.toggle("active", b === btn); });
+        views.forEach(function (v) {
+          v.hidden = (v.id !== "view-" + target);
+        });
+      });
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      AdminAuth.logout();
+      window.location.href = "/admin/index.html";
+    });
+
+    /* ── データ初期化 ── */
+    var DATA = { articles: [], study: [], logs: [] };
+
+    function loadAll() {
+      return Promise.all([
+        AdminStore.initFromJson("articles", "/assets/data/articles.json", "articles"),
+        AdminStore.initFromJson("study",    "/assets/data/study.json",    "items"),
+        AdminStore.initFromJson("logs",     "/assets/data/research-log.json", "logs")
+      ]).then(function (results) {
+        DATA.articles = results[0];
+        DATA.study    = results[1];
+        DATA.logs     = results[2];
+        renderOverview();
+        renderArticles();
+        renderStudy();
+        renderLogs();
+      });
+    }
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function fmtDate(iso) {
+      return iso ? iso.slice(0, 10) : "—";
+    }
+
+    /* ── Overview ── */
+    function renderOverview() {
+      document.getElementById("stat-articles").textContent = DATA.articles.length;
+      document.getElementById("stat-study").textContent = DATA.study.length;
+      document.getElementById("stat-logs").textContent = DATA.logs.length;
+      var pub = DATA.articles.filter(function (a) { return a.status === "published"; }).length
+              + DATA.study.filter(function (a) { return a.status === "published"; }).length;
+      document.getElementById("stat-published").textContent = pub;
+    }
+
+    /* ── Articles テーブル ── */
+    function renderArticles() {
+      var tbody = document.getElementById("articles-tbody");
+      if (DATA.articles.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">記事がありません。「新規記事」から追加してください。</td></tr>';
+        return;
+      }
+      tbody.innerHTML = DATA.articles.map(function (a) {
+        return [
+          "<tr>",
+          '<td class="row-title">' + esc(a.title) + "</td>",
+          "<td>" + esc(a.category || "—") + "</td>",
+          '<td><span class="status-pill" data-s="' + esc(a.status || "draft") + '">' + esc(a.status || "draft") + "</span></td>",
+          "<td>" + fmtDate(a.publishedAt) + "</td>",
+          '<td><div class="row-actions">',
+          '<button class="icon-btn" data-edit="articles" data-id="' + esc(a.id) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
+          '<button class="icon-btn danger" data-del="articles" data-id="' + esc(a.id) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
+          "</div></td>",
+          "</tr>"
+        ].join("");
+      }).join("");
+    }
+
+    /* ── Study テーブル ── */
+    function renderStudy() {
+      var tbody = document.getElementById("study-tbody");
+      if (DATA.study.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">アイテムがありません。「新規アイテム」から追加してください。</td></tr>';
+        return;
+      }
+      tbody.innerHTML = DATA.study.map(function (s) {
+        return [
+          "<tr>",
+          '<td class="row-title">' + esc(s.title) + "</td>",
+          "<td>" + esc(s.category || "—") + "</td>",
+          "<td>" + esc(s.difficulty || "—") + "/5</td>",
+          '<td><span class="status-pill" data-s="' + esc(s.status || "draft") + '">' + esc(s.status || "draft") + "</span></td>",
+          '<td><div class="row-actions">',
+          '<button class="icon-btn" data-edit="study" data-id="' + esc(s.id) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
+          '<button class="icon-btn danger" data-del="study" data-id="' + esc(s.id) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
+          "</div></td>",
+          "</tr>"
+        ].join("");
+      }).join("");
+    }
+
+    /* ── Logs テーブル ── */
+    function renderLogs() {
+      var tbody = document.getElementById("logs-tbody");
+      if (DATA.logs.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">ログがありません。「新規ログ」から追加してください。</td></tr>';
+        return;
+      }
+      tbody.innerHTML = DATA.logs.map(function (l) {
+        return [
+          "<tr>",
+          '<td class="row-title">' + esc(l.title) + "</td>",
+          "<td>" + esc(l.type || "—") + "</td>",
+          "<td>" + fmtDate(l.date) + "</td>",
+          '<td><div class="row-actions">',
+          '<button class="icon-btn" data-edit="logs" data-id="' + esc(l.id) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
+          '<button class="icon-btn danger" data-del="logs" data-id="' + esc(l.id) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
+          "</div></td>",
+          "</tr>"
+        ].join("");
+      }).join("");
+    }
+
+    /* ── モーダル：フォーム定義 ── */
+    var FORM_DEFS = {
+      articles: [
+        { key: "title",     label: "タイトル", type: "text", required: true },
+        { key: "slug",      label: "スラッグ (URL)", type: "text", required: true },
+        { key: "category",  label: "カテゴリ", type: "select", options: ["tech","astronomy","quiz","diary","review"] },
+        { key: "excerpt",   label: "要約", type: "textarea" },
+        { key: "body",      label: "本文 (Markdown)", type: "textarea" },
+        { key: "tags",      label: "タグ (カンマ区切り)", type: "text" },
+        { key: "status",    label: "状態", type: "select", options: ["draft","published","archived"] },
+        { key: "publishedAt", label: "公開日 (YYYY-MM-DD)", type: "text" }
+      ],
+      study: [
+        { key: "title",      label: "タイトル", type: "text", required: true },
+        { key: "slug",       label: "スラッグ (URL)", type: "text", required: true },
+        { key: "category",   label: "カテゴリ", type: "select", options: ["physics","astronomy","mathematics","simulations"] },
+        { key: "excerpt",    label: "要約", type: "textarea" },
+        { key: "difficulty", label: "難易度 (1-5)", type: "text" },
+        { key: "tags",       label: "タグ (カンマ区切り)", type: "text" },
+        { key: "status",     label: "状態", type: "select", options: ["wip","draft","published"] },
+        { key: "publishedAt", label: "公開日 (YYYY-MM-DD)", type: "text" }
+      ],
+      logs: [
+        { key: "title", label: "タイトル", type: "text", required: true },
+        { key: "type",  label: "タイプ", type: "select", options: ["release","update","study","observation","event","note"] },
+        { key: "body",  label: "本文", type: "textarea" },
+        { key: "date",  label: "日付 (YYYY-MM-DD)", type: "text", required: true },
+        { key: "tags",  label: "タグ (カンマ区切り)", type: "text" },
+        { key: "visibility", label: "公開設定", type: "select", options: ["public","private"] }
+      ]
+    };
+
+    var COLLECTION_NAMES = { articles: "Blog記事", study: "Studyアイテム", logs: "研究ログ" };
+
+    var modalOverlay = document.getElementById("modal-overlay");
+    var modalTitle   = document.getElementById("modal-title");
+    var modalForm    = document.getElementById("modal-form");
+    var currentEditCollection = null;
+    var currentEditId = null;
+
+    function openModal(collection, id) {
+      currentEditCollection = collection;
+      currentEditId = id;
+      var def = FORM_DEFS[collection];
+      var existing = id ? DATA[collection].filter(function (i) { return i.id === id; })[0] : null;
+
+      modalTitle.textContent = (existing ? "編集: " : "新規: ") + COLLECTION_NAMES[collection];
+
+      var html = def.map(function (f) {
+        var val = existing ? existing[f.key] : "";
+        if (f.key === "tags" && Array.isArray(val)) val = val.join(", ");
+        if (f.type === "select") {
+          var opts = f.options.map(function (o) {
+            return '<option value="' + o + '"' + (val === o ? " selected" : "") + ">" + o + "</option>";
+          }).join("");
+          return [
+            '<div class="modal-row">',
+            '<label class="modal-label">' + f.label + "</label>",
+            '<select class="modal-select" name="' + f.key + '">' + opts + "</select>",
+            "</div>"
+          ].join("");
+        }
+        if (f.type === "textarea") {
+          return [
+            '<div class="modal-row">',
+            '<label class="modal-label">' + f.label + "</label>",
+            '<textarea class="modal-textarea" name="' + f.key + '">' + esc(val) + "</textarea>",
+            "</div>"
+          ].join("");
+        }
+        return [
+          '<div class="modal-row">',
+          '<label class="modal-label">' + f.label + (f.required ? " *" : "") + "</label>",
+          '<input class="modal-input" type="text" name="' + f.key + '" value="' + esc(val) + '"' + (f.required ? " required" : "") + " />",
+          "</div>"
+        ].join("");
+      }).join("");
+
+      html += [
+        '<div class="modal-actions">',
+        '<button type="button" class="modal-btn-cancel" id="modal-cancel">キャンセル</button>',
+        '<button type="submit" class="modal-btn-save">保存</button>',
+        "</div>"
+      ].join("");
+
+      modalForm.innerHTML = html;
+      modalOverlay.classList.add("open");
+
+      document.getElementById("modal-cancel").addEventListener("click", closeModal);
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove("open");
+      modalForm.innerHTML = "";
+    }
+
+    modalForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var fd = new FormData(modalForm);
+      var patch = {};
+      FORM_DEFS[currentEditCollection].forEach(function (f) {
+        var v = fd.get(f.key) || "";
+        if (f.key === "tags") {
+          patch[f.key] = v.split(",").map(function (t) { return t.trim(); }).filter(Boolean);
+        } else if (f.key === "difficulty") {
+          patch[f.key] = parseInt(v, 10) || 1;
+        } else {
+          patch[f.key] = v;
+        }
+      });
+
+      var storeKeyMap = { articles: "articles", study: "study", logs: "logs" };
+      var storeName = storeKeyMap[currentEditCollection];
+
+      if (currentEditId) {
+        var updated = AdminStore.update(storeName, currentEditId, patch);
+        var idx = DATA[currentEditCollection].findIndex(function (i) { return i.id === currentEditId; });
+        if (idx !== -1) DATA[currentEditCollection][idx] = updated;
+      } else {
+        var created = AdminStore.create(storeName, patch, currentEditCollection);
+        DATA[currentEditCollection].unshift(created);
+      }
+
+      closeModal();
+      renderOverview();
+      renderArticles();
+      renderStudy();
+      renderLogs();
+    });
+
+    /* ── テーブル操作イベント（イベントデリゲーション） ── */
+    document.addEventListener("click", function (e) {
+      var editBtn = e.target.closest("[data-edit]");
+      if (editBtn) {
+        openModal(editBtn.dataset.edit, editBtn.dataset.id);
+        return;
+      }
+      var delBtn = e.target.closest("[data-del]");
+      if (delBtn) {
+        var collection = delBtn.dataset.del;
+        var id = delBtn.dataset.id;
+        if (!window.confirm("本当に削除しますか？この操作は元に戻せません。")) return;
+        AdminStore.remove(collection, id);
+        DATA[collection] = DATA[collection].filter(function (i) { return i.id !== id; });
+        renderOverview();
+        renderArticles();
+        renderStudy();
+        renderLogs();
+      }
+    });
+
+    document.getElementById("add-article").addEventListener("click", function () { openModal("articles", null); });
+    document.getElementById("add-study").addEventListener("click", function () { openModal("study", null); });
+    document.getElementById("add-log").addEventListener("click", function () { openModal("logs", null); });
+
+    /* ── JSON書き出し ── */
+    var exportOverlay = document.getElementById("export-overlay");
+    var exportTextarea = document.getElementById("export-textarea");
+
+    function openExport(collection, wrapperKey) {
+      exportTextarea.value = AdminStore.exportJson(collection, wrapperKey);
+      exportOverlay.classList.add("open");
+    }
+
+    document.getElementById("export-articles").addEventListener("click", function () { openExport("articles", "articles"); });
+    document.getElementById("export-study").addEventListener("click", function () { openExport("study", "items"); });
+    document.getElementById("export-logs").addEventListener("click", function () { openExport("logs", "logs"); });
+
+    document.getElementById("export-close").addEventListener("click", function () {
+      exportOverlay.classList.remove("open");
+    });
+
+    document.getElementById("export-copy").addEventListener("click", function () {
+      exportTextarea.select();
+      try {
+        document.execCommand("copy");
+      } catch (e) {
+        navigator.clipboard && navigator.clipboard.writeText(exportTextarea.value);
+      }
+    });
+
+    loadAll();
+  })();
+  </script>
+</body>
+</html>
