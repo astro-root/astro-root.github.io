@@ -24,179 +24,169 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  
   <link rel="canonical" href="https://astro-root.com/privacy" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" /></noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="/assets/css/variables.css" />
+  <link rel="stylesheet" href="/assets/css/base.css" />
+  <link rel="stylesheet" href="/assets/css/nav.css" />
+  <link rel="stylesheet" href="/assets/css/footer.css" />
   <style>
-    :root {
-      --bg-0:#020b18; --bg-1:#040f20; --bg-2:#071628;
-      --bg-card:rgba(5,14,28,0.82);
-      --accent-blue:#3b9eff; --accent-teal:#00e5b8; --accent-purple:#8b72ff;
-      --text-0:#eef3ff; --text-1:#7d9ab8; --text-2:#6b8fa8;
-      --border:rgba(59,158,255,0.10); --border-m:rgba(59,158,255,0.22);
-      --glow-blue:rgba(59,158,255,0.18);
-      --font-display:'Syne','Noto Sans JP',sans-serif;
-      --font-mono:'JetBrains Mono','Noto Sans JP',monospace;
-      --font-body:'Noto Sans JP',sans-serif;
-      --r-sm:8px; --r-md:14px; --r-lg:22px; --r-xl:28px;
-      --ease:cubic-bezier(0.25,0.46,0.45,0.94);
-      --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
-      --t:0.28s; --t-fast:0.18s;
-      --nav-h:66px;
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
+
+    .page-header { margin-bottom: 40px; }
+    .page-header-inner { display: flex; flex-direction: column; gap: 18px; }
+    .page-eyebrow { display: flex; align-items: center; gap: 14px; }
+    .page-eyebrow-line { width: 32px; height: 1px; background: var(--accent-blue); opacity: 0.6; }
+    .page-eyebrow-text { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--accent-teal); letter-spacing: 0.28em; text-transform: uppercase; }
+    .page-meta {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      letter-spacing: 0.08em;
     }
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    html { scroll-behavior:smooth; font-size:16px; -webkit-text-size-adjust:100%; }
-    body { background:var(--bg-0); color:var(--text-0); font-family:var(--font-body); line-height:1.8; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-    @media (hover:none) { body { cursor:auto; } }
-    a { color:var(--accent-blue); text-decoration:none; transition:color var(--t); }
-    @media (hover:none) { a { cursor:pointer; } }
-    a:hover { color:var(--accent-teal); }
-    img { max-width:100%; display:block; }
-    ul, ol { list-style:none; }
-    button { font-family:inherit; }
-    @media (hover:none) { button { cursor:pointer; } }
-    ::-webkit-scrollbar { width:4px; }
-    ::-webkit-scrollbar-track { background:var(--bg-0); }
-    ::-webkit-scrollbar-thumb { background:var(--border-m); border-radius:99px; }
-    ::-webkit-scrollbar-thumb:hover { background:var(--accent-blue); }
-    :focus-visible { outline:2px solid var(--accent-blue); outline-offset:3px; border-radius:4px; }
-    .skip-link { position:fixed; top:-100%; left:16px; z-index:9999; background:var(--accent-blue); color:var(--bg-0); padding:10px 20px; border-radius:0 0 var(--r-md) var(--r-md); font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.08em; font-weight:600; transition:top 0.2s var(--ease); }
-    .skip-link:focus { top:0; outline:none; }
 
-    #cursor-dot { opacity:0;  position:fixed; pointer-events:none; z-index:10000; width:6px; height:6px; border-radius:50%; background:var(--accent-blue); box-shadow:0 0 10px var(--accent-blue),0 0 20px rgba(59,158,255,0.4); transform:translate(-50%,-50%); transition:width var(--t-fast) var(--ease),height var(--t-fast) var(--ease),background var(--t-fast); will-change:left,top; }
-    #cursor-ring { position:fixed; pointer-events:none; z-index:9999; width:36px; height:36px; border-radius:50%; border:1px solid rgba(59,158,255,0.45); transform:translate(-50%,-50%); transition:width 0.22s var(--ease),height 0.22s var(--ease),border-color 0.22s,opacity 0.22s; will-change:left,top; }
-    #cursor-dot.hover { width:10px; height:10px; background:var(--accent-teal); }
-    #cursor-ring.hover { width:54px; height:54px; border-color:rgba(0,229,184,0.5); }
-    #cursor-dot.clicking { width:4px; height:4px; }
-    #cursor-ring.clicking { width:28px; height:28px; }
-    #scroll-progress { position:fixed; top:0; left:0; z-index:9998; height:2px; width:0%; background:linear-gradient(90deg,var(--accent-blue) 0%,var(--accent-teal) 50%,var(--accent-purple) 100%); transition:width 0.1s linear; box-shadow:0 0 8px rgba(59,158,255,0.6); }
+    .policy-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: clamp(28px, 5vw, 52px);
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+      position: relative;
+      overflow: hidden;
+    }
 
-    #star-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; display:block; }
-    .aurora-bg { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-    .aurora-orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0; animation:orbDrift 28s ease-in-out infinite alternate,orbIn 3s ease forwards; }
-    .aurora-orb:nth-child(1) { width:600px; height:600px; background:radial-gradient(circle,rgba(59,158,255,0.18) 0%,transparent 65%); top:-200px; right:-150px; animation-duration:22s; animation-delay:0.3s; }
-    .aurora-orb:nth-child(2) { width:400px; height:400px; background:radial-gradient(circle,rgba(139,114,255,0.13) 0%,transparent 65%); bottom:10%; left:-100px; animation-duration:30s; animation-delay:-8s; }
-    @keyframes orbDrift { 0%{transform:translate(0,0) scale(1) rotate(0deg);} 33%{transform:translate(30px,-20px) scale(1.08) rotate(2deg);} 66%{transform:translate(-20px,15px) scale(0.95) rotate(-1deg);} 100%{transform:translate(50px,40px) scale(1.14) rotate(3deg);} }
-    @keyframes orbIn { to{opacity:1;} }
-    .noise-overlay { position:fixed; inset:0; z-index:0; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.022; mix-blend-mode:overlay; }
-    .grid-overlay { position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(59,158,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(59,158,255,0.022) 1px,transparent 1px); background-size:72px 72px; }
+    .policy-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-teal), transparent);
+      opacity: 0.4;
+    }
 
-    header { position:relative; z-index:500; }
-    main, footer { position:relative; z-index:1; }
+    .policy-section h2 {
+      font-family: var(--font-display);
+      font-size: var(--fs-md);
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--text-0);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-    .container { width:100%; max-width:860px; margin:0 auto; padding:0 clamp(20px,5vw,56px); }
-    .container-wide { width:100%; max-width:1100px; margin:0 auto; padding:0 clamp(20px,5vw,64px); }
+    .policy-section h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px; height: 18px;
+      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-teal));
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
 
-    .nav { position:fixed; top:0; left:0; right:0; z-index:500; transition:background var(--t) var(--ease),border-color var(--t) var(--ease); border-bottom:1px solid transparent; }
-    .nav.scrolled { background:rgba(2,11,24,0.90); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom-color:var(--border); }
-    .nav-inner { display:flex; align-items:center; justify-content:space-between; height:var(--nav-h); }
-    .nav-logo { display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; font-size:0.92rem; transition:opacity var(--t); color:var(--text-0); }
-    .nav-logo:hover { opacity:0.75; color:var(--text-0); }
-    .nav-logo-img { width:30px; height:30px; border-radius:50%; border:1.5px solid var(--border-m); overflow:hidden; flex-shrink:0; box-shadow:0 0 12px rgba(59,158,255,0.3); }
-    .nav-logo-img img { width:100%; height:100%; object-fit:cover; }
-    .nav-links { display:flex; align-items:center; gap:32px; }
-    .nav-links a { font-family:var(--font-mono); font-size:0.68rem; color:var(--text-1); letter-spacing:0.14em; text-transform:uppercase; position:relative; padding-bottom:4px; transition:color var(--t) var(--ease); min-height:44px; display:inline-flex; align-items:center; }
-    .nav-links a::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:1.5px; background:linear-gradient(90deg,var(--accent-blue),var(--accent-teal)); transform:scaleX(0); transform-origin:left; transition:transform var(--t) var(--ease-spring); border-radius:99px; }
-    .nav-links a:hover { color:var(--text-0); }
-    .nav-links a:hover::after { transform:scaleX(1); }
-    .nav-links a[aria-current="page"] { color:var(--accent-blue); }
-    .nav-links a[aria-current="page"]::after { transform:scaleX(1); }
-    .nav-toggle { display:none; flex-direction:column; gap:5px; background:none; border:none; padding:10px; border-radius:var(--r-sm); min-width:44px; min-height:44px; align-items:center; justify-content:center; }
-    .nav-toggle span { display:block; width:22px; height:1.5px; background:var(--text-0); transition:transform var(--t) var(--ease),opacity var(--t) var(--ease); transform-origin:center; }
-    .nav-toggle.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
-    .nav-toggle.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
-    .nav-toggle.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
-    .nav-mobile { display:none; position:fixed; top:var(--nav-h); left:0; right:0; background:rgba(2,11,24,0.97); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid var(--border); padding:8px 0; z-index:499; flex-direction:column; }
-    .nav-mobile.open { display:flex; animation:mobileSlideIn 0.22s var(--ease) forwards; }
-    @keyframes mobileSlideIn { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
-    .nav-mobile a { padding:14px clamp(20px,5vw,64px); font-family:var(--font-mono); font-size:0.78rem; color:var(--text-1); letter-spacing:0.12em; text-transform:uppercase; border-bottom:1px solid var(--border); transition:color var(--t) var(--ease),background var(--t) var(--ease),padding-left var(--t) var(--ease); min-height:52px; display:flex; align-items:center; }
-    .nav-mobile a::before { content:'—'; font-size:0.65rem; color:var(--accent-blue); opacity:0.35; margin-right:12px; transition:opacity var(--t),transform var(--t) var(--ease-spring); }
-    .nav-mobile a:last-child { border-bottom:none; }
-    .nav-mobile a:hover { color:var(--accent-blue); background:rgba(59,158,255,0.04); padding-left:calc(clamp(20px,5vw,64px) + 6px); }
-    .nav-mobile a:hover::before { opacity:1; transform:translateX(4px); }
-    .nav-mobile a[aria-current="page"] { color:var(--accent-blue); }
-    @media (max-width:780px) { .nav-links{display:none;} .nav-toggle{display:flex;} }
+    .policy-section p,
+    .policy-section li {
+      font-size: var(--fs-sm);
+      color: var(--text-1);
+      line-height: 2.0;
+    }
 
-    .page-hero { padding:calc(var(--nav-h) + 54px) 0 64px; text-align:center; }
-    .page-label { font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.28em; color:var(--accent-teal); text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; justify-content:center; gap:10px; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.2s; }
-    .page-label::before, .page-label::after { content:''; display:inline-block; width:28px; height:1px; background:linear-gradient(90deg,transparent,var(--accent-teal)); }
-    .page-label::after { background:linear-gradient(90deg,var(--accent-teal),transparent); }
-    .page-title { font-family:var(--font-display); font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; letter-spacing:-0.03em; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.4s; }
-    .page-meta { font-family:var(--font-mono); font-size:0.68rem; color:var(--text-2); margin-top:14px; letter-spacing:0.08em; opacity:0; animation:heroUp 0.8s var(--ease) forwards 0.6s; }
-    @keyframes heroUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+    .policy-section ul {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
 
-    .reveal { opacity:1; transform:none; transition:opacity 0.7s var(--ease),transform 0.7s var(--ease); }
-    .reveal[data-pending] { opacity:0; transform:translateY(28px); }
-    .reveal.visible { opacity:1; transform:translateY(0); }
-    .d1{transition-delay:0.08s;} .d2{transition-delay:0.16s;} .d3{transition-delay:0.24s;}
+    .policy-section li {
+      padding-left: 18px;
+      position: relative;
+    }
 
-    .content-wrap { padding:0 0 100px; }
-    .policy-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-xl); padding:clamp(32px,5vw,56px); backdrop-filter:blur(14px); display:flex; flex-direction:column; gap:44px; position:relative; overflow:hidden; transition:border-color var(--t),box-shadow var(--t); }
-    .policy-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--accent-blue),var(--accent-teal),transparent); opacity:0.35; }
-    .policy-card:hover { border-color:var(--border-m); box-shadow:0 20px 50px rgba(59,158,255,0.07); }
-    .policy-section h2 { font-family:var(--font-display); font-size:1.05rem; font-weight:700; margin-bottom:14px; color:var(--text-0); display:flex; align-items:center; gap:10px; }
-    .policy-section h2::before { content:''; display:inline-block; width:4px; height:18px; background:linear-gradient(to bottom,var(--accent-blue),var(--accent-teal)); border-radius:99px; flex-shrink:0; }
-    .policy-section p, .policy-section li { font-size:0.9rem; color:var(--text-1); line-height:2.1; }
-    .policy-section ul { display:flex; flex-direction:column; gap:8px; }
-    .policy-section li { padding-left:16px; position:relative; }
-    .policy-section li::before { content:'—'; position:absolute; left:0; color:var(--accent-teal); font-size:0.7rem; top:1px; }
-    .highlight { background:rgba(59,158,255,0.04); border:1px solid var(--border-m); border-radius:var(--r-sm); padding:14px 18px; font-size:0.86rem; color:var(--text-1); line-height:2; margin-top:12px; }
-    .highlight a { color:var(--accent-blue); }
-    .highlight a:hover { color:var(--accent-teal); }
-    .policy-divider { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); }
+    .policy-section li::before {
+      content: "—";
+      position: absolute;
+      left: 0;
+      color: var(--accent-teal);
+      font-size: var(--fs-xs);
+      top: 1px;
+    }
 
-    .footer { border-top:1px solid var(--border); padding:48px 0; position:relative; }
-    .footer::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:200px; height:1px; background:linear-gradient(90deg,transparent,var(--accent-blue),transparent); }
-    .footer-inner { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
-    .footer-brand { display:flex; align-items:center; gap:10px; color:var(--text-0); text-decoration:none; }
-    a.footer-brand:hover { opacity:0.75; }
-    .footer-brand-icon { width:26px; height:26px; border-radius:50%; border:1.5px solid var(--border-m); overflow:hidden; box-shadow:0 0 8px rgba(59,158,255,0.2); }
-    .footer-brand-icon img { width:100%; height:100%; object-fit:cover; }
-    .footer-brand-name { font-family:var(--font-display); font-size:0.88rem; font-weight:700; }
-    .footer-nav { display:flex; flex-wrap:wrap; gap:24px; }
-    .footer-nav a { font-family:var(--font-mono); font-size:0.64rem; color:var(--text-2); letter-spacing:0.1em; text-transform:uppercase; transition:color var(--t) var(--ease); position:relative; padding-bottom:2px; min-height:44px; display:inline-flex; align-items:center; }
-    .footer-nav a::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:1px; background:var(--accent-teal); transform:scaleX(0); transform-origin:left; transition:transform var(--t) var(--ease-spring); }
-    .footer-nav a:hover { color:var(--accent-teal); }
-    .footer-nav a:hover::after { transform:scaleX(1); }
-    .footer-nav a[aria-current="page"] { color:var(--accent-blue); }
-    .footer-copy { font-family:var(--font-mono); font-size:0.64rem; color:var(--text-2); letter-spacing:0.08em; }
-    @media (max-width:600px) { .footer-inner{flex-direction:column;align-items:flex-start;gap:12px;} }
+    .highlight {
+      background: rgba(75,169,255,0.05);
+      border: 1px solid var(--border-m);
+      border-radius: var(--r-sm);
+      padding: 14px 18px;
+      font-size: var(--fs-xs);
+      color: var(--text-1);
+      line-height: 1.95;
+      margin-top: 12px;
+    }
 
-    @media (prefers-reduced-motion:reduce) {
-      *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
-      .reveal { opacity:1; transform:none; }
-      body { cursor:auto; }
-      a, button { cursor:pointer; }
-      #cursor-dot, #cursor-ring { display:none; }
+    .highlight a { color: var(--accent-blue); transition: color var(--t); }
+    .highlight a:hover { color: var(--accent-teal); }
+
+    .policy-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .back-to-lab {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono); font-size: var(--fs-xs);
+      color: var(--text-2); letter-spacing: 0.14em;
+      text-transform: uppercase; text-decoration: none;
+      transition: color var(--t); margin-top: 56px;
+    }
+
+    .back-to-lab:hover { color: var(--accent-blue); }
+    .back-to-lab svg { width: 14px; height: 14px; transform: rotate(180deg); }
+
+    @media (max-width: 640px) {
+      main { padding-top: calc(var(--nav-h) + 36px); }
+      .policy-card { padding: 24px; gap: 28px; }
     }
   </style>
 </head>
 <body>
-  <div id="cursor-dot" aria-hidden="true"></div>
-  <div id="cursor-ring" aria-hidden="true"></div>
   <div id="scroll-progress" aria-hidden="true"></div>
-  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
   <canvas id="star-canvas" aria-hidden="true"></canvas>
-  <div class="aurora-bg" aria-hidden="true"><div class="aurora-orb"></div><div class="aurora-orb"></div></div>
+  <div class="aurora-bg" aria-hidden="true">
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+    <div class="aurora-orb"></div>
+  </div>
   <div class="noise-overlay" aria-hidden="true"></div>
   <div class="grid-overlay" aria-hidden="true"></div>
 
+  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
   <header role="banner">
-    <nav class="nav" id="nav" aria-label="メインナビゲーション">
-      <div class="container-wide">
+    <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
+      <div class="container">
         <div class="nav-inner">
-          <a href="/" class="nav-logo" aria-label="るーとの研究室 TOPへ">
-            <div class="nav-logo-img"><img src="/icon.png" alt="" aria-hidden="true" /></div>
+          <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
+            <div class="nav-logo-mark">
+              <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
+            </div>
             <span>るーとの研究室</span>
           </a>
           <ul class="nav-links" role="list">
             <li><a href="/">TOP</a></li>
+            <li><a href="/projects/">PROJECTS</a></li>
+            <li><a href="/study/">STUDY</a></li>
+            <li><a href="/blog/">BLOG</a></li>
             <li><a href="/about">ABOUT</a></li>
-            <li><a href="/privacy" aria-current="page">PRIVACY POLICY</a></li>
             <li><a href="/contact">CONTACT</a></li>
           </ul>
           <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
@@ -207,182 +197,135 @@
     </nav>
     <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
       <a href="/">TOP</a>
+      <a href="/projects/">PROJECTS</a>
+      <a href="/study/">STUDY</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/lab/">LAB EQUIPMENT</a>
+      <a href="/astronomy/">ASTRONOMY</a>
       <a href="/about">ABOUT</a>
-      <a href="/privacy" aria-current="page">PRIVACY POLICY</a>
       <a href="/contact">CONTACT</a>
+      <a href="/privacy" aria-current="page">PRIVACY POLICY</a>
     </div>
   </header>
 
   <main id="main-content">
-    <div class="page-hero">
-      <div class="container">
-        <p class="page-label">Privacy</p>
-        <h1 class="page-title">プライバシーポリシー</h1>
-        <p class="page-meta">最終更新：2026年4月5日</p>
-      </div>
-    </div>
+    <div class="container">
 
-    <div class="content-wrap">
-      <div class="container">
-        <div class="policy-card reveal">
-
-          <div class="policy-section">
-            <h2>取得する個人情報</h2>
-            <p>当サイトでは、以下の場面で個人情報を取得することがあります。</p>
-            <ul>
-              <li>お問い合わせフォーム送信時：お名前・メールアドレス・件名・メッセージ本文</li>
-              <li>アクセス解析：IPアドレス・ブラウザ情報・閲覧ページ・滞在時間（Google Analytics 経由）</li>
-              <li>広告配信：Cookieを利用した閲覧履歴（Google AdSense 経由）</li>
-            </ul>
+      <header class="page-header reveal">
+        <div class="page-header-inner">
+          <div class="page-eyebrow">
+            <div class="page-eyebrow-line" aria-hidden="true"></div>
+            <span class="page-eyebrow-text">Research Lab / Privacy</span>
           </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>個人情報の利用目的</h2>
-            <ul>
-              <li>お問い合わせへの回答・対応</li>
-              <li>サイト改善のためのアクセス分析</li>
-              <li>利用規約違反等の不正行為への対処</li>
-            </ul>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>個人情報の第三者提供</h2>
-            <p>当サイトは、法令に基づく場合を除き、利用者の同意なく第三者に個人情報を提供することはありません。</p>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>Cookie（クッキー）について</h2>
-            <p>当サイトでは、利便性向上およびアクセス解析・広告配信のためにCookieを使用しています。Cookieはブラウザの設定から無効にすることができますが、一部機能が利用できなくなる場合があります。</p>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>Google Analytics について</h2>
-            <p>当サイトはGoogleが提供するアクセス解析サービス「Google Analytics」を利用しています。Google Analyticsはデータ収集のためにCookieを使用します。収集されるデータは匿名であり、個人を特定するものではありません。</p>
-            <div class="highlight">
-              <strong>オプトアウト：</strong> Google Analytics のデータ収集を無効にするには
-              <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google アナリティクス オプトアウト アドオン</a> をご利用ください。
-            </div>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>Google AdSense について</h2>
-            <p>当サイトはGoogleが提供する広告配信サービス「Google AdSense」を利用しています（または利用予定）。Google AdSenseは、利用者の興味に応じた広告を表示するためにCookieを使用する場合があります。</p>
-            <div class="highlight">
-              <strong>広告のカスタマイズ設定：</strong>
-              <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">Google 広告設定ページ</a> から、パーソナライズ広告のオン・オフを変更できます。
-            </div>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>外部リンクについて</h2>
-            <p>当サイトから外部サイトへのリンクを掲載しています。リンク先サイトの内容・プライバシーポリシーについては、当サイトは責任を負いません。</p>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>免責事項</h2>
-            <ul>
-              <li>当サイトの情報は可能な限り正確を期しますが、内容の正確性・完全性を保証するものではありません。</li>
-              <li>当サイトを通じて生じた損害について、運営者は一切の責任を負いません。</li>
-              <li>予告なくコンテンツを変更・削除する場合があります。</li>
-            </ul>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>プライバシーポリシーの変更</h2>
-            <p>本ポリシーは、法令の変更や運営方針の見直しに伴い、予告なく変更する場合があります。変更後の内容は当ページ上に掲載した時点から有効となります。</p>
-          </div>
-
-          <div class="policy-divider"></div>
-
-          <div class="policy-section">
-            <h2>お問い合わせ</h2>
-            <p>個人情報の取り扱いに関するご質問は、<a href="/contact">お問い合わせページ</a>よりご連絡ください。</p>
-          </div>
-
+          <h1 class="page-title">Privacy <em>Policy</em></h1>
+          <p class="page-meta">最終更新：2026年6月30日</p>
         </div>
+      </header>
+
+      <div class="policy-card reveal d1">
+
+        <div class="policy-section">
+          <h2>取得する個人情報</h2>
+          <p>当サイトでは、以下の場面で個人情報を取得することがあります。</p>
+          <ul>
+            <li>お問い合わせフォーム送信時：お名前・メールアドレス・件名・メッセージ本文</li>
+            <li>アクセス解析：IPアドレス・ブラウザ情報・閲覧ページ・滞在時間（Google Analytics 経由）</li>
+            <li>広告配信：Cookieを利用した閲覧履歴（Google AdSense 経由）</li>
+          </ul>
+        </div>
+
+        <div class="policy-divider"></div>
+
+        <div class="policy-section">
+          <h2>個人情報の利用目的</h2>
+          <ul>
+            <li>お問い合わせへの回答・対応</li>
+            <li>サイト改善のためのアクセス分析</li>
+            <li>利用規約違反等の不正行為への対処</li>
+          </ul>
+        </div>
+
+        <div class="policy-divider"></div>
+
+        <div class="policy-section">
+          <h2>Cookieについて</h2>
+          <p>
+            当サイトでは、利用状況の分析および広告配信のためにCookieを使用しています。
+            Cookieはブラウザの設定により無効化することができますが、
+            一部機能が正しく動作しなくなる可能性があります。
+          </p>
+          <div class="highlight">
+            Google Analytics・Google AdSenseが使用するCookieの詳細については、
+            <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">Googleのポリシーとプリンシプル</a>をご確認ください。
+          </div>
+        </div>
+
+        <div class="policy-divider"></div>
+
+        <div class="policy-section">
+          <h2>第三者への提供</h2>
+          <p>
+            取得した個人情報は、法令に基づく場合を除き、本人の同意なく第三者へ提供することはありません。
+            アクセス解析・広告配信のために使用するサービス（Google Analytics, Google AdSense等）に対しては、
+            各サービスのプライバシーポリシーに基づいてデータが処理されます。
+          </p>
+        </div>
+
+        <div class="policy-divider"></div>
+
+        <div class="policy-section">
+          <h2>免責事項</h2>
+          <p>
+            当サイトのコンテンツ・情報について、できる限り正確な情報を提供するよう努めていますが、
+            正確性や安全性を保証するものではありません。
+            当サイトに掲載された内容によって生じた損害について、運営者は一切の責任を負いません。
+          </p>
+        </div>
+
+        <div class="policy-divider"></div>
+
+        <div class="policy-section">
+          <h2>プライバシーポリシーの変更</h2>
+          <p>
+            当サイトは、必要に応じて本ポリシーの内容を変更することがあります。
+            変更後のプライバシーポリシーは、当ページに掲載された時点から効力を持つものとします。
+          </p>
+        </div>
+
+        <div class="policy-divider"></div>
+
+        <div class="policy-section">
+          <h2>お問い合わせ</h2>
+          <p>
+            本ポリシーに関するご質問は、
+            <a href="/contact" style="color:var(--accent-blue);">お問い合わせフォーム</a>
+            よりご連絡ください。
+          </p>
+        </div>
+
       </div>
+
+      <a href="/" class="back-to-lab reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
+        </svg>
+        Back to Lab
+      </a>
+
     </div>
   </main>
 
-  <footer class="footer" role="contentinfo">
-    <div class="container-wide">
-      <div class="footer-inner">
-        <a href="/" class="footer-brand" aria-label="るーとの研究室 TOPへ">
-          <div class="footer-brand-icon"><img src="/icon.png" alt="" aria-hidden="true" /></div>
-          <span class="footer-brand-name">るーとの研究室</span>
-        </a>
-        <nav class="footer-nav" aria-label="フッターナビゲーション">
-          <a href="/">TOP</a>
-          <a href="/about">ABOUT</a>
-          <a href="/privacy" aria-current="page">PRIVACY POLICY</a>
-          <a href="/contact">CONTACT</a>
-        </nav>
-        <p class="footer-copy">© 2026 Root. All rights reserved.</p>
-      </div>
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <span class="footer-logo">るーとの研究室</span>
+      <nav class="footer-links" aria-label="フッターナビゲーション">
+        <a href="/privacy" aria-current="page">Privacy</a>
+        <a href="/contact">Contact</a>
+      </nav>
+      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
     </div>
   </footer>
 
-  <script>
-  (function(){
-    var nav=document.getElementById('nav'),toggle=document.getElementById('nav-toggle'),mob=document.getElementById('nav-mobile');
-    window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>20);},{passive:true});
-    toggle.addEventListener('click',function(){var o=toggle.classList.toggle('open');mob.classList.toggle('open',o);toggle.setAttribute('aria-expanded',String(o));if(o){var fs=mob.querySelectorAll('a,button');var f=fs[0],l=fs[fs.length-1];if(f)f.focus();function tf(e){if(e.key==='Escape'){toggle.click();toggle.focus();return;}if(e.key!=='Tab')return;if(e.shiftKey){if(document.activeElement===f){e.preventDefault();l.focus();}}else{if(document.activeElement===l){e.preventDefault();f.focus();}}}mob.addEventListener('keydown',tf);mob._tf=tf;}else{if(mob._tf){mob.removeEventListener('keydown',mob._tf);delete mob._tf;}}});
-    mob.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){toggle.classList.remove('open');mob.classList.remove('open');toggle.setAttribute('aria-expanded','false');});});
-  })();
-  (function(){
-    if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches)return;
-    var dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
-    if(!dot||!ring)return;
-    var mx=0,my=0,rx=0,ry=0,rafId=null,active=true;
-    document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
-    function animRing(){if(!active){rafId=null;return;}rx+=(mx-rx)*0.14;ry+=(my-ry)*0.14;ring.style.left=rx+'px';ring.style.top=ry+'px';rafId=requestAnimationFrame(animRing);}
-    rafId=requestAnimationFrame(animRing);
-    document.addEventListener('visibilitychange',function(){active=!document.hidden;if(active&&!rafId)rafId=requestAnimationFrame(animRing);});
-    var ia='a,button,input,textarea,[role="button"]';
-    document.addEventListener('mouseover',function(e){if(e.target.closest(ia)){dot.classList.add('hover');ring.classList.add('hover');}});
-    document.addEventListener('mouseout', function(e){if(e.target.closest(ia)){dot.classList.remove('hover');ring.classList.remove('hover');}});
-    document.addEventListener('mousedown',function(){dot.classList.add('clicking');ring.classList.add('clicking');});
-    document.addEventListener('mouseup',  function(){dot.classList.remove('clicking');ring.classList.remove('clicking');});
-    document.addEventListener('mouseleave',function(){dot.style.opacity='0';ring.style.opacity='0';});
-    document.addEventListener('mouseenter',function(){dot.style.opacity='1';ring.style.opacity='1';});
-  })();
-  (function(){var bar=document.getElementById('scroll-progress');if(!bar)return;window.addEventListener('scroll',function(){var max=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(max>0?(window.scrollY/max)*100:0)+'%';},{passive:true});})();
-  (function(){
-    var revealEls2=document.querySelectorAll('.reveal');revealEls2.forEach(function(el){el.dataset.pending='';});var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');delete e.target.dataset.pending;obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});revealEls2.forEach(function(el){obs.observe(el);});
-  })();
-  (function(){
-    var canvas=document.getElementById('star-canvas');if(!canvas)return;
-    var ctx=canvas.getContext('2d'),stars=[],W=0,H=0,rafId=null,active=true;
-    function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
-    function mkStar(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.1+0.15,a:Math.random(),da:(Math.random()*0.003+0.001)*(Math.random()>0.5?1:-1),vy:-(Math.random()*0.035+0.005)};}
-    var shooters=[];function mkShooter(){return{x:0,y:0,len:Math.random()*130+70,speed:Math.random()*8+5,angle:Math.PI/4+(Math.random()-0.5)*0.5,life:0,maxLife:Math.random()*45+28,active:false,timer:Math.random()*180+40};}function resetShooter(sh){sh.x=Math.random()*W*1.4-W*0.2;sh.y=Math.random()*H*0.45;sh.len=Math.random()*130+70;sh.speed=Math.random()*8+5;sh.angle=Math.PI/4+(Math.random()-0.5)*0.5;sh.maxLife=Math.random()*45+28;sh.life=0;sh.active=true;}function initShooters(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){shooters=[];return;}shooters=Array.from({length:5},function(_,i){var s=mkShooter();s.timer=i*80+20;return s;});}function init(){stars=Array.from({length:180},mkStar);initShooters();}
-    function draw(){
-      if(!active){rafId=null;return;}
-      ctx.clearRect(0,0,W,H);
-      for(var shi=0;shi<shooters.length;shi++){var sh=shooters[shi];if(!sh.active){sh.timer--;if(sh.timer<=0)resetShooter(sh);continue;}sh.life++;sh.x+=Math.cos(sh.angle)*sh.speed;sh.y+=Math.sin(sh.angle)*sh.speed;var t=sh.life/sh.maxLife;var al=t<0.2?t/0.2:t>0.75?(1-t)/0.25:1;var tX=sh.x-Math.cos(sh.angle)*sh.len*Math.min(t*2.5,1);var tY=sh.y-Math.sin(sh.angle)*sh.len*Math.min(t*2.5,1);var sg=ctx.createLinearGradient(tX,tY,sh.x,sh.y);sg.addColorStop(0,'rgba(180,220,255,0)');sg.addColorStop(0.6,'rgba(200,230,255,'+(al*0.4)+')');sg.addColorStop(1,'rgba(245,252,255,'+(al*0.95)+')');ctx.beginPath();ctx.moveTo(tX,tY);ctx.lineTo(sh.x,sh.y);ctx.strokeStyle=sg;ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.arc(sh.x,sh.y,2*al,0,Math.PI*2);ctx.fillStyle='rgba(220,240,255,'+al+')';ctx.fill();if(sh.life>=sh.maxLife){sh.active=false;sh.timer=Math.random()*240+120;}}
-      for(var si=0;si<stars.length;si++){var s=stars[si];s.a+=s.da;if(s.a>1){s.a=1;s.da=-Math.abs(s.da);}if(s.a<0.04){s.a=0.04;s.da=Math.abs(s.da);}s.y+=s.vy;if(s.y<-4){s.y=H+4;s.x=Math.random()*W;}ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='rgba(160,200,255,'+s.a+')';ctx.fill();}
-      rafId=requestAnimationFrame(draw);
-    }
-    document.addEventListener('visibilitychange',function(){active=!document.hidden;if(active&&!rafId)rafId=requestAnimationFrame(draw);});
-    var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){resize();init();},200);},{passive:true});
-    resize();init();rafId=requestAnimationFrame(draw);
-  })();
-  </script>
+  <script src="/assets/js/lab-common.js"></script>
 </body>
 </html>
