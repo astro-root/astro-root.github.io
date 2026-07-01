@@ -108,6 +108,14 @@
     return filtered.length !== items.length;
   };
 
+  /*
+    一括書き込み。JSONインポート機能から使用する。
+    既存データを完全に置き換える点に注意(呼び出し側でマージ処理を行うこと)。
+  */
+  AdminStore.setAll = function (name, items) {
+    return writeCollection(name, items);
+  };
+
   AdminStore.exportJson = function (name, wrapperKey) {
     var items = AdminStore.getAll(name);
     var wrapper = {};
