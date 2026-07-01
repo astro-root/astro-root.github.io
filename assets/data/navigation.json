@@ -13,7 +13,6 @@
     { "label": "Study",        "labelJa": "スタディ",        "href": "/study/",        "key": "study",        "phase": 5 },
     { "label": "Blog",         "labelJa": "ブログ",          "href": "/blog/",         "key": "blog",         "phase": 6 },
     { "label": "Lab",          "labelJa": "ラボ設備",        "href": "/lab/",          "key": "lab",          "phase": 7 },
-    { "label": "Astronomy",    "labelJa": "天文学",          "href": "/astronomy/",    "key": "astronomy",    "phase": 8 },
     { "label": "Research Log", "labelJa": "研究ログ",        "href": "/research-log/", "key": "research-log", "phase": 9 },
     { "label": "About",        "labelJa": "アバウト",        "href": "/about",         "key": "about",        "phase": 10 },
     { "label": "Contact",      "labelJa": "コンタクト",      "href": "/contact",       "key": "contact",      "phase": 11 }

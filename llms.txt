@@ -14,10 +14,10 @@
 
 - [TOP](https://astro-root.com/) — 研究室探索UI（トップページ）
 - [Projects](https://astro-root.com/projects/) — 公開Webツール一覧
-- [Study](https://astro-root.com/study/) — 物理学・天文学・数学・シミュレーション学習ノート
+- [Study](https://astro-root.com/study/) — 物理学・天文学・数学・シミュレーション学習ノート（Astronomyコンテンツもこちらに統合）
 - [Blog](https://astro-root.com/blog/) — ブログ記事一覧
 - [Lab Equipment](https://astro-root.com/lab/) — 使用技術スタック紹介
-- [Astronomy](https://astro-root.com/astronomy/) — 天文学コンテンツ・観測記録・星座図
+
 - [Research Log](https://astro-root.com/research-log/) — 活動記録タイムライン
 - [About](https://astro-root.com/about) — プロフィール
 - [Contact](https://astro-root.com/contact) — お問い合わせ

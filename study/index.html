@@ -719,6 +719,209 @@
     }
 
     .retry-btn svg { width: 14px; height: 14px; }
+
+    /* ══════ Astronomy統合コンテンツ（Studyタブ内） ══════ */
+    .astro-fact-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .astro-fact-item {
+      background: var(--bg-card);
+      padding: 18px 12px;
+      text-align: center;
+    }
+
+    .astro-fact-value {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent-teal);
+      margin-bottom: 4px;
+    }
+
+    .astro-fact-label {
+      font-family: var(--font-mono);
+      font-size: 0.54rem;
+      color: var(--text-2);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+
+    .astro-banner {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 22px 26px;
+      background: var(--bg-card);
+      border: 1px solid rgba(30,235,192,0.18);
+      border-radius: var(--r-lg);
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .astro-banner-badge {
+      font-family: var(--font-mono);
+      font-size: 0.54rem;
+      color: var(--accent-teal);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      border: 1px solid rgba(30,235,192,0.25);
+      background: rgba(30,235,192,0.06);
+      border-radius: 99px;
+      padding: 3px 10px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .astro-banner-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-0);
+      margin-bottom: 6px;
+    }
+
+    .astro-banner-desc {
+      font-size: var(--fs-xs);
+      color: var(--text-1);
+      line-height: 1.75;
+      max-width: 460px;
+    }
+
+    .astro-banner-link {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--accent-teal);
+      border: 1px solid rgba(30,235,192,0.28);
+      background: rgba(30,235,192,0.05);
+      border-radius: var(--r-sm);
+      padding: 8px 16px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background var(--t), transform var(--t) var(--ease-spring);
+    }
+
+    .astro-banner-link:hover { background: rgba(30,235,192,0.12); transform: translateY(-2px); }
+    .astro-banner-link svg { width: 13px; height: 13px; }
+
+    .astro-subhead {
+      font-family: var(--font-mono);
+      font-size: 0.56rem;
+      color: var(--accent-teal);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      margin: 32px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .astro-catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .astro-catalog-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+    }
+
+    .astro-catalog-preview {
+      width: 100%;
+      height: 100px;
+      background: rgba(2,8,20,0.9);
+    }
+
+    .astro-catalog-preview svg { width: 100%; height: 100%; }
+
+    .astro-catalog-body { padding: 14px 16px; }
+
+    .astro-catalog-name {
+      font-family: var(--font-display);
+      font-size: 0.90rem;
+      font-weight: 800;
+      color: var(--text-0);
+      margin-bottom: 6px;
+    }
+
+    .astro-catalog-desc {
+      font-size: 0.72rem;
+      color: var(--text-1);
+      line-height: 1.65;
+    }
+
+    .astro-obs-empty {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 28px 24px;
+      text-align: center;
+      color: var(--text-2);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      line-height: 1.85;
+    }
+
+    .astro-obs-empty strong { color: var(--accent-teal); }
+
+    .astro-sim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .astro-sim-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 16px;
+      opacity: 0.6;
+    }
+
+    .astro-sim-card-label {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      letter-spacing: var(--ls-wide);
+      color: var(--accent-amber);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .astro-sim-card-name {
+      font-family: var(--font-display);
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--text-0);
+      margin-bottom: 6px;
+    }
+
+    .astro-sim-card-desc {
+      font-size: 0.70rem;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+      .astro-fact-strip { grid-template-columns: repeat(2, 1fr); }
+      .astro-banner { flex-direction: column; align-items: flex-start; }
+      .astro-banner-link { margin-left: 0; align-self: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -753,7 +956,6 @@
             <li><a href="/study/" aria-current="page">STUDY</a></li>
             <li><a href="/blog/">BLOG</a></li>
             <li><a href="/lab/">LAB EQUIPMENT</a></li>
-            <li><a href="/astronomy/">ASTRONOMY</a></li>
             <li><a href="/about">ABOUT</a></li>
             <li><a href="/contact">CONTACT</a></li>
           </ul>
@@ -769,7 +971,6 @@
       <a href="/study/" aria-current="page">STUDY</a>
       <a href="/blog/">BLOG</a>
       <a href="/lab/">LAB EQUIPMENT</a>
-      <a href="/astronomy/">ASTRONOMY</a>
       <a href="/about">ABOUT</a>
       <a href="/contact">CONTACT</a>
       <a href="/privacy">PRIVACY POLICY</a>
@@ -848,6 +1049,50 @@
     };
 
     var ARROW_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" class="study-card-arrow" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>';
+
+    /* ══════ Astronomyタブ統合コンテンツ ══════ */
+    var ASTRONOMY_EXTRA_HTML = [
+      '<div class="astro-fact-strip">',
+      '  <div class="astro-fact-item"><div class="astro-fact-value">88</div><div class="astro-fact-label">IAU Constellations</div></div>',
+      '  <div class="astro-fact-item"><div class="astro-fact-value">13.8Gyr</div><div class="astro-fact-label">Age of Universe</div></div>',
+      '  <div class="astro-fact-item"><div class="astro-fact-value">2000+</div><div class="astro-fact-label">Exoplanets Found</div></div>',
+      '  <div class="astro-fact-item"><div class="astro-fact-value">c</div><div class="astro-fact-label">Speed of Light</div></div>',
+      '</div>',
+      '<div class="astro-banner">',
+      '  <div>',
+      '    <span class="astro-banner-badge">Community</span>',
+      '    <p class="astro-banner-title">AstroHigh</p>',
+      '    <p class="astro-banner-desc">高校生天文学者のためのコミュニティ。天体観測・論文読解・宇宙論の議論を行っています。管理者として運営に携わっています。</p>',
+      '  </div>',
+      '  <a class="astro-banner-link" href="https://x.com/AstroHigh_Info" target="_blank" rel="noopener noreferrer">',
+      '    AstroHighを見る',
+      '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>',
+      '  </a>',
+      '</div>',
+      '<p class="astro-subhead">天体カタログ</p>',
+      '<div class="astro-catalog-grid">',
+      '  <div class="astro-catalog-card">',
+      '    <div class="astro-catalog-preview"><svg viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="100" fill="rgba(2,8,20,1)"/><ellipse cx="120" cy="50" rx="80" ry="30" fill="none" stroke="rgba(75,169,255,0.2)" stroke-width="1" stroke-dasharray="4,4"/><circle cx="120" cy="50" r="9" fill="rgba(255,210,100,0.95)"/><circle cx="180" cy="50" r="3.5" fill="rgba(75,169,255,0.9)"/><circle cx="96" cy="34" r="3" fill="rgba(30,235,192,0.85)"/></svg></div>',
+      '    <div class="astro-catalog-body"><p class="astro-catalog-name">太陽系</p><p class="astro-catalog-desc">太陽を中心に8惑星が公転する恒星系。地球は第3惑星。</p></div>',
+      '  </div>',
+      '  <div class="astro-catalog-card">',
+      '    <div class="astro-catalog-preview"><svg viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="100" fill="rgba(2,8,20,1)"/><ellipse cx="120" cy="50" rx="16" ry="12" fill="rgba(255,220,160,0.3)"/><path d="M120 50 Q160 30 200 22" fill="none" stroke="rgba(180,180,255,0.3)" stroke-width="6" stroke-linecap="round"/><path d="M120 50 Q80 70 40 78" fill="none" stroke="rgba(180,180,255,0.3)" stroke-width="6" stroke-linecap="round"/><circle cx="150" cy="46" r="2.5" fill="rgba(255,220,100,0.9)"/></svg></div>',
+      '    <div class="astro-catalog-body"><p class="astro-catalog-name">天の川銀河</p><p class="astro-catalog-desc">直径約10万光年の棒渦巻銀河。太陽はオリオン腕に位置。</p></div>',
+      '  </div>',
+      '  <div class="astro-catalog-card">',
+      '    <div class="astro-catalog-preview"><svg viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="100" fill="rgba(2,8,20,1)"/><circle cx="120" cy="50" r="8" fill="none" stroke="rgba(156,135,255,0.3)" stroke-width="1"/><circle cx="120" cy="50" r="26" fill="none" stroke="rgba(156,135,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/><circle cx="120" cy="16" r="3" fill="rgba(255,220,160,0.8)"/><circle cx="164" cy="34" r="2.5" fill="rgba(255,220,160,0.75)"/></svg></div>',
+      '    <div class="astro-catalog-body"><p class="astro-catalog-name">ハッブル定数</p><p class="astro-catalog-desc">宇宙膨張速度を表す定数。CMB観測値と局所観測値の乖離が現代宇宙論の課題。</p></div>',
+      '  </div>',
+      '</div>',
+      '<p class="astro-subhead">観測記録</p>',
+      '<div class="astro-obs-empty"><strong>準備中</strong> — 天体望遠鏡による観測記録・スケッチを Research Log と連携して順次公開予定です。</div>',
+      '<p class="astro-subhead">シミュレーション</p>',
+      '<div class="astro-sim-grid">',
+      '  <div class="astro-sim-card"><span class="astro-sim-card-label">Orbital Mechanics</span><p class="astro-sim-card-name">軌道力学</p><p class="astro-sim-card-desc">ケプラーの法則による惑星軌道の可視化（準備中）</p></div>',
+      '  <div class="astro-sim-card"><span class="astro-sim-card-label">N-Body Problem</span><p class="astro-sim-card-name">多体問題</p><p class="astro-sim-card-desc">重力相互作用のリアルタイム計算（準備中）</p></div>',
+      '  <div class="astro-sim-card"><span class="astro-sim-card-label">Galaxy Formation</span><p class="astro-sim-card-name">銀河形成</p><p class="astro-sim-card-desc">ダークマターハローへのガス降着モデル（準備中）</p></div>',
+      '</div>'
+    ].join('\n');
 
     /* ── シミュレーション用プレビューSVG ── */
     function makeSimPreview(subcat) {
@@ -988,6 +1233,7 @@
         '    </div>',
         '    <div class="cat-banner-count"><strong>' + count + '</strong>items</div>',
         '  </div>',
+        (cat.id === 'astronomy' ? ASTRONOMY_EXTRA_HTML : ''),
         subcatBtns ? '<div class="subcat-bar">' + subcatBtns + '</div>' : '',
         '  <div class="items-grid">',
         gridContent,
@@ -1083,9 +1329,21 @@
 
           studyRoot.innerHTML = html;
 
-          /* 最初のパネルをアクティブに */
-          var firstPanel = studyRoot.querySelector('.cat-panel');
-          if (firstPanel) firstPanel.classList.add('active');
+          /* URLクエリ(?cat=xxx)があればそのタブを、なければ最初のパネルをアクティブに */
+          var queryCat = new URLSearchParams(window.location.search).get('cat');
+          var targetPanel = queryCat ? studyRoot.querySelector('.cat-panel[data-cat="' + queryCat + '"]') : null;
+          var activePanel = targetPanel || studyRoot.querySelector('.cat-panel');
+          if (activePanel) activePanel.classList.add('active');
+
+          if (queryCat) {
+            var targetTab = studyRoot.querySelector('.tab-btn[data-cat="' + queryCat + '"]');
+            if (targetTab) {
+              studyRoot.querySelectorAll('.tab-btn').forEach(function (t) {
+                t.classList.toggle('active', t === targetTab);
+                t.setAttribute('aria-selected', String(t === targetTab));
+              });
+            }
+          }
 
           setupTabs(studyRoot);
           setupSubcatFilters(studyRoot);
