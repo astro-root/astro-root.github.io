@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="/assets/css/base.css" />
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
+  <link rel="stylesheet" href="/assets/css/chat-widget.css" />
   <style>
     body { display: flex; flex-direction: column; min-height: 100vh; }
     main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
@@ -714,7 +715,13 @@
     </div>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/firebase-init.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="/assets/js/lab-common.js"></script>
+  <script src="/assets/js/chat-widget.js"></script>
   <script>
   (function () {
     'use strict';
