@@ -98,8 +98,28 @@
     過去の会話が復元されない。Firestore側の記録自体は残るため、
     開発者は受信箱から引き続き全履歴を閲覧できる。
   */
+  var SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24時間で新規セッション扱いにする
+  var SESSION_STORAGE_KEY = "lab_chat_session_v1";
+
   function getOrCreateSessionId() {
-    return "sess-" + randomToken(24);
+    try {
+      var raw = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        if (saved && saved.id && saved.savedAt && (Date.now() - saved.savedAt) < SESSION_TTL_MS) {
+          saved.savedAt = Date.now();
+          localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(saved));
+          return saved.id;
+        }
+      }
+    } catch (e) {
+      /* localStorageが使えない環境(プライベートモード等)では毎回新規セッションにフォールバック */
+    }
+    var id = "sess-" + randomToken(24);
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ id: id, savedAt: Date.now() }));
+    } catch (e) {}
+    return id;
   }
 
   function buildUI() {
