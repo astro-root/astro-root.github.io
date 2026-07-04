@@ -311,28 +311,31 @@
       showLocalNotice("接続エラーが発生しました。ページを再読み込みしてください。");
     });
 
+    var renderedMessageIds = {};
     unsubscribeMessages = sessionRef.collection("messages").orderBy("createdAt", "asc")
       .onSnapshot(function (snap) {
-        var container = document.getElementById("lab-chat-messages");
-        if (container) container.innerHTML = "";
-        recentMessages = [];
-        snap.forEach(function (doc) {
-          var data = doc.data();
+        var hadThinking = aiThinking;
+        if (hadThinking) hideThinking();
+
+        var addedAny = false;
+        snap.docChanges().forEach(function (change) {
+          if (change.type !== "added") return;
+          var data = change.doc.data();
+          if (renderedMessageIds[change.doc.id]) return;
+          renderedMessageIds[change.doc.id] = true;
           renderMessage(data);
+          addedAny = true;
           if (data.sender === "user" || data.sender === "bot") {
             recentMessages.push({ sender: data.sender, text: data.text });
           }
         });
-        if (aiThinking) {
-          var wasThinking = aiThinking;
-          aiThinking = false; // hideThinking内でfalseにされるのを避けるため一旦退避
-          showThinking();
-          aiThinking = wasThinking;
-        }
         recentMessages = recentMessages.slice(-10);
+
+        if (hadThinking) showThinking();
+
         var launcher = document.getElementById("lab-chat-launcher");
         var panel = document.getElementById("lab-chat-panel");
-        if (launcher && panel && !panel.classList.contains("open") && !snap.empty) {
+        if (launcher && panel && !panel.classList.contains("open") && addedAny) {
           launcher.classList.add("has-unread");
         }
       }, function (err) {
