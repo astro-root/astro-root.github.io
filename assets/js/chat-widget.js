@@ -8,7 +8,7 @@
   var GREETING = "こんにちは、るーとの研究室チャットです。ご質問をどうぞ。開発者と直接お話ししたい場合は下の「開発者を呼ぶ」ボタンを押してください。";
   var CALL_CONFIRM = "開発者に通知しました。少々お待ちください(最大2分ほど応答がない場合、自動応答に切り替わります)。";
   var FALLBACK_STATIC = "現在、開発者もAI応答も利用できないようです。お手数ですが、少し時間をおいて再度お試しいただくか、お問い合わせフォームからご連絡ください。";
-  var AI_NUDGE_FALLBACK = "内容は記録済みです。至急の場合はお問い合わせフォームからもご連絡いただけます。";
+  var AI_NUDGE_FALLBACK = "うまくお答えできませんでした。恐れ入りますが、お問い合わせフォームからご連絡いただけますでしょうか。";
 
   var db = null;
   var auth = null;
@@ -19,6 +19,7 @@
   var unsubscribeSession = null;
   var panelOpened = false;
   var currentSessionMode = "ai";
+  var aiThinking = false;
   var lastAutoReplyAt = 0;
   var recentMessages = [];
 
@@ -45,6 +46,7 @@
   }
 
   function showThinking() {
+    aiThinking = true;
     var container = document.getElementById("lab-chat-messages");
     if (!container) return;
     hideThinking();
@@ -58,6 +60,7 @@
   }
 
   function hideThinking() {
+    aiThinking = false;
     var el = document.getElementById("lab-chat-thinking");
     if (el) el.remove();
   }
@@ -112,6 +115,7 @@
       '  </button>',
       '</div>',
       '<p class="lab-chat-notice">個人情報(本名・連絡先・パスワード等)は入力しないでください。会話は匿名化して記録され、応答改善のために利用されます。</p>',
+      '<p class="lab-chat-notice lab-chat-ai-disclaimer">※自動応答はAIによるものです。内容が不正確な場合があります。</p>',
       '<div class="lab-chat-messages" id="lab-chat-messages"></div>',
       '<div class="lab-chat-footer">',
       '  <button class="lab-chat-call-btn" id="lab-chat-call-btn">',
@@ -313,6 +317,12 @@
             recentMessages.push({ sender: data.sender, text: data.text });
           }
         });
+        if (aiThinking) {
+          var wasThinking = aiThinking;
+          aiThinking = false; // hideThinking内でfalseにされるのを避けるため一旦退避
+          showThinking();
+          aiThinking = wasThinking;
+        }
         recentMessages = recentMessages.slice(-10);
         var launcher = document.getElementById("lab-chat-launcher");
         var panel = document.getElementById("lab-chat-panel");
