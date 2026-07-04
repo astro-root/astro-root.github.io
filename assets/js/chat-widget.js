@@ -274,10 +274,19 @@
     });
   }
 
+  var pendingReplyTimer = null;
   function maybeSendAIReply() {
     if (currentSessionMode !== "ai") return;
     var now = Date.now();
-    if (now - lastAutoReplyAt < AUTO_REPLY_COOLDOWN_MS) return;
+    var remaining = AUTO_REPLY_COOLDOWN_MS - (now - lastAutoReplyAt);
+    if (remaining > 0) {
+      if (pendingReplyTimer) clearTimeout(pendingReplyTimer);
+      pendingReplyTimer = setTimeout(function () {
+        pendingReplyTimer = null;
+        maybeSendAIReply();
+      }, remaining + 50);
+      return;
+    }
     lastAutoReplyAt = now;
 
     showThinking();
