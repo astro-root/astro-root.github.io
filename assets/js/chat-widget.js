@@ -7,8 +7,7 @@
   var EMAILJS_SERVICE_ID = "astro_root";
   var EMAILJS_TEMPLATE_ID = "astro_root_notify";
 
-  /* ★★★ Cloudflare Workerをデプロイ後、実際のURLに置き換えること ★★★ */
-  var AI_WORKER_URL = "https://root-slab-chat-ai.YOUR-SUBDOMAIN.workers.dev";
+  var AI_WORKER_URL = "https://root-slab-chat-ai.astro-root.workers.dev";
 
   var GREETING = "こんにちは、るーとの研究室チャットです。ご質問をどうぞ。開発者と直接お話ししたい場合は下の「開発者を呼ぶ」ボタンを押してください。";
   var CALL_CONFIRM = "開発者に通知しました。少々お待ちください(最大2分ほど応答がない場合、自動応答に切り替わります)。";
@@ -25,9 +24,8 @@
   var panelOpened = false;
   var currentSessionStatus = null;
   var lastAutoReplyAt = 0;
-  var recentMessages = []; /* AIへ渡す直近の会話履歴(表示用データと同期) */
+  var recentMessages = [];
 
-  /* ── ユーティリティ ── */
   function esc(s) {
     return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
@@ -85,17 +83,16 @@
     return out;
   }
 
+  /*
+    セッションIDをlocalStorageに保存しない。
+    ページを開くたびに新規セッションとして扱うため、訪問者のブラウザには
+    過去の会話が復元されない。Firestore側の記録自体は残るため、
+    開発者は受信箱から引き続き全履歴を閲覧できる。
+  */
   function getOrCreateSessionId() {
-    var key = "lab_chat_session_id";
-    var id = localStorage.getItem(key);
-    if (!id) {
-      id = "sess-" + randomToken(24);
-      localStorage.setItem(key, id);
-    }
-    return id;
+    return "sess-" + randomToken(24);
   }
 
-  /* ── UIマークアップ生成 ── */
   function buildUI() {
     var launcher = document.createElement("button");
     launcher.id = "lab-chat-launcher";
@@ -162,7 +159,6 @@
     }
   }
 
-  /* ── メッセージ描画 ── */
   function renderMessage(msg) {
     var container = document.getElementById("lab-chat-messages");
     if (!container) return;
@@ -187,7 +183,6 @@
     el.textContent = map[status] || "オンライン";
   }
 
-  /* ── Firestore書き込み ── */
   function postMessage(sender, text) {
     var sessionRef = db.collection("chat_sessions").doc(sessionId);
     var msgRef = sessionRef.collection("messages").doc();
@@ -220,10 +215,6 @@
     });
   }
 
-  /*
-    Cloudflare Worker経由でGeminiに問い合わせる。
-    失敗時はnullを返す(呼び出し側で定型文へのフォールバックを行う)。
-  */
   function callAI(messages) {
     return fetch(AI_WORKER_URL, {
       method: "POST",
@@ -255,11 +246,6 @@
     });
   }
 
-  /*
-    自動応答モード(ai-handling)中に訪問者が追加メッセージを送った場合、
-    クールダウンを空けてGeminiに問い合わせ、返ってきた本物の応答を送る。
-    Worker呼び出しに失敗した場合のみ定型文にフォールバックする。
-  */
   function maybeSendAIReply() {
     if (currentSessionStatus !== "ai-handling") return;
     var now = Date.now();
@@ -279,7 +265,6 @@
     });
   }
 
-  /* ── 開発者呼び出し ── */
   function callDeveloper() {
     var btn = document.getElementById("lab-chat-call-btn");
     btn.disabled = true;
@@ -325,7 +310,6 @@
     });
   }
 
-  /* ── 2分タイムアウト → Geminiによる自動応答へ切り替え ── */
   function scheduleTimeoutCheck(calledAtMillis) {
     if (timeoutHandle) clearTimeout(timeoutHandle);
     var remaining = TIMEOUT_MS - (Date.now() - calledAtMillis);
@@ -361,7 +345,6 @@
     });
   }
 
-  /* ── リアルタイム購読 ── */
   function subscribeToSession() {
     var sessionRef = db.collection("chat_sessions").doc(sessionId);
 
@@ -405,7 +388,6 @@
       });
   }
 
-  /* ── 初期化 ── */
   function initChat() {
     if (!window.LAB_FIREBASE) {
       var container = document.getElementById("lab-chat-messages");
