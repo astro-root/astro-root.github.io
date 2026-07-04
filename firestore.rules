@@ -13,6 +13,7 @@ service cloud.firestore {
                     || isDeveloper()
                   );
       allow list: if isDeveloper();
+      allow delete: if isDeveloper();
       allow create: if request.auth != null
                      && request.resource.data.ownerUid == request.auth.uid
                      && request.resource.data.mode == 'ai';
@@ -39,6 +40,7 @@ service cloud.firestore {
                        get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.ownerUid == request.auth.uid
                        || isDeveloper()
                      );
+        allow delete: if isDeveloper();
         allow create: if request.auth != null && (
           (
             get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.ownerUid == request.auth.uid

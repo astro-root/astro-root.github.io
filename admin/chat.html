@@ -135,8 +135,24 @@
       color: var(--text-1);
     }
 
+    .inbox-item { position: relative; }
     .inbox-item:hover { background: rgba(75,169,255,0.05); }
     .inbox-item.active { background: rgba(75,169,255,0.08); border-left-color: var(--accent-blue); }
+
+    .inbox-item-delete {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-2);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .inbox-item-delete:hover { color: #ff6b6b; background: rgba(255,107,107,0.1); }
 
     .inbox-item-id {
       font-family: var(--font-mono);
@@ -471,17 +487,23 @@
             var pending = mode === "ai" && !!data.calledAt;
             var badgeStatus = pending ? "pending" : mode;
             var badgeLabel = pending ? "要対応(呼び出しあり)" : (MODE_LABEL[mode] || mode);
-            var item = document.createElement("button");
+            var item = document.createElement("div");
             item.className = "inbox-item";
             if (doc.id === currentSessionId) item.classList.add("active");
             item.innerHTML =
               '<div class="inbox-item-id">' + esc(doc.id) + '</div>' +
               '<div class="inbox-item-preview">' + esc(data.lastMessagePreview || "(メッセージなし)") + '</div>' +
               '<span class="inbox-item-status" data-status="' + esc(badgeStatus) + '">' +
-              esc(badgeLabel) + '</span>';
-            item.addEventListener("click", function () {
+              esc(badgeLabel) + '</span>' +
+              '<button class="inbox-item-delete" data-session-id="' + esc(doc.id) + '" title="このセッションを削除">削除</button>';
+            item.addEventListener("click", function (e) {
+              if (e.target.classList.contains("inbox-item-delete")) return;
               document.getElementById("session-id-input").value = doc.id;
               openSession(doc.id);
+            });
+            item.querySelector(".inbox-item-delete").addEventListener("click", function (e) {
+              e.stopPropagation();
+              deleteSession(doc.id);
             });
             list.appendChild(item);
           });
@@ -590,6 +612,29 @@
     }
 
     document.getElementById("mode-toggle-btn").addEventListener("click", toggleMode);
+
+    function deleteSession(sessionId) {
+      if (!db) return;
+      if (!confirm("セッション " + sessionId + " を完全に削除します。よろしいですか?(元に戻せません)")) return;
+      var sessionRef = db.collection("chat_sessions").doc(sessionId);
+      sessionRef.collection("messages").get().then(function (snap) {
+        var batch = db.batch();
+        snap.forEach(function (doc) { batch.delete(doc.ref); });
+        return batch.commit();
+      }).then(function () {
+        return sessionRef.delete();
+      }).then(function () {
+        if (currentSessionId === sessionId) {
+          currentSessionId = null;
+          document.getElementById("thread-status").textContent = "セッションを選択してください";
+          document.getElementById("thread-messages").innerHTML = "";
+          document.getElementById("mode-toggle-row").style.display = "none";
+        }
+      }).catch(function (err) {
+        console.error("セッション削除失敗:", err);
+        alert("削除に失敗しました。権限を確認してください。");
+      });
+    }
 
     document.getElementById("session-id-open").addEventListener("click", function () {
       var id = document.getElementById("session-id-input").value.trim();
