@@ -10,10 +10,21 @@ service cloud.firestore {
 
     match /chat_sessions/{sessionId} {
 
+      /*
+        resource == null の分岐が無いと、まだ存在しないドキュメントへの
+        get()(=新規セッションの存在確認)が「resource.data」評価エラーで
+        permission-deniedとなり、新規訪問者のセッション作成が全滅する。
+        これが「送信しても何も表示されない」バグの直接原因だった。
+      */
       allow get: if request.auth != null
-                  && (resource.data.ownerUid == request.auth.uid || isDeveloper());
+                  && (
+                    resource == null
+                    || resource.data.ownerUid == request.auth.uid
+                    || isDeveloper()
+                  );
 
-      allow list: if false;
+      /* 開発者のみ、全セッションの一覧(受信箱)取得を許可する */
+      allow list: if isDeveloper();
 
       allow create: if request.auth != null
                      && request.resource.data.ownerUid == request.auth.uid

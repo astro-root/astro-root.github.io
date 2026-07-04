@@ -35,11 +35,22 @@
   }
 
   /*
-    暗号論的乱数によるトークン生成。
-    Date.now()に依存するとタイムスタンプから推測可能になり、
-    セッションIDの実質的な秘匿性がランダム部の数文字しかなくなる問題を修正。
-    24文字・62種の文字集合で約142bitのエントロピーを確保する。
+    エラー時にコンソールログだけで済ませず、画面上にも表示する。
+    これはFirestoreへの永続化はしないローカル限定の表示であり、
+    次のonSnapshot更新が来ると画面から消える(既知の制約)。
+    それでも「何も起きていないように見える」よりは遥かにましである。
   */
+  function showLocalNotice(text) {
+    var container = document.getElementById("lab-chat-messages");
+    if (!container) return;
+    var div = document.createElement("div");
+    div.className = "lab-chat-bubble";
+    div.dataset.sender = "bot";
+    div.innerHTML = '<span class="lab-chat-bubble-label">システム</span>' + esc(text);
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
   function randomToken(length) {
     var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     var bytes = new Uint8Array(length);
@@ -197,7 +208,10 @@
     var text = (input.value || "").trim();
     if (!text) return;
     input.value = "";
-    postMessage("user", scrubPII(text));
+    postMessage("user", scrubPII(text)).catch(function (err) {
+      console.error("メッセージ送信失敗:", err);
+      showLocalNotice("送信に失敗しました。ページを再読み込みしてもう一度お試しください。");
+    });
   }
 
   /* ── 開発者呼び出し ── */
@@ -221,6 +235,7 @@
       }
     }).catch(function (err) {
       console.error("callDeveloper failed:", err);
+      showLocalNotice("開発者呼び出しに失敗しました。しばらくしてから再度お試しください。");
       btn.disabled = false;
     });
   }
@@ -289,6 +304,9 @@
         clearTimeout(timeoutHandle);
         timeoutHandle = null;
       }
+    }, function (err) {
+      console.error("セッション購読エラー:", err);
+      showLocalNotice("接続エラーが発生しました。ページを再読み込みしてください。");
     });
 
     unsubscribeMessages = sessionRef.collection("messages").orderBy("createdAt", "asc")
@@ -303,6 +321,9 @@
         if (launcher && panel && !panel.classList.contains("open") && !snap.empty) {
           launcher.classList.add("has-unread");
         }
+      }, function (err) {
+        console.error("メッセージ購読エラー:", err);
+        showLocalNotice("メッセージの読み込みに失敗しました。ページを再読み込みしてください。");
       });
   }
 
@@ -331,10 +352,14 @@
     auth.onAuthStateChanged(function (user) {
       if (user) {
         uid = user.uid;
-        ensureSessionExists().then(subscribeToSession);
+        ensureSessionExists().then(subscribeToSession).catch(function (err) {
+          console.error("セッション初期化失敗:", err);
+          showLocalNotice("チャットの初期化に失敗しました。ページを再読み込みしてください。");
+        });
       } else {
         auth.signInAnonymously().catch(function (err) {
           console.error("匿名サインインに失敗しました:", err);
+          showLocalNotice("接続に失敗しました。ページを再読み込みしてください。");
         });
       }
     });

@@ -20,7 +20,7 @@
     body { display: flex; flex-direction: column; min-height: 100vh; padding: 24px; }
 
     .chat-admin-header {
-      max-width: 640px;
+      max-width: 960px;
       margin: 0 auto 20px;
       width: 100%;
     }
@@ -87,11 +87,93 @@
 
     #chat-admin-main { display: none; }
 
+    .chat-admin-layout {
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .inbox-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 640px;
+    }
+
+    .inbox-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+    }
+
+    .inbox-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .inbox-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: none;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      color: var(--text-1);
+    }
+
+    .inbox-item:hover { background: rgba(75,169,255,0.05); }
+    .inbox-item.active { background: rgba(75,169,255,0.08); border-left-color: var(--accent-blue); }
+
+    .inbox-item-id {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-2);
+      margin-bottom: 4px;
+    }
+
+    .inbox-item-preview {
+      font-size: var(--fs-xs);
+      color: var(--text-1);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 4px;
+    }
+
+    .inbox-item-status {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .inbox-item-status[data-status="bot"] { background: rgba(255,255,255,0.06); color: var(--text-2); }
+    .inbox-item-status[data-status="calling"] { background: rgba(255,194,92,0.14); color: var(--accent-amber); }
+    .inbox-item-status[data-status="ai-handling"] { background: rgba(168,120,255,0.16); color: #c9a8ff; }
+    .inbox-item-status[data-status="developer"] { background: rgba(30,235,192,0.14); color: var(--accent-teal); }
+
     .session-id-row {
       display: flex;
       gap: 8px;
       max-width: 640px;
-      margin: 0 auto 20px;
+      margin: 0 0 12px;
       width: 100%;
     }
 
@@ -121,10 +203,7 @@
     }
 
     .chat-thread-wrap {
-      max-width: 640px;
-      margin: 0 auto;
       width: 100%;
-      flex: 1;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--r-xl);
@@ -203,6 +282,11 @@
       font-weight: 600;
       cursor: pointer;
     }
+
+    @media (max-width: 720px) {
+      .chat-admin-layout { grid-template-columns: 1fr; }
+      .inbox-panel { max-height: 220px; }
+    }
   </style>
 </head>
 <body>
@@ -223,7 +307,7 @@
   <div id="chat-admin-main">
     <div class="chat-admin-header">
       <p class="chat-admin-title">Live Chat 対応</p>
-      <p style="font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--text-2);">メール内のリンクから開くと自動的にセッションが読み込まれます。手動で開く場合はIDを入力してください。</p>
+      <p style="font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--text-2);">左の受信箱から選択するか、メールのリンク、またはセッションIDを直接入力してください。</p>
     </div>
 
     <div class="session-id-row">
@@ -231,12 +315,21 @@
       <button class="session-id-btn" id="session-id-open">開く</button>
     </div>
 
-    <div class="chat-thread-wrap">
-      <div class="chat-thread-status" id="thread-status">セッションを選択してください</div>
-      <div class="chat-thread-messages" id="thread-messages"></div>
-      <div class="chat-reply-row">
-        <textarea class="chat-reply-input" id="reply-input" rows="2" placeholder="返信を入力..."></textarea>
-        <button class="chat-reply-btn" id="reply-send">送信</button>
+    <div class="chat-admin-layout">
+      <div class="inbox-panel">
+        <div class="inbox-header">受信箱(全セッション)</div>
+        <div class="inbox-list" id="inbox-list">
+          <div style="padding:14px;font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--text-2);">読み込み中...</div>
+        </div>
+      </div>
+
+      <div class="chat-thread-wrap">
+        <div class="chat-thread-status" id="thread-status">セッションを選択してください</div>
+        <div class="chat-thread-messages" id="thread-messages"></div>
+        <div class="chat-reply-row">
+          <textarea class="chat-reply-input" id="reply-input" rows="2" placeholder="返信を入力..."></textarea>
+          <button class="chat-reply-btn" id="reply-send">送信</button>
+        </div>
       </div>
     </div>
   </div>
@@ -247,14 +340,14 @@
     "use strict";
 
     /* 既存の簡易パスワードゲート(サイト全体の管理画面共通)。
-       これはこれで独立した既存の脆弱性だが、今回のスコープはチャット機能の
-       Firestoreルールなので、ここでは二重の防御として維持するだけに留める。 */
+       Firebase Authとは別の防御層として維持する。 */
     AdminAuth.requireAuth();
 
     var db = null;
     var currentSessionId = null;
     var unsubMessages = null;
     var unsubSession = null;
+    var unsubInbox = null;
 
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -294,7 +387,8 @@
       document.getElementById("chat-admin-main").style.display = "block";
       db = window.LAB_FIREBASE.db;
 
-      /* URLクエリ(?session=xxx)があれば自動的に開く */
+      subscribeInbox();
+
       var queryId = new URLSearchParams(window.location.search).get("session");
       if (queryId) {
         document.getElementById("session-id-input").value = queryId;
@@ -315,6 +409,49 @@
       showLoginError("Firebase未設定です。assets/js/firebase-init.js を確認してください。");
     }
 
+    /* ── 受信箱(全セッション一覧、AI対応済みチャットも含む) ── */
+    var STATUS_LABEL = {
+      bot: "会話中",
+      calling: "呼び出し中",
+      "ai-handling": "AI対応済み",
+      developer: "対応済み"
+    };
+
+    function subscribeInbox() {
+      if (unsubInbox) unsubInbox();
+      unsubInbox = db.collection("chat_sessions")
+        .orderBy("lastMessageAt", "desc")
+        .limit(50)
+        .onSnapshot(function (snap) {
+          var list = document.getElementById("inbox-list");
+          list.innerHTML = "";
+          if (snap.empty) {
+            list.innerHTML = '<div style="padding:14px;font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--text-2);">セッションがありません</div>';
+            return;
+          }
+          snap.forEach(function (doc) {
+            var data = doc.data();
+            var item = document.createElement("button");
+            item.className = "inbox-item";
+            if (doc.id === currentSessionId) item.classList.add("active");
+            item.innerHTML =
+              '<div class="inbox-item-id">' + esc(doc.id) + '</div>' +
+              '<div class="inbox-item-preview">' + esc(data.lastMessagePreview || "(メッセージなし)") + '</div>' +
+              '<span class="inbox-item-status" data-status="' + esc(data.status || "bot") + '">' +
+              esc(STATUS_LABEL[data.status] || data.status || "-") + '</span>';
+            item.addEventListener("click", function () {
+              document.getElementById("session-id-input").value = doc.id;
+              openSession(doc.id);
+            });
+            list.appendChild(item);
+          });
+        }, function (err) {
+          console.error("受信箱の購読エラー:", err);
+          document.getElementById("inbox-list").innerHTML =
+            '<div style="padding:14px;font-family:var(--font-mono);font-size:var(--fs-2xs);color:#ff6b6b;">受信箱の読み込みに失敗しました</div>';
+        });
+    }
+
     function renderMessage(msg) {
       var container = document.getElementById("thread-messages");
       var label = { user: "訪問者", bot: "自動応答", developer: "あなた" }[msg.sender] || msg.sender;
@@ -330,6 +467,13 @@
       if (!db) return;
       currentSessionId = sessionId;
 
+      /* 受信箱側のアクティブ表示を更新 */
+      var items = document.querySelectorAll(".inbox-item");
+      items.forEach(function (el) {
+        var idEl = el.querySelector(".inbox-item-id");
+        el.classList.toggle("active", idEl && idEl.textContent === sessionId);
+      });
+
       if (unsubMessages) unsubMessages();
       if (unsubSession) unsubSession();
 
@@ -340,7 +484,8 @@
           document.getElementById("thread-status").textContent = "該当のセッションが見つかりません。";
           return;
         }
-        document.getElementById("thread-status").textContent = "セッション: " + sessionId + " / 状態: " + (doc.data().status || "-");
+        document.getElementById("thread-status").textContent =
+          "セッション: " + sessionId + " / 状態: " + (STATUS_LABEL[doc.data().status] || doc.data().status || "-");
       }, function (err) {
         console.error("セッション購読エラー:", err);
         document.getElementById("thread-status").textContent = "アクセス権限がありません(ルールを確認してください)。";
