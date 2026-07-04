@@ -236,9 +236,9 @@
       from_email: "no-reply@astro-root.com",
       subject: "【チャット呼び出し】開発者対応をお願いします",
       message: "研究室サイトのチャットで開発者呼び出しがありました。\n\n管理画面から直接返信してください:\n" + chatUrl,
-      reply_to: "no-reply@astro-root.com",
+      reply_to: "contact@astro-root.com",
       to_name: "るーと",
-      to_email: "no-reply@astro-root.com"
+      to_email: "contact@astro-root.com"
     };
     return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params).catch(function (err) {
       console.error("開発者呼び出しメール送信失敗:", err);

@@ -4,7 +4,7 @@ service cloud.firestore {
 
     function isDeveloper() {
       return request.auth != null
-             && request.auth.token.email == 'root@example.com'
+             && request.auth.token.email == 'contact@astro-root.com'
              && request.auth.token.email_verified == true;
     }
 
