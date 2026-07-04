@@ -1,64 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function isDeveloper() {
-      /*
-        email_verified を要求しない。
-        自己登録を許可していない単一の開発者アカウント運用であり、
-        パスワード認証を通過した時点で本人確定として扱う。
-        Firebaseコンソールで作成したユーザーはデフォルトでemail_verifiedが
-        falseになるため、これを必須にすると開発者自身がロックアウトされる。
-      */
       return request.auth != null
              && request.auth.token.email == 'contact@astro-root.com';
     }
-
     match /chat_sessions/{sessionId} {
-
       allow get: if request.auth != null
                   && (
                     resource == null
                     || resource.data.ownerUid == request.auth.uid
                     || isDeveloper()
                   );
-
       allow list: if isDeveloper();
-
       allow create: if request.auth != null
                      && request.resource.data.ownerUid == request.auth.uid
-                     && request.resource.data.status == 'bot';
-
+                     && request.resource.data.mode == 'ai';
       allow update: if request.auth != null && (
         (
           resource.data.ownerUid == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['status', 'calledAt', 'lastMessageAt', 'lastMessagePreview'])
-          && (
-            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
-            || request.resource.data.status in ['calling', 'ai-handling']
-          )
+               .hasOnly(['calledAt', 'lastMessageAt', 'lastMessagePreview'])
         )
         ||
         (
           isDeveloper()
           && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['status', 'lastMessageAt', 'lastMessagePreview'])
+               .hasOnly(['mode', 'lastMessageAt', 'lastMessagePreview'])
           && (
-            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
-            || request.resource.data.status == 'developer'
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['mode'])
+            || request.resource.data.mode in ['ai', 'developer']
           )
         )
       );
-
       match /messages/{messageId} {
-
         allow read: if request.auth != null
                      && (
                        get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.ownerUid == request.auth.uid
                        || isDeveloper()
                      );
-
         allow create: if request.auth != null && (
           (
             get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.ownerUid == request.auth.uid

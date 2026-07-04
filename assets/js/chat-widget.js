@@ -18,7 +18,7 @@
   var unsubscribeMessages = null;
   var unsubscribeSession = null;
   var panelOpened = false;
-  var currentSessionStatus = null;
+  var currentSessionMode = "ai";
   var lastAutoReplyAt = 0;
   var recentMessages = [];
 
@@ -167,16 +167,14 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  function updateStatusLabel(status) {
+  function updateStatusLabel(mode) {
     var el = document.getElementById("lab-chat-status");
     if (!el) return;
     var map = {
-      bot: "オンライン",
-      calling: "開発者を呼び出し中...",
-      developer: "開発者が対応中",
-      "ai-handling": "自動応答中(AI)"
+      ai: "オンライン(自動応答)",
+      developer: "開発者が対応中"
     };
-    el.textContent = map[status] || "オンライン";
+    el.textContent = map[mode] || "オンライン";
   }
 
   function postMessage(sender, text) {
@@ -201,7 +199,7 @@
       if (doc.exists) return;
       return sessionRef.set({
         ownerUid: uid,
-        status: "bot",
+        mode: "ai",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastMessagePreview: ""
@@ -243,7 +241,7 @@
   }
 
   function maybeSendAIReply() {
-    if (currentSessionStatus !== "ai-handling") return;
+    if (currentSessionMode !== "ai") return;
     var now = Date.now();
     if (now - lastAutoReplyAt < AUTO_REPLY_COOLDOWN_MS) return;
     lastAutoReplyAt = now;
@@ -266,22 +264,15 @@
     btn.disabled = true;
     var sessionRef = db.collection("chat_sessions").doc(sessionId);
     sessionRef.update({
-      status: "calling",
       calledAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(function () {
       return postMessage("bot", CALL_CONFIRM);
     }).then(function () {
       return sendCallNotification();
-    }).then(function () {
-      return sessionRef.get();
-    }).then(function (doc) {
-      var data = doc.data();
-      if (data && data.calledAt) {
-        scheduleTimeoutCheck(data.calledAt.toMillis());
-      }
     }).catch(function (err) {
       console.error("callDeveloper failed:", err);
       showLocalNotice("開発者呼び出しに失敗しました。しばらくしてから再度お試しください。");
+    }).finally(function () {
       btn.disabled = false;
     });
   }
@@ -297,55 +288,14 @@
     });
   }
 
-  function scheduleTimeoutCheck(calledAtMillis) {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-    var remaining = TIMEOUT_MS - (Date.now() - calledAtMillis);
-    if (remaining <= 0) {
-      tryFallbackToAI();
-    } else {
-      timeoutHandle = setTimeout(tryFallbackToAI, remaining);
-    }
-  }
-
-  function tryFallbackToAI() {
-    var sessionRef = db.collection("chat_sessions").doc(sessionId);
-    db.runTransaction(function (tx) {
-      return tx.get(sessionRef).then(function (doc) {
-        if (!doc.exists) return false;
-        if (doc.data().status !== "calling") return false;
-        tx.update(sessionRef, { status: "ai-handling" });
-        return true;
-      });
-    }).then(function (didTransition) {
-      if (!didTransition) return;
-      showThinking();
-      return callAI(recentMessages).then(function (text) {
-        hideThinking();
-        var reply = text || FALLBACK_STATIC;
-        return postMessage("bot", reply).then(function () {
-          recentMessages.push({ sender: "bot", text: reply });
-        });
-      });
-    }).catch(function (err) {
-      hideThinking();
-      console.error("AI fallback failed:", err);
-    });
-  }
-
   function subscribeToSession() {
     var sessionRef = db.collection("chat_sessions").doc(sessionId);
 
     unsubscribeSession = sessionRef.onSnapshot(function (doc) {
       if (!doc.exists) return;
       var data = doc.data();
-      currentSessionStatus = data.status;
-      updateStatusLabel(data.status);
-      if (data.status === "calling" && data.calledAt) {
-        scheduleTimeoutCheck(data.calledAt.toMillis());
-      } else if (timeoutHandle) {
-        clearTimeout(timeoutHandle);
-        timeoutHandle = null;
-      }
+      currentSessionMode = data.mode || "ai";
+      updateStatusLabel(currentSessionMode);
     }, function (err) {
       console.error("セッション購読エラー:", err);
       showLocalNotice("接続エラーが発生しました。ページを再読み込みしてください。");
