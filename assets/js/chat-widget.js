@@ -340,7 +340,9 @@
     auth.onAuthStateChanged(function (user) {
       if (user) {
         uid = user.uid;
-        ensureSessionExists().then(subscribeToSession).catch(function (err) {
+        user.getIdToken(true).then(function () {
+          return ensureSessionExists().then(subscribeToSession);
+        }).catch(function (err) {
           console.error("セッション初期化失敗:", err);
           showLocalNotice("チャットの初期化に失敗しました。ページを再読み込みしてください。");
         });
