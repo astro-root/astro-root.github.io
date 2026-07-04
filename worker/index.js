@@ -7,12 +7,27 @@
 */
 const ALLOWED_ORIGIN = "https://astro-root.com";
 
+const SITE_FACTS =
+  "【サイト概要】\n" +
+  "・サイト名: るーとの研究室 (astro-root.com)\n" +
+  "・運営者: るーと(HN: astro_root)。高校3年生(2026年現在)、Webエンジニア・クイズプレイヤー・天文学研究者。日本物理学会 学生会友、AstroHigh 管理者。\n" +
+  "・サイトの目的: ポートフォリオ・Webツール公開・学習記録。クイズ大会支援ツールの開発公開と、天文学・物理学の探求を行う個人研究室サイト。\n" +
+  "・主なコンテンツ: PROJECTS(開発したツール紹介)、STUDY(学習記録)、BLOG、LAB EQUIPMENT、ABOUT、CONTACT。\n" +
+  "・公開しているツール(いずれも無償公開): Q-Score(早押しクイズ大会支援ツール)、Q-Room、Q-Mark、Q-Panel(パネル開放クイズシステム)、Q-Cumber(1人用スコアトラッカー)、ShiftLink(シフト管理)、LineGO(整理券管理)、元素タイピング(タイピング練習)。\n" +
+  "・技術スタック: JavaScript, HTML/CSS, Firebase, TypeScript, Git/GitHub。\n" +
+  "・連絡先: お問い合わせフォーム(https://astro-root.com/contact)。SNSはX(@astro_root, @root_qscore, @AstroHigh_Info)、LINE公式(Q-Scoreの通知用)。\n" +
+  "・当サイトは個人運営であり、企業ではない。";
+
 const SYSTEM_PROMPT =
   "あなたは「るーとの研究室」サイトの自動応答チャットボットです。" +
-  "開発者本人が不在のときに来訪者の質問に短く親切に日本語で答えます。" +
-  "わからないことは正直に「担当者に確認します」と答えてください。" +
-  "医療・法律等の断定的な専門助言はしないでください。" +
-  "返答は3〜4文程度で簡潔にまとめてください。";
+  "開発者本人が不在のときに来訪者の質問に日本語で答えます。\n\n" +
+  SITE_FACTS + "\n\n" +
+  "【厳守事項】\n" +
+  "・回答は必ず上記の「サイト概要」に書かれている事実の範囲内にとどめてください。\n" +
+  "・上記に書かれていない詳細(特定のツールの使い方の細部、開設していない機能、記載のない実績や経歴など)を推測や創作で答えてはいけません。わからないことは、正直に「その点については把握しておらず、正確な情報をお伝えできません。お問い合わせフォームからご確認いただけますでしょうか」のように答えてください。\n" +
+  "・サイトと無関係な一般知識の質問(雑談以外の専門的な質問など)には、簡単に答えつつ、このサイトの話題ではない旨を伝えてください。\n" +
+  "・医療・法律等の断定的な専門助言はしないでください。\n" +
+  "・返答は3〜4文程度で簡潔にまとめてください。";
 
 function corsHeaders(origin) {
   return {
@@ -53,7 +68,11 @@ async function handleAI(request, env, origin) {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
           contents: contents,
-          generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
+          generationConfig: {
+            maxOutputTokens: 500,
+            temperature: 0.7,
+            thinkingConfig: { thinkingBudget: 0 },
+          },
         }),
       }
     );
@@ -65,6 +84,8 @@ async function handleAI(request, env, origin) {
   }
 
   if (!geminiRes.ok) {
+    const errBody = await geminiRes.text();
+    console.log("gemini_error status=" + geminiRes.status + " body=" + errBody);
     return new Response(JSON.stringify({ error: "gemini_error", status: geminiRes.status }), {
       status: 502,
       headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
@@ -81,7 +102,7 @@ async function handleAI(request, env, origin) {
     });
   }
 
-  return new Response(JSON.stringify({ text: text }), {
+  return new Response(JSON.stringify({ text: text, isAI: true }), {
     headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
   });
 }

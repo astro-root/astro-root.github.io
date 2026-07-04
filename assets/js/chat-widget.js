@@ -52,7 +52,7 @@
     div.className = "lab-chat-bubble";
     div.id = "lab-chat-thinking";
     div.dataset.sender = "thinking";
-    div.innerHTML = "<span></span><span></span><span></span>";
+    div.innerHTML = '<span class="lab-chat-bubble-label">AIが考え中</span><span></span><span></span><span></span>';
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   }
