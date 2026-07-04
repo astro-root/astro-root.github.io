@@ -57,7 +57,7 @@
     div.className = "lab-chat-bubble";
     div.id = "lab-chat-thinking";
     div.dataset.sender = "thinking";
-    div.innerHTML = '<span class="lab-chat-bubble-label">AIが考え中</span><span></span><span></span><span></span>';
+    div.innerHTML = '<span class="lab-chat-bubble-label">AIが考え中</span><span class="lab-chat-thinking-dots"><span></span><span></span><span></span></span>';
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   }
@@ -118,6 +118,7 @@
       '  </button>',
       '</div>',
       '<p class="lab-chat-notice">個人情報(本名・連絡先・パスワード等)は入力しないでください。会話は匿名化して記録され、応答改善のために利用されます。</p>',
+      '<p class="lab-chat-notice lab-chat-ai-disclaimer">※自動応答はAIによるものです。内容が不正確な場合があります。</p>',
       '<div class="lab-chat-messages" id="lab-chat-messages"></div>',
       '<div class="lab-chat-footer">',
       '  <button class="lab-chat-call-btn" id="lab-chat-call-btn">',
