@@ -164,10 +164,41 @@
       border-radius: 4px;
     }
 
-    .inbox-item-status[data-status="bot"] { background: rgba(255,255,255,0.06); color: var(--text-2); }
-    .inbox-item-status[data-status="calling"] { background: rgba(255,194,92,0.14); color: var(--accent-amber); }
-    .inbox-item-status[data-status="ai-handling"] { background: rgba(168,120,255,0.16); color: #c9a8ff; }
+    .inbox-item-status[data-status="ai"] { background: rgba(168,120,255,0.16); color: #c9a8ff; }
     .inbox-item-status[data-status="developer"] { background: rgba(30,235,192,0.14); color: var(--accent-teal); }
+    .inbox-item-status[data-status="pending"] { background: rgba(255,194,92,0.14); color: var(--accent-amber); }
+
+    .mode-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .mode-toggle-label {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+    }
+
+    .mode-toggle-btn {
+      padding: 6px 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border-m);
+      background: rgba(168,120,255,0.12);
+      color: #c9a8ff;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .mode-toggle-btn[data-mode="developer"] {
+      background: rgba(30,235,192,0.14);
+      color: var(--accent-teal);
+    }
 
     .session-id-row {
       display: flex;
@@ -328,6 +359,10 @@
 
       <div class="chat-thread-wrap">
         <div class="chat-thread-status" id="thread-status">セッションを選択してください</div>
+        <div class="mode-toggle-row" id="mode-toggle-row" style="display:none;">
+          <span class="mode-toggle-label">対応モード:</span>
+          <button class="mode-toggle-btn" id="mode-toggle-btn" data-mode="ai">AI対応中</button>
+        </div>
         <div class="chat-thread-messages" id="thread-messages"></div>
         <div class="chat-reply-row">
           <textarea class="chat-reply-input" id="reply-input" rows="2" placeholder="返信を入力..."></textarea>
@@ -413,11 +448,9 @@
     }
 
     /* ── 受信箱(全セッション一覧、AI対応済みチャットも含む) ── */
-    var STATUS_LABEL = {
-      bot: "会話中",
-      calling: "呼び出し中",
-      "ai-handling": "AI対応済み",
-      developer: "対応済み"
+    var MODE_LABEL = {
+      ai: "AI対応中",
+      developer: "開発者対応中"
     };
 
     function subscribeInbox() {
@@ -434,14 +467,18 @@
           }
           snap.forEach(function (doc) {
             var data = doc.data();
+            var mode = data.mode || "ai";
+            var pending = mode === "ai" && !!data.calledAt;
+            var badgeStatus = pending ? "pending" : mode;
+            var badgeLabel = pending ? "要対応(呼び出しあり)" : (MODE_LABEL[mode] || mode);
             var item = document.createElement("button");
             item.className = "inbox-item";
             if (doc.id === currentSessionId) item.classList.add("active");
             item.innerHTML =
               '<div class="inbox-item-id">' + esc(doc.id) + '</div>' +
               '<div class="inbox-item-preview">' + esc(data.lastMessagePreview || "(メッセージなし)") + '</div>' +
-              '<span class="inbox-item-status" data-status="' + esc(data.status || "bot") + '">' +
-              esc(STATUS_LABEL[data.status] || data.status || "-") + '</span>';
+              '<span class="inbox-item-status" data-status="' + esc(badgeStatus) + '">' +
+              esc(badgeLabel) + '</span>';
             item.addEventListener("click", function () {
               document.getElementById("session-id-input").value = doc.id;
               openSession(doc.id);
@@ -485,13 +522,22 @@
       unsubSession = sessionRef.onSnapshot(function (doc) {
         if (!doc.exists) {
           document.getElementById("thread-status").textContent = "該当のセッションが見つかりません。";
+          document.getElementById("mode-toggle-row").style.display = "none";
           return;
         }
+        var data = doc.data();
+        var mode = data.mode || "ai";
         document.getElementById("thread-status").textContent =
-          "セッション: " + sessionId + " / 状態: " + (STATUS_LABEL[doc.data().status] || doc.data().status || "-");
+          "セッション: " + sessionId + " / モード: " + (MODE_LABEL[mode] || mode);
+
+        var toggleBtn = document.getElementById("mode-toggle-btn");
+        toggleBtn.dataset.mode = mode;
+        toggleBtn.textContent = mode === "developer" ? "開発者対応中(クリックでAIに戻す)" : "AI対応中(クリックで引き継ぐ)";
+        document.getElementById("mode-toggle-row").style.display = "flex";
       }, function (err) {
         console.error("セッション購読エラー:", err);
         document.getElementById("thread-status").textContent = "アクセス権限がありません(ルールを確認してください)。";
+        document.getElementById("mode-toggle-row").style.display = "none";
       });
 
       unsubMessages = sessionRef.collection("messages").orderBy("createdAt", "asc")
@@ -519,7 +565,6 @@
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       batch.update(sessionRef, {
-        status: "developer",
         lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastMessagePreview: text.slice(0, 80)
       });
@@ -527,6 +572,24 @@
         console.error("返信送信失敗:", err);
       });
     }
+
+    function toggleMode() {
+      if (!currentSessionId || !db) return;
+      var btn = document.getElementById("mode-toggle-btn");
+      var current = btn.dataset.mode || "ai";
+      var next = current === "developer" ? "ai" : "developer";
+      btn.disabled = true;
+      db.collection("chat_sessions").doc(currentSessionId).update({ mode: next })
+        .catch(function (err) {
+          console.error("モード切り替え失敗:", err);
+          alert("モードの切り替えに失敗しました。権限を確認してください。");
+        })
+        .finally(function () {
+          btn.disabled = false;
+        });
+    }
+
+    document.getElementById("mode-toggle-btn").addEventListener("click", toggleMode);
 
     document.getElementById("session-id-open").addEventListener("click", function () {
       var id = document.getElementById("session-id-input").value.trim();
