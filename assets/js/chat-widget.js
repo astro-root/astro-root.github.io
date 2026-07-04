@@ -45,8 +45,11 @@
     container.scrollTop = container.scrollHeight;
   }
 
+  var thinkingShownAt = 0;
+  var MIN_THINKING_MS = 600;
   function showThinking() {
     aiThinking = true;
+    thinkingShownAt = Date.now();
     var container = document.getElementById("lab-chat-messages");
     if (!container) return;
     hideThinking();
@@ -115,7 +118,6 @@
       '  </button>',
       '</div>',
       '<p class="lab-chat-notice">個人情報(本名・連絡先・パスワード等)は入力しないでください。会話は匿名化して記録され、応答改善のために利用されます。</p>',
-      '<p class="lab-chat-notice lab-chat-ai-disclaimer">※自動応答はAIによるものです。内容が不正確な場合があります。</p>',
       '<div class="lab-chat-messages" id="lab-chat-messages"></div>',
       '<div class="lab-chat-footer">',
       '  <button class="lab-chat-call-btn" id="lab-chat-call-btn">',
@@ -252,10 +254,14 @@
 
     showThinking();
     callAI(recentMessages).then(function (text) {
-      hideThinking();
-      var reply = text || AI_NUDGE_FALLBACK;
-      return postMessage("bot", reply).then(function () {
-        recentMessages.push({ sender: "bot", text: reply });
+      var elapsed = Date.now() - thinkingShownAt;
+      var wait = Math.max(0, MIN_THINKING_MS - elapsed);
+      return new Promise(function (resolve) { setTimeout(resolve, wait); }).then(function () {
+        hideThinking();
+        var reply = text || AI_NUDGE_FALLBACK;
+        return postMessage("bot", reply).then(function () {
+          recentMessages.push({ sender: "bot", text: reply });
+        });
       });
     }).catch(function (err) {
       hideThinking();
