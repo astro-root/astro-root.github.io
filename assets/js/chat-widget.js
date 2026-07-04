@@ -26,6 +26,13 @@
   function esc(s) {
     return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
+  function linkify(escapedText) {
+    return escapedText.replace(/(https?:\/\/[^\s<]+)/g, function (url) {
+      var trimmed = url.replace(/[)\.,、。]+$/, "");
+      var trailing = url.slice(trimmed.length);
+      return '<a href="' + trimmed + '" target="_blank" rel="noopener noreferrer">' + trimmed + '</a>' + trailing;
+    });
+  }
 
   function scrubPII(text) {
     var scrubbed = text;
@@ -169,7 +176,7 @@
     var div = document.createElement("div");
     div.className = "lab-chat-bubble";
     div.dataset.sender = msg.sender;
-    div.innerHTML = '<span class="lab-chat-bubble-label">' + esc(label) + '</span>' + esc(msg.text);
+    div.innerHTML = '<span class="lab-chat-bubble-label">' + esc(label) + '</span>' + linkify(esc(msg.text));
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   }

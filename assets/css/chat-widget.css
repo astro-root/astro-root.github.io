@@ -200,6 +200,12 @@
   30% { transform: translateY(-3px); opacity: 1; }
 }
 
+.lab-chat-bubble a {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
 /* ── フッター(呼び出しボタン・入力欄) ── */
 .lab-chat-footer {
   border-top: 1px solid var(--border);
