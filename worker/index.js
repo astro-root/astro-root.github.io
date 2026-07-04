@@ -7,7 +7,7 @@
   これを空/誤りのままにすると、誰でもこのWorkerを叩いて
   Gemini無料枠を消費できてしまう。
 */
-const ALLOWED_ORIGIN = "https://your-actual-domain.com";
+const ALLOWED_ORIGIN = "https://astro-root.com";
 
 const SYSTEM_PROMPT =
   "あなたは「るーとの研究室」サイトの自動応答チャットボットです。" +
