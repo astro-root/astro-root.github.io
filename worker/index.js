@@ -1,11 +1,9 @@
 /*
-  訪問者ブラウザ → このWorker → Gemini API という中継構成。
-  GeminiのAPIキーはここ(Cloudflareのsecret)にのみ保持し、
+  訪問者ブラウザ → このWorker → Gemini API / Discord Webhook という中継構成。
+  APIキーやWebhook URLはここ(Cloudflareのsecret)にのみ保持し、
   ブラウザ側には一切渡さない。
 
   ★★★ ALLOWED_ORIGIN は必ずサイトの本番ドメインに置き換えること ★★★
-  これを空/誤りのままにすると、誰でもこのWorkerを叩いて
-  Gemini無料枠を消費できてしまう。
 */
 const ALLOWED_ORIGIN = "https://astro-root.com";
 
@@ -24,9 +22,110 @@ function corsHeaders(origin) {
   };
 }
 
+async function handleAI(request, env, origin) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400 });
+  }
+
+  const messages = Array.isArray(body.messages) ? body.messages.slice(-10) : [];
+  if (messages.length === 0) {
+    return new Response(JSON.stringify({ error: "no_messages" }), { status: 400 });
+  }
+
+  const contents = messages
+    .filter((m) => m.sender === "user" || m.sender === "bot")
+    .map((m) => ({
+      role: m.sender === "user" ? "user" : "model",
+      parts: [{ text: String(m.text || "").slice(0, 2000) }],
+    }));
+
+  let geminiRes;
+  try {
+    geminiRes = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+        env.GEMINI_API_KEY,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: contents,
+          generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
+        }),
+      }
+    );
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "gemini_fetch_failed" }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    });
+  }
+
+  if (!geminiRes.ok) {
+    return new Response(JSON.stringify({ error: "gemini_error", status: geminiRes.status }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    });
+  }
+
+  const data = await geminiRes.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+
+  if (!text) {
+    return new Response(JSON.stringify({ error: "empty_response" }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    });
+  }
+
+  return new Response(JSON.stringify({ text: text }), {
+    headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+  });
+}
+
+async function handleNotify(request, env, origin) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400 });
+  }
+
+  const chatUrl = String(body.chatUrl || "").slice(0, 300);
+  if (!chatUrl.startsWith(ALLOWED_ORIGIN + "/admin/chat.html")) {
+    /* 想定外のURLを送りつけられて悪用されるのを防ぐ最低限のチェック */
+    return new Response(JSON.stringify({ error: "invalid_chat_url" }), { status: 400 });
+  }
+
+  const discordRes = await fetch(env.DISCORD_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content:
+        "🔔 **研究室チャットで開発者呼び出しがありました**\n" +
+        "管理画面から返信してください: " + chatUrl,
+    }),
+  });
+
+  if (!discordRes.ok) {
+    return new Response(JSON.stringify({ error: "discord_error", status: discordRes.status }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    });
+  }
+
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
+    const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders(origin) });
@@ -41,66 +140,9 @@ export default {
       });
     }
 
-    let body;
-    try {
-      body = await request.json();
-    } catch (e) {
-      return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400 });
+    if (url.pathname === "/notify") {
+      return handleNotify(request, env, origin);
     }
-
-    const messages = Array.isArray(body.messages) ? body.messages.slice(-10) : [];
-    if (messages.length === 0) {
-      return new Response(JSON.stringify({ error: "no_messages" }), { status: 400 });
-    }
-
-    const contents = messages
-      .filter((m) => m.sender === "user" || m.sender === "bot")
-      .map((m) => ({
-        role: m.sender === "user" ? "user" : "model",
-        parts: [{ text: String(m.text || "").slice(0, 2000) }],
-      }));
-
-    let geminiRes;
-    try {
-      geminiRes = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-          env.GEMINI_API_KEY,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: contents,
-            generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
-          }),
-        }
-      );
-    } catch (e) {
-      return new Response(JSON.stringify({ error: "gemini_fetch_failed" }), {
-        status: 502,
-        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
-      });
-    }
-
-    if (!geminiRes.ok) {
-      return new Response(JSON.stringify({ error: "gemini_error", status: geminiRes.status }), {
-        status: 502,
-        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
-      });
-    }
-
-    const data = await geminiRes.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-
-    if (!text) {
-      return new Response(JSON.stringify({ error: "empty_response" }), {
-        status: 502,
-        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
-      });
-    }
-
-    return new Response(JSON.stringify({ text: text }), {
-      headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
-    });
+    return handleAI(request, env, origin);
   },
 };

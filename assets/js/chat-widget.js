@@ -3,10 +3,6 @@
 
   var TIMEOUT_MS = 2 * 60 * 1000;
   var AUTO_REPLY_COOLDOWN_MS = 20 * 1000;
-  var EMAILJS_PUBLIC_KEY = "yxzdXxEsQp6Ulyn1w";
-  var EMAILJS_SERVICE_ID = "astro_root";
-  var EMAILJS_TEMPLATE_ID = "astro_root_notify";
-
   var AI_WORKER_URL = "https://root-slab-chat-ai.astro-root.workers.dev";
 
   var GREETING = "こんにちは、るーとの研究室チャットです。ご質問をどうぞ。開発者と直接お話ししたい場合は下の「開発者を呼ぶ」ボタンを押してください。";
@@ -275,7 +271,7 @@
     }).then(function () {
       return postMessage("bot", CALL_CONFIRM);
     }).then(function () {
-      return sendCallEmail();
+      return sendCallNotification();
     }).then(function () {
       return sessionRef.get();
     }).then(function (doc) {
@@ -290,23 +286,14 @@
     });
   }
 
-  function sendCallEmail() {
-    if (typeof emailjs === "undefined") {
-      console.warn("EmailJS SDKが読み込まれていないため通知メールを送信できません。");
-      return Promise.resolve();
-    }
+  function sendCallNotification() {
     var chatUrl = window.location.origin + "/admin/chat.html?session=" + encodeURIComponent(sessionId);
-    var params = {
-      from_name: "研究室チャット(匿名)",
-      from_email: "no-reply@astro-root.com",
-      subject: "【チャット呼び出し】開発者対応をお願いします",
-      message: "研究室サイトのチャットで開発者呼び出しがありました。\n\n管理画面から直接返信してください:\n" + chatUrl,
-      reply_to: "contact@astro-root.com",
-      to_name: "るーと",
-      to_email: "contact@astro-root.com"
-    };
-    return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params).catch(function (err) {
-      console.error("開発者呼び出しメール送信失敗:", err);
+    return fetch(AI_WORKER_URL + "/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatUrl: chatUrl })
+    }).catch(function (err) {
+      console.error("Discord通知の送信失敗:", err);
     });
   }
 
@@ -399,15 +386,6 @@
     db = window.LAB_FIREBASE.db;
     auth = window.LAB_FIREBASE.auth;
     sessionId = getOrCreateSessionId();
-
-    if (typeof emailjs !== "undefined" && !window.__labEmailjsInited) {
-      try {
-        emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-        window.__labEmailjsInited = true;
-      } catch (e) {
-        console.warn("EmailJS init skipped:", e);
-      }
-    }
 
     auth.onAuthStateChanged(function (user) {
       if (user) {
