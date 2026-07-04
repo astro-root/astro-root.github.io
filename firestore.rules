@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isDeveloper() {
+      return request.auth != null
+             && request.auth.token.email == 'root@example.com'
+             && request.auth.token.email_verified == true;
+    }
+
+    match /chat_sessions/{sessionId} {
+
+      allow get: if request.auth != null
+                  && (resource.data.ownerUid == request.auth.uid || isDeveloper());
+
+      allow list: if false;
+
+      allow create: if request.auth != null
+                     && request.resource.data.ownerUid == request.auth.uid
+                     && request.resource.data.status == 'bot';
+
+      allow update: if request.auth != null && (
+        (
+          resource.data.ownerUid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'calledAt', 'lastMessageAt', 'lastMessagePreview'])
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+            || request.resource.data.status in ['calling', 'ai-handling']
+          )
+        )
+        ||
+        (
+          isDeveloper()
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'lastMessageAt', 'lastMessagePreview'])
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+            || request.resource.data.status == 'developer'
+          )
+        )
+      );
+
+      match /messages/{messageId} {
+
+        allow read: if request.auth != null
+                     && (
+                       get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.ownerUid == request.auth.uid
+                       || isDeveloper()
+                     );
+
+        allow create: if request.auth != null && (
+          (
+            get(/databases/$(database)/documents/chat_sessions/$(sessionId)).data.ownerUid == request.auth.uid
+            && request.resource.data.sender in ['user', 'bot']
+          )
+          ||
+          (
+            isDeveloper()
+            && request.resource.data.sender == 'developer'
+          )
+        );
+      }
+    }
+  }
+}

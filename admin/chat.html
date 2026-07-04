@@ -33,6 +33,60 @@
       margin-bottom: 8px;
     }
 
+    .fb-login-wrap {
+      max-width: 360px;
+      margin: 80px auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 24px;
+    }
+
+    .fb-login-wrap p.fb-login-note {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .fb-login-field {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 10px 12px;
+      color: var(--text-0);
+      font-size: var(--fs-sm);
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    .fb-login-field:focus { border-color: var(--accent-blue); }
+
+    .fb-login-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: linear-gradient(120deg, var(--accent-blue), var(--accent-teal));
+      color: var(--bg-0);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .fb-login-error {
+      color: #ff6b6b;
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      margin-top: 10px;
+      min-height: 1em;
+    }
+
+    #chat-admin-main { display: none; }
+
     .session-id-row {
       display: flex;
       gap: 8px;
@@ -152,22 +206,38 @@
   </style>
 </head>
 <body>
-  <div class="chat-admin-header">
-    <p class="chat-admin-title">Live Chat 対応</p>
-    <p style="font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--text-2);">メール内のリンクから開くと自動的にセッションが読み込まれます。手動で開く場合はIDを入力してください。</p>
+
+  <div class="fb-login-wrap" id="fb-login-wrap">
+    <p class="chat-admin-title">開発者ログイン</p>
+    <p class="fb-login-note">
+      Firestoreセキュリティルールにより、Live Chat機能はFirebase Authenticationでの
+      ログインを必須にしています。事前にFirebaseコンソールの
+      Authentication &gt; Users で作成した開発者アカウントでログインしてください。
+    </p>
+    <input type="email" class="fb-login-field" id="fb-login-email" placeholder="メールアドレス" autocomplete="username" />
+    <input type="password" class="fb-login-field" id="fb-login-password" placeholder="パスワード" autocomplete="current-password" />
+    <button class="fb-login-btn" id="fb-login-btn">ログイン</button>
+    <p class="fb-login-error" id="fb-login-error"></p>
   </div>
 
-  <div class="session-id-row">
-    <input type="text" class="session-id-input" id="session-id-input" placeholder="セッションID (sess-...)" />
-    <button class="session-id-btn" id="session-id-open">開く</button>
-  </div>
+  <div id="chat-admin-main">
+    <div class="chat-admin-header">
+      <p class="chat-admin-title">Live Chat 対応</p>
+      <p style="font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--text-2);">メール内のリンクから開くと自動的にセッションが読み込まれます。手動で開く場合はIDを入力してください。</p>
+    </div>
 
-  <div class="chat-thread-wrap">
-    <div class="chat-thread-status" id="thread-status">セッションを選択してください</div>
-    <div class="chat-thread-messages" id="thread-messages"></div>
-    <div class="chat-reply-row">
-      <textarea class="chat-reply-input" id="reply-input" rows="2" placeholder="返信を入力..."></textarea>
-      <button class="chat-reply-btn" id="reply-send">送信</button>
+    <div class="session-id-row">
+      <input type="text" class="session-id-input" id="session-id-input" placeholder="セッションID (sess-...)" />
+      <button class="session-id-btn" id="session-id-open">開く</button>
+    </div>
+
+    <div class="chat-thread-wrap">
+      <div class="chat-thread-status" id="thread-status">セッションを選択してください</div>
+      <div class="chat-thread-messages" id="thread-messages"></div>
+      <div class="chat-reply-row">
+        <textarea class="chat-reply-input" id="reply-input" rows="2" placeholder="返信を入力..."></textarea>
+        <button class="chat-reply-btn" id="reply-send">送信</button>
+      </div>
     </div>
   </div>
 
@@ -176,6 +246,9 @@
   (function () {
     "use strict";
 
+    /* 既存の簡易パスワードゲート(サイト全体の管理画面共通)。
+       これはこれで独立した既存の脆弱性だが、今回のスコープはチャット機能の
+       Firestoreルールなので、ここでは二重の防御として維持するだけに留める。 */
     AdminAuth.requireAuth();
 
     var db = null;
@@ -185,6 +258,61 @@
 
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    /* ── Firebase Authログイン ── */
+    function showLoginError(msg) {
+      document.getElementById("fb-login-error").textContent = msg;
+    }
+
+    function attemptLogin() {
+      if (!window.LAB_FIREBASE) {
+        showLoginError("Firebase未設定です。assets/js/firebase-init.js を確認してください。");
+        return;
+      }
+      var email = document.getElementById("fb-login-email").value.trim();
+      var password = document.getElementById("fb-login-password").value;
+      if (!email || !password) {
+        showLoginError("メールアドレスとパスワードを入力してください。");
+        return;
+      }
+      showLoginError("");
+      window.LAB_FIREBASE.auth.signInWithEmailAndPassword(email, password)
+        .catch(function (err) {
+          console.error("ログイン失敗:", err);
+          showLoginError("ログインに失敗しました。メールアドレスとパスワードを確認してください。");
+        });
+    }
+
+    document.getElementById("fb-login-btn").addEventListener("click", attemptLogin);
+    document.getElementById("fb-login-password").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") attemptLogin();
+    });
+
+    function unlockUI() {
+      document.getElementById("fb-login-wrap").style.display = "none";
+      document.getElementById("chat-admin-main").style.display = "block";
+      db = window.LAB_FIREBASE.db;
+
+      /* URLクエリ(?session=xxx)があれば自動的に開く */
+      var queryId = new URLSearchParams(window.location.search).get("session");
+      if (queryId) {
+        document.getElementById("session-id-input").value = queryId;
+        openSession(queryId);
+      }
+    }
+
+    if (window.LAB_FIREBASE) {
+      window.LAB_FIREBASE.auth.onAuthStateChanged(function (user) {
+        if (user && !user.isAnonymous) {
+          unlockUI();
+        } else {
+          document.getElementById("fb-login-wrap").style.display = "block";
+          document.getElementById("chat-admin-main").style.display = "none";
+        }
+      });
+    } else {
+      showLoginError("Firebase未設定です。assets/js/firebase-init.js を確認してください。");
     }
 
     function renderMessage(msg) {
@@ -199,11 +327,7 @@
     }
 
     function openSession(sessionId) {
-      if (!window.LAB_FIREBASE) {
-        document.getElementById("thread-status").textContent = "Firebaseが未設定です。assets/js/firebase-init.js を確認してください。";
-        return;
-      }
-      db = window.LAB_FIREBASE.db;
+      if (!db) return;
       currentSessionId = sessionId;
 
       if (unsubMessages) unsubMessages();
@@ -217,6 +341,9 @@
           return;
         }
         document.getElementById("thread-status").textContent = "セッション: " + sessionId + " / 状態: " + (doc.data().status || "-");
+      }, function (err) {
+        console.error("セッション購読エラー:", err);
+        document.getElementById("thread-status").textContent = "アクセス権限がありません(ルールを確認してください)。";
       });
 
       unsubMessages = sessionRef.collection("messages").orderBy("createdAt", "asc")
@@ -224,6 +351,8 @@
           var container = document.getElementById("thread-messages");
           container.innerHTML = "";
           snap.forEach(function (doc) { renderMessage(doc.data()); });
+        }, function (err) {
+          console.error("メッセージ購読エラー:", err);
         });
     }
 
@@ -263,13 +392,6 @@
         sendReply();
       }
     });
-
-    /* URLクエリ(?session=xxx)があれば自動的に開く */
-    var queryId = new URLSearchParams(window.location.search).get("session");
-    if (queryId) {
-      document.getElementById("session-id-input").value = queryId;
-      openSession(queryId);
-    }
   })();
   </script>
 </body>

@@ -7,7 +7,7 @@
   var EMAILJS_TEMPLATE_ID = "astro_root_notify";
 
   var GREETING = "こんにちは、るーとの研究室チャットです。ご質問をどうぞ。開発者と直接お話ししたい場合は下の「開発者を呼ぶ」ボタンを押してください。";
-  var CALL_CONFIRM = "開発者に通知しました。少々お待ちください（最大2分ほど応答がない場合、自動応答に切り替わります）。";
+  var CALL_CONFIRM = "開発者に通知しました。少々お待ちください(最大2分ほど応答がない場合、自動応答に切り替わります)。";
   var FALLBACK_POOL = [
     "現在、開発者がすぐに対応できないようです。よくあるご質問は Projects や Study ページにもまとまっていますので、あわせてご確認ください。詳しい内容はお問い合わせフォームからも送信いただけます。",
     "自動応答モードに切り替わりました。至急でない内容でしたら、この後あらためて担当者からご連絡します。"
@@ -34,11 +34,34 @@
     return scrubbed;
   }
 
+  /*
+    暗号論的乱数によるトークン生成。
+    Date.now()に依存するとタイムスタンプから推測可能になり、
+    セッションIDの実質的な秘匿性がランダム部の数文字しかなくなる問題を修正。
+    24文字・62種の文字集合で約142bitのエントロピーを確保する。
+  */
+  function randomToken(length) {
+    var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    var bytes = new Uint8Array(length);
+    if (window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+    } else {
+      for (var i = 0; i < length; i++) {
+        bytes[i] = Math.floor(Math.random() * 256);
+      }
+    }
+    var out = "";
+    for (var j = 0; j < length; j++) {
+      out += chars[bytes[j] % chars.length];
+    }
+    return out;
+  }
+
   function getOrCreateSessionId() {
     var key = "lab_chat_session_id";
     var id = localStorage.getItem(key);
     if (!id) {
-      id = "sess-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+      id = "sess-" + randomToken(24);
       localStorage.setItem(key, id);
     }
     return id;
@@ -67,7 +90,7 @@
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
       '  </button>',
       '</div>',
-      '<p class="lab-chat-notice">個人情報（本名・連絡先・パスワード等）は入力しないでください。会話は匿名化して記録され、応答改善のために利用されます。</p>',
+      '<p class="lab-chat-notice">個人情報(本名・連絡先・パスワード等)は入力しないでください。会話は匿名化して記録され、応答改善のために利用されます。</p>',
       '<div class="lab-chat-messages" id="lab-chat-messages"></div>',
       '<div class="lab-chat-footer">',
       '  <button class="lab-chat-call-btn" id="lab-chat-call-btn">',
