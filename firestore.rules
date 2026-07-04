@@ -3,19 +3,19 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isDeveloper() {
+      /*
+        email_verified を要求しない。
+        自己登録を許可していない単一の開発者アカウント運用であり、
+        パスワード認証を通過した時点で本人確定として扱う。
+        Firebaseコンソールで作成したユーザーはデフォルトでemail_verifiedが
+        falseになるため、これを必須にすると開発者自身がロックアウトされる。
+      */
       return request.auth != null
-             && request.auth.token.email == 'contact@astro-root.com'
-             && request.auth.token.email_verified == true;
+             && request.auth.token.email == 'contact@astro-root.com';
     }
 
     match /chat_sessions/{sessionId} {
 
-      /*
-        resource == null の分岐が無いと、まだ存在しないドキュメントへの
-        get()(=新規セッションの存在確認)が「resource.data」評価エラーで
-        permission-deniedとなり、新規訪問者のセッション作成が全滅する。
-        これが「送信しても何も表示されない」バグの直接原因だった。
-      */
       allow get: if request.auth != null
                   && (
                     resource == null
@@ -23,7 +23,6 @@ service cloud.firestore {
                     || isDeveloper()
                   );
 
-      /* 開発者のみ、全セッションの一覧(受信箱)取得を許可する */
       allow list: if isDeveloper();
 
       allow create: if request.auth != null

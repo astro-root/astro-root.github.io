@@ -2,6 +2,7 @@
   "use strict";
 
   var TIMEOUT_MS = 2 * 60 * 1000;
+  var AUTO_REPLY_COOLDOWN_MS = 20 * 1000;
   var EMAILJS_PUBLIC_KEY = "yxzdXxEsQp6Ulyn1w";
   var EMAILJS_SERVICE_ID = "astro_root";
   var EMAILJS_TEMPLATE_ID = "astro_root_notify";
@@ -12,6 +13,15 @@
     "現在、開発者がすぐに対応できないようです。よくあるご質問は Projects や Study ページにもまとまっていますので、あわせてご確認ください。詳しい内容はお問い合わせフォームからも送信いただけます。",
     "自動応答モードに切り替わりました。至急でない内容でしたら、この後あらためて担当者からご連絡します。"
   ];
+  /*
+    自動応答モード(ai-handling)中に訪問者が追加でメッセージを送った場合の
+    継続応答。本物のAIではなく定型文の相槌に過ぎない。
+    連投防止のためAUTO_REPLY_COOLDOWN_MSの間隔を空ける。
+  */
+  var AI_NUDGE_POOL = [
+    "メッセージを確認しました。現在は自動応答モードのため、追って開発者から改めてご連絡します。",
+    "内容は記録済みです。至急の場合はお問い合わせフォームからもご連絡いただけます。"
+  ];
 
   var db = null;
   var auth = null;
@@ -21,6 +31,8 @@
   var unsubscribeMessages = null;
   var unsubscribeSession = null;
   var panelOpened = false;
+  var currentSessionStatus = null;
+  var lastAutoReplyAt = 0;
 
   /* ── ユーティリティ ── */
   function esc(s) {
@@ -34,12 +46,6 @@
     return scrubbed;
   }
 
-  /*
-    エラー時にコンソールログだけで済ませず、画面上にも表示する。
-    これはFirestoreへの永続化はしないローカル限定の表示であり、
-    次のonSnapshot更新が来ると画面から消える(既知の制約)。
-    それでも「何も起きていないように見える」よりは遥かにましである。
-  */
   function showLocalNotice(text) {
     var container = document.getElementById("lab-chat-messages");
     if (!container) return;
@@ -203,12 +209,30 @@
     });
   }
 
+  /*
+    自動応答モード(ai-handling)中に訪問者が追加メッセージを送った場合、
+    一定間隔を空けて定型の相槌を返す。developerが対応中(developer)や
+    通常会話中(bot)、呼び出し中(calling)では発火しない。
+  */
+  function maybeSendAutoNudge() {
+    if (currentSessionStatus !== "ai-handling") return;
+    var now = Date.now();
+    if (now - lastAutoReplyAt < AUTO_REPLY_COOLDOWN_MS) return;
+    lastAutoReplyAt = now;
+    var msg = AI_NUDGE_POOL[Math.floor(Math.random() * AI_NUDGE_POOL.length)];
+    postMessage("bot", msg).catch(function (err) {
+      console.error("自動応答の送信失敗:", err);
+    });
+  }
+
   function sendUserMessage() {
     var input = document.getElementById("lab-chat-input");
     var text = (input.value || "").trim();
     if (!text) return;
     input.value = "";
-    postMessage("user", scrubPII(text)).catch(function (err) {
+    postMessage("user", scrubPII(text)).then(function () {
+      maybeSendAutoNudge();
+    }).catch(function (err) {
       console.error("メッセージ送信失敗:", err);
       showLocalNotice("送信に失敗しました。ページを再読み込みしてもう一度お試しください。");
     });
@@ -297,6 +321,7 @@
     unsubscribeSession = sessionRef.onSnapshot(function (doc) {
       if (!doc.exists) return;
       var data = doc.data();
+      currentSessionStatus = data.status;
       updateStatusLabel(data.status);
       if (data.status === "calling" && data.calledAt) {
         scheduleTimeoutCheck(data.calledAt.toMillis());
