@@ -7,21 +7,13 @@
   var EMAILJS_SERVICE_ID = "astro_root";
   var EMAILJS_TEMPLATE_ID = "astro_root_notify";
 
+  /* ★★★ Cloudflare Workerをデプロイ後、実際のURLに置き換えること ★★★ */
+  var AI_WORKER_URL = "https://root-slab-chat-ai.YOUR-SUBDOMAIN.workers.dev";
+
   var GREETING = "こんにちは、るーとの研究室チャットです。ご質問をどうぞ。開発者と直接お話ししたい場合は下の「開発者を呼ぶ」ボタンを押してください。";
   var CALL_CONFIRM = "開発者に通知しました。少々お待ちください(最大2分ほど応答がない場合、自動応答に切り替わります)。";
-  var FALLBACK_POOL = [
-    "現在、開発者がすぐに対応できないようです。よくあるご質問は Projects や Study ページにもまとまっていますので、あわせてご確認ください。詳しい内容はお問い合わせフォームからも送信いただけます。",
-    "自動応答モードに切り替わりました。至急でない内容でしたら、この後あらためて担当者からご連絡します。"
-  ];
-  /*
-    自動応答モード(ai-handling)中に訪問者が追加でメッセージを送った場合の
-    継続応答。本物のAIではなく定型文の相槌に過ぎない。
-    連投防止のためAUTO_REPLY_COOLDOWN_MSの間隔を空ける。
-  */
-  var AI_NUDGE_POOL = [
-    "メッセージを確認しました。現在は自動応答モードのため、追って開発者から改めてご連絡します。",
-    "内容は記録済みです。至急の場合はお問い合わせフォームからもご連絡いただけます。"
-  ];
+  var FALLBACK_STATIC = "現在、開発者もAI応答も利用できないようです。お手数ですが、少し時間をおいて再度お試しいただくか、お問い合わせフォームからご連絡ください。";
+  var AI_NUDGE_FALLBACK = "内容は記録済みです。至急の場合はお問い合わせフォームからもご連絡いただけます。";
 
   var db = null;
   var auth = null;
@@ -33,6 +25,7 @@
   var panelOpened = false;
   var currentSessionStatus = null;
   var lastAutoReplyAt = 0;
+  var recentMessages = []; /* AIへ渡す直近の会話履歴(表示用データと同期) */
 
   /* ── ユーティリティ ── */
   function esc(s) {
@@ -55,6 +48,24 @@
     div.innerHTML = '<span class="lab-chat-bubble-label">システム</span>' + esc(text);
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
+  }
+
+  function showThinking() {
+    var container = document.getElementById("lab-chat-messages");
+    if (!container) return;
+    hideThinking();
+    var div = document.createElement("div");
+    div.className = "lab-chat-bubble";
+    div.id = "lab-chat-thinking";
+    div.dataset.sender = "thinking";
+    div.innerHTML = "<span></span><span></span><span></span>";
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function hideThinking() {
+    var el = document.getElementById("lab-chat-thinking");
+    if (el) el.remove();
   }
 
   function randomToken(length) {
@@ -171,7 +182,7 @@
       bot: "オンライン",
       calling: "開発者を呼び出し中...",
       developer: "開発者が対応中",
-      "ai-handling": "自動応答中"
+      "ai-handling": "自動応答中(AI)"
     };
     el.textContent = map[status] || "オンライン";
   }
@@ -210,18 +221,22 @@
   }
 
   /*
-    自動応答モード(ai-handling)中に訪問者が追加メッセージを送った場合、
-    一定間隔を空けて定型の相槌を返す。developerが対応中(developer)や
-    通常会話中(bot)、呼び出し中(calling)では発火しない。
+    Cloudflare Worker経由でGeminiに問い合わせる。
+    失敗時はnullを返す(呼び出し側で定型文へのフォールバックを行う)。
   */
-  function maybeSendAutoNudge() {
-    if (currentSessionStatus !== "ai-handling") return;
-    var now = Date.now();
-    if (now - lastAutoReplyAt < AUTO_REPLY_COOLDOWN_MS) return;
-    lastAutoReplyAt = now;
-    var msg = AI_NUDGE_POOL[Math.floor(Math.random() * AI_NUDGE_POOL.length)];
-    postMessage("bot", msg).catch(function (err) {
-      console.error("自動応答の送信失敗:", err);
+  function callAI(messages) {
+    return fetch(AI_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: messages })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("worker_error_" + res.status);
+      return res.json();
+    }).then(function (data) {
+      return data && data.text ? data.text : null;
+    }).catch(function (err) {
+      console.error("AI呼び出し失敗:", err);
+      return null;
     });
   }
 
@@ -230,11 +245,37 @@
     var text = (input.value || "").trim();
     if (!text) return;
     input.value = "";
-    postMessage("user", scrubPII(text)).then(function () {
-      maybeSendAutoNudge();
+    var scrubbed = scrubPII(text);
+    postMessage("user", scrubbed).then(function () {
+      recentMessages.push({ sender: "user", text: scrubbed });
+      maybeSendAIReply();
     }).catch(function (err) {
       console.error("メッセージ送信失敗:", err);
       showLocalNotice("送信に失敗しました。ページを再読み込みしてもう一度お試しください。");
+    });
+  }
+
+  /*
+    自動応答モード(ai-handling)中に訪問者が追加メッセージを送った場合、
+    クールダウンを空けてGeminiに問い合わせ、返ってきた本物の応答を送る。
+    Worker呼び出しに失敗した場合のみ定型文にフォールバックする。
+  */
+  function maybeSendAIReply() {
+    if (currentSessionStatus !== "ai-handling") return;
+    var now = Date.now();
+    if (now - lastAutoReplyAt < AUTO_REPLY_COOLDOWN_MS) return;
+    lastAutoReplyAt = now;
+
+    showThinking();
+    callAI(recentMessages).then(function (text) {
+      hideThinking();
+      var reply = text || AI_NUDGE_FALLBACK;
+      return postMessage("bot", reply).then(function () {
+        recentMessages.push({ sender: "bot", text: reply });
+      });
+    }).catch(function (err) {
+      hideThinking();
+      console.error("自動応答の送信失敗:", err);
     });
   }
 
@@ -284,7 +325,7 @@
     });
   }
 
-  /* ── 2分タイムアウト → 定型応答へフォールバック ── */
+  /* ── 2分タイムアウト → Geminiによる自動応答へ切り替え ── */
   function scheduleTimeoutCheck(calledAtMillis) {
     if (timeoutHandle) clearTimeout(timeoutHandle);
     var remaining = TIMEOUT_MS - (Date.now() - calledAtMillis);
@@ -305,11 +346,17 @@
         return true;
       });
     }).then(function (didTransition) {
-      if (didTransition) {
-        var msg = FALLBACK_POOL[Math.floor(Math.random() * FALLBACK_POOL.length)];
-        postMessage("bot", msg);
-      }
+      if (!didTransition) return;
+      showThinking();
+      return callAI(recentMessages).then(function (text) {
+        hideThinking();
+        var reply = text || FALLBACK_STATIC;
+        return postMessage("bot", reply).then(function () {
+          recentMessages.push({ sender: "bot", text: reply });
+        });
+      });
     }).catch(function (err) {
+      hideThinking();
       console.error("AI fallback failed:", err);
     });
   }
@@ -338,9 +385,15 @@
       .onSnapshot(function (snap) {
         var container = document.getElementById("lab-chat-messages");
         if (container) container.innerHTML = "";
+        recentMessages = [];
         snap.forEach(function (doc) {
-          renderMessage(doc.data());
+          var data = doc.data();
+          renderMessage(data);
+          if (data.sender === "user" || data.sender === "bot") {
+            recentMessages.push({ sender: data.sender, text: data.text });
+          }
         });
+        recentMessages = recentMessages.slice(-10);
         var launcher = document.getElementById("lab-chat-launcher");
         var panel = document.getElementById("lab-chat-panel");
         if (launcher && panel && !panel.classList.contains("open") && !snap.empty) {
