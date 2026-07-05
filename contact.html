@@ -1031,8 +1031,8 @@
 
         /* 既存のEmailJS送信処理を完全保持 */
         Promise.all([
-          emailjs.send('astro_root', 'astro_root_notify',    params),
-          emailjs.send('astro_root', 'astro_root_autoreply', params)
+          emailjs.send('astro_root', 'astro_root_notify', params),
+          emailjs.send('astro_root', 'astro_root_mail',   params)
         ])
           .then(function () {
             showMsg('ok', '✓ 送信しました。自動返信メールをご確認ください。');
