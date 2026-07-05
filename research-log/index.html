@@ -531,42 +531,44 @@
   <div id="cursor-dot" aria-hidden="true"></div>
   <div id="cursor-ring" aria-hidden="true"></div>
 
-  <header role="banner">
-    <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
-      <div class="container">
-        <div class="nav-inner">
-          <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
-            <div class="nav-logo-mark">
-              <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
-            </div>
-            <span>るーとの研究室</span>
-          </a>
-          <ul class="nav-links" role="list">
-            <li><a href="/">TOP</a></li>
-            <li><a href="/projects/">PROJECTS</a></li>
-            <li><a href="/study/">STUDY</a></li>
-            <li><a href="/blog/">BLOG</a></li>
-            <li><a href="/lab/">LAB EQUIPMENT</a></li>
-            <li><a href="/about">ABOUT</a></li>
-            <li><a href="/contact">CONTACT</a></li>
-          </ul>
-          <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
+  <!-- PARTIAL:HEADER:START -->
+<header role="banner">
+  <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="/" class="nav-logo" aria-label="るーとの研究室 トップへ">
+          <div class="nav-logo-mark">
+            <img src="/icon.png" alt="" aria-hidden="true" width="30" height="30" />
+          </div>
+          <span>るーとの研究室</span>
+        </a>
+        <ul class="nav-links" role="list">
+          <li><a href="/" data-nav-key="top">TOP</a></li>
+          <li><a href="/projects/" data-nav-key="projects">PROJECTS</a></li>
+          <li><a href="/study/" data-nav-key="study">STUDY</a></li>
+          <li><a href="/blog/" data-nav-key="blog">BLOG</a></li>
+          <li><a href="/lab/" data-nav-key="lab">LAB EQUIPMENT</a></li>
+          <li><a href="/about" data-nav-key="about">ABOUT</a></li>
+          <li><a href="/contact" data-nav-key="contact">CONTACT</a></li>
+        </ul>
+        <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
+          <span></span><span></span><span></span>
+        </button>
       </div>
-    </nav>
-    <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
-      <a href="/">TOP</a>
-      <a href="/projects/">PROJECTS</a>
-      <a href="/study/">STUDY</a>
-      <a href="/blog/">BLOG</a>
-      <a href="/lab/">LAB EQUIPMENT</a>
-      <a href="/about">ABOUT</a>
-      <a href="/contact">CONTACT</a>
-      <a href="/privacy">PRIVACY POLICY</a>
     </div>
-  </header>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="モバイルナビゲーション">
+    <a href="/" data-nav-key="top">TOP</a>
+    <a href="/projects/" data-nav-key="projects">PROJECTS</a>
+    <a href="/study/" data-nav-key="study">STUDY</a>
+    <a href="/blog/" data-nav-key="blog">BLOG</a>
+    <a href="/lab/" data-nav-key="lab">LAB EQUIPMENT</a>
+    <a href="/about" data-nav-key="about">ABOUT</a>
+    <a href="/contact" data-nav-key="contact">CONTACT</a>
+    <a href="/privacy">PRIVACY POLICY</a>
+  </div>
+</header>
+<!-- PARTIAL:HEADER:END -->
 
   <main id="main-content">
     <div class="container">
@@ -702,16 +704,18 @@
     </div>
   </main>
 
-  <footer class="site-footer" role="contentinfo">
-    <div class="footer-inner">
-      <span class="footer-logo">るーとの研究室</span>
-      <nav class="footer-links" aria-label="フッターナビゲーション">
-        <a href="/privacy">Privacy</a>
-        <a href="/contact">Contact</a>
-      </nav>
-      <p class="footer-copy">© 2026 Root. All rights reserved.</p>
-    </div>
-  </footer>
+  <!-- PARTIAL:FOOTER:START -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <span class="footer-logo">るーとの研究室</span>
+    <nav class="footer-links" aria-label="フッターナビゲーション">
+      <a href="/privacy">Privacy</a>
+      <a href="/contact">Contact</a>
+    </nav>
+    <p class="footer-copy">© 2026 Root. All rights reserved.</p>
+  </div>
+</footer>
+<!-- PARTIAL:FOOTER:END -->
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -719,6 +723,7 @@
   <script src="/assets/js/firebase-init.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="/assets/js/lab-common.js"></script>
+  <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
   <script>
   (function () {
