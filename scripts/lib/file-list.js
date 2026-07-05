@@ -1,5 +1,5 @@
 module.exports = [
-  "index.html",
+  "index.html", /* footerマーカーは意図的に付けていない(1画面完結のため) */
   "about.html",
   "contact.html",
   "contact-success.html",
