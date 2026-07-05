@@ -1,0 +1,95 @@
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .error-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 40px) 24px 60px;
+    }
+
+    .error-wrap {
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .error-code-svg {
+      width: clamp(180px, 40vw, 260px);
+      margin: 0 auto 32px;
+    }
+
+    .error-eyebrow {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--accent-teal);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .error-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-0);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .error-desc {
+      font-size: var(--fs-sm);
+      color: var(--text-1);
+      line-height: 1.85;
+      margin-bottom: 32px;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .error-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--r-md);
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      transition: transform var(--t) var(--ease-spring), box-shadow var(--t), border-color var(--t);
+      min-height: 46px;
+    }
+
+    .error-btn-primary {
+      background: linear-gradient(120deg, var(--accent-blue), var(--accent-teal));
+      color: var(--bg-0);
+      font-weight: 600;
+    }
+
+    .error-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(75,169,255,0.28);
+    }
+
+    .error-btn-ghost {
+      border: 1px solid var(--border-m);
+      color: var(--text-1);
+      background: transparent;
+    }
+
+    .error-btn-ghost:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .error-btn svg { width: 14px; height: 14px; }
+
+    @media (max-width: 420px) {
+      .error-actions { flex-direction: column; }
+      .error-btn { justify-content: center; }
+    }
