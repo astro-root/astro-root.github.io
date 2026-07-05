@@ -33,128 +33,7 @@
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
-  <style>
-    body { display: flex; flex-direction: column; min-height: 100vh; }
-    main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
-
-    .page-header { margin-bottom: 40px; }
-    .page-header-inner { display: flex; flex-direction: column; gap: 18px; }
-    .page-eyebrow { display: flex; align-items: center; gap: 14px; }
-    .page-eyebrow-line { width: 32px; height: 1px; background: var(--accent-blue); opacity: 0.6; }
-    .page-eyebrow-text { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--accent-teal); letter-spacing: 0.28em; text-transform: uppercase; }
-    .page-meta {
-      font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
-      color: var(--text-2);
-      letter-spacing: 0.08em;
-    }
-
-    .policy-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-xl);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: clamp(28px, 5vw, 52px);
-      display: flex;
-      flex-direction: column;
-      gap: 36px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .policy-card::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-teal), transparent);
-      opacity: 0.4;
-    }
-
-    .policy-section h2 {
-      font-family: var(--font-display);
-      font-size: var(--fs-md);
-      font-weight: 700;
-      margin-bottom: 14px;
-      color: var(--text-0);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .policy-section h2::before {
-      content: "";
-      display: inline-block;
-      width: 4px; height: 18px;
-      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-teal));
-      border-radius: 99px;
-      flex-shrink: 0;
-    }
-
-    .policy-section p,
-    .policy-section li {
-      font-size: var(--fs-sm);
-      color: var(--text-1);
-      line-height: 2.0;
-    }
-
-    .policy-section ul {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .policy-section li {
-      padding-left: 18px;
-      position: relative;
-    }
-
-    .policy-section li::before {
-      content: "—";
-      position: absolute;
-      left: 0;
-      color: var(--accent-teal);
-      font-size: var(--fs-xs);
-      top: 1px;
-    }
-
-    .highlight {
-      background: rgba(75,169,255,0.05);
-      border: 1px solid var(--border-m);
-      border-radius: var(--r-sm);
-      padding: 14px 18px;
-      font-size: var(--fs-xs);
-      color: var(--text-1);
-      line-height: 1.95;
-      margin-top: 12px;
-    }
-
-    .highlight a { color: var(--accent-blue); transition: color var(--t); }
-    .highlight a:hover { color: var(--accent-teal); }
-
-    .policy-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-    }
-
-    .back-to-lab {
-      display: inline-flex; align-items: center; gap: 10px;
-      font-family: var(--font-mono); font-size: var(--fs-xs);
-      color: var(--text-2); letter-spacing: 0.14em;
-      text-transform: uppercase; text-decoration: none;
-      transition: color var(--t); margin-top: 56px;
-    }
-
-    .back-to-lab:hover { color: var(--accent-blue); }
-    .back-to-lab svg { width: 14px; height: 14px; transform: rotate(180deg); }
-
-    @media (max-width: 640px) {
-      main { padding-top: calc(var(--nav-h) + 36px); }
-      .policy-card { padding: 24px; gap: 28px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/assets/css/pages/privacy.css" />
 </head>
 <body>
   <div id="scroll-progress" aria-hidden="true"></div>
@@ -335,7 +214,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="/assets/js/firebase-init.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
