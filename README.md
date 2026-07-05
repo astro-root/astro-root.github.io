@@ -19,6 +19,8 @@
 
 素のHTML/CSS/JSで構築し、GitHub Pagesでホスティング。ビルドツールは使用せず、
 `partials/` + 同期スクリプトによる軽量なコンポーネント共通化のみ導入している。
+
+```text
 .
 ├── index.html, about.html, contact.html, ...   # 各ページ(静的HTML)
 ├── assets/
@@ -40,7 +42,8 @@
 │   ├── chat.html             # Live Chat管理画面(Firebase Auth必須)
 │   └── ...
 └── worker/
-└── index.js              # Cloudflare Worker(AI応答 / Discord通知の中継)
+    └── index.js              # Cloudflare Worker(AI応答 / Discord通知の中継)
+```
 
 ### header / footer の編集方法
 
