@@ -551,42 +551,40 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-      padding: 64px 32px;
+      gap: 14px;
+      padding: 72px 32px;
       text-align: center;
     }
-
     .empty-state-icon {
-      width: 56px;
-      height: 56px;
-      color: var(--text-2);
-      opacity: 0.5;
+      display: none;
     }
-
+    .empty-badge {
+      order: -1;
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      border: none;
+      background-color: transparent;
+      padding: 0;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      margin-bottom: 4px;
+    }
     .empty-title {
       font-family: var(--font-display);
       font-size: 1.05rem;
       font-weight: 700;
       color: var(--text-1);
     }
-
     .empty-desc {
       font-size: 0.80rem;
       color: var(--text-2);
       line-height: 1.75;
       max-width: 360px;
-    }
-
-    .empty-badge {
-      font-family: var(--font-mono);
-      font-size: 0.58rem;
-      color: var(--accent-teal);
-      border: 1px solid rgba(0,229,184,0.25);
-      background: rgba(0,229,184,0.06);
-      border-radius: 99px;
-      padding: 5px 14px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
     }
 
     /* ── ローディング ── */
