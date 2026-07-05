@@ -334,8 +334,28 @@
     }
 
     @media (max-width: 720px) {
-      .chat-admin-layout { grid-template-columns: 1fr; }
-      .inbox-panel { max-height: 220px; }
+      body { padding: 12px; }
+      .chat-admin-layout { grid-template-columns: 1fr; gap: 12px; }
+      .inbox-panel { max-height: 200px; }
+      .chat-thread-wrap {
+        height: auto;
+        max-height: none;
+      }
+      .chat-thread-messages {
+        min-height: 260px;
+        max-height: 50vh;
+        max-height: 50dvh;
+      }
+      .session-id-row { flex-direction: column; }
+      .session-id-btn { width: 100%; }
+      .chat-reply-row { flex-direction: column; align-items: stretch; }
+      .chat-reply-btn { width: 100%; }
+      .chat-reply-input { font-size: 16px; }
+    }
+
+    @media (max-width: 420px) {
+      .chat-admin-title { font-size: 1.1rem; }
+      .inbox-item-preview { max-width: 100%; }
     }
   </style>
 </head>

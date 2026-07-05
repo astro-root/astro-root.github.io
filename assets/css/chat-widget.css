@@ -273,10 +273,32 @@
 
 @media (max-width: 480px) {
   #lab-chat-panel {
-    right: 12px;
-    left: 12px;
+    right: 10px;
+    left: 10px;
     width: auto;
-    bottom: 84px;
+    bottom: 78px;
+    height: auto;
+    max-height: calc(100vh - 100px);
+    max-height: calc(100dvh - 100px);
   }
-  #lab-chat-launcher { right: 16px; bottom: 16px; }
+  #lab-chat-launcher {
+    right: 14px;
+    bottom: 14px;
+    width: 52px;
+    height: 52px;
+  }
+  .lab-chat-header { padding: 14px 14px; }
+  .lab-chat-messages { padding: 12px 10px; }
+  .lab-chat-bubble { max-width: 88%; font-size: 0.86rem; }
+  .lab-chat-footer { padding: 8px 10px 10px; }
+  .lab-chat-input { font-size: 16px; } /* iOSでの自動ズームを防止 */
+}
+
+@media (max-width: 480px) and (max-height: 640px) {
+  /* 画面が低い端末(横向き含む)では、パネルをほぼ全画面化して入力欄を確保する */
+  #lab-chat-panel {
+    bottom: 70px;
+    max-height: calc(100vh - 84px);
+    max-height: calc(100dvh - 84px);
+  }
 }
