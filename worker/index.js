@@ -16,7 +16,19 @@ const SITE_FACTS =
   "・公開しているツール(いずれも無償公開): Q-Score(早押しクイズ大会支援ツール)、Q-Room、Q-Mark、Q-Panel(パネル開放クイズシステム)、Q-Cumber(1人用スコアトラッカー)、ShiftLink(シフト管理)、LineGO(整理券管理)、元素タイピング(タイピング練習)。\n" +
   "・技術スタック: JavaScript, HTML/CSS, Firebase, TypeScript, Git/GitHub。\n" +
   "・連絡先: お問い合わせフォーム(https://astro-root.com/contact)。SNSはX(@astro_root, @root_qscore, @AstroHigh_Info)、LINE公式(Q-Scoreの通知用)。\n" +
-  "・当サイトは個人運営であり、企業ではない。";
+  "・当サイトは個人運営であり、企業ではない。\n\n" +
+  "【案内してよいURL一覧(これ以外のURLは絶対に作り出さないこと)】\n" +
+  "・トップページ: https://astro-root.com/\n" +
+  "・PROJECTS(ツール一覧): https://astro-root.com/projects/\n" +
+  "・STUDY(学習記録): https://astro-root.com/study/\n" +
+  "・BLOG: https://astro-root.com/blog/\n" +
+  "・LAB EQUIPMENT: https://astro-root.com/lab/\n" +
+  "・ABOUT: https://astro-root.com/about\n" +
+  "・CONTACT(お問い合わせフォーム): https://astro-root.com/contact\n" +
+  "・PRIVACY POLICY: https://astro-root.com/privacy\n" +
+  "上記に無いページ(例: 個別ツールの専用ページ、料金ページなど)を聞かれた場合、URLを推測して作ってはいけません。" +
+  "「PROJECTSページ内でご確認いただけます」のように、案内可能な範囲のURLに誘導するか、" +
+  "正直に分からない旨を伝えてください。";
 
 const SYSTEM_PROMPT =
   "あなたは「るーとの研究室」サイトの自動応答チャットボットです。" +
