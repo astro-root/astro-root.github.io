@@ -229,68 +229,45 @@
       }).join('');
     }
 
-    /* ── デモエントリ（ログが空の場合に表示するサンプル） ── */
-    function injectDemoLogs() {
-      var today = new Date();
-      var fmt   = function(d) { return d.toISOString().slice(0,10); };
+    /* ── 空状態（ログ未公開） ── */
+    function showComingSoon() {
+      var timeline = document.getElementById('timeline');
+      if (timeline) {
+        timeline.innerHTML = [
+          '<div class="empty-state">',
+          '  <svg class="empty-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="4"/><path d="M8 24h48M8 40h48M24 8v48"/></svg>',
+          '  <p class="empty-title">活動ログ 準備中</p>',
+          '  <p class="empty-desc">開発・学習・観測などの活動記録は近日公開予定です。</p>',
+          '  <span class="empty-badge">Coming Soon</span>',
+          '</div>'
+        ].join('\n');
+      }
+      var count = document.getElementById('result-count');
+      if (count) count.textContent = '0 logs';
+    }
 
-      return [
-        {
-          id: 'demo-001', type: 'release', title: 'るーとの研究室 リニューアル完了',
-          body: '全面リニューアル。研究室探索UIを実装。Projects / Study / Blog / Lab / Astronomy / Research Log の各ページを新規作成。',
-          date: fmt(today), tags: ['Web', 'Design', 'Milestone'], visibility: 'public',
-          relatedType: null, relatedId: null, relatedUrl: null
-        },
-        {
-          id: 'demo-002', type: 'update', title: 'Phase 1〜9 実装完了',
-          body: '基盤整備・トップページSVG研究室UI・データスキーマ・各コンテンツページの実装が完了。',
-          date: fmt(new Date(today.getTime() - 1 * 86400000)),
-          tags: ['Development', 'GitHub'], visibility: 'public',
-          relatedType: null, relatedId: null, relatedUrl: null
-        },
-        {
-          id: 'demo-003', type: 'study', title: 'ハッブルテンションについて調査',
-          body: 'CMB由来の H₀ = 67.4 km/s/Mpc と局所観測値 73 km/s/Mpc の乖離「ハッブルテンション」について文献調査を実施。',
-          date: fmt(new Date(today.getTime() - 3 * 86400000)),
-          tags: ['Cosmology', 'Hubble', 'Tension'], visibility: 'public',
-          relatedType: 'external', relatedId: null, relatedUrl: 'https://arxiv.org'
-        },
-        {
-          id: 'demo-004', type: 'observation', title: '木星・土星 同時観測',
-          body: '天頂付近で木星の縞模様と大赤斑、土星の環（カッシーニ間隙）を確認。シーイング：4/5。',
-          date: fmt(new Date(today.getTime() - 7 * 86400000)),
-          tags: ['Jupiter', 'Saturn', 'Planetary'], visibility: 'public',
-          relatedType: 'external', relatedId: null, relatedUrl: null
-        },
-        {
-          id: 'demo-005', type: 'event', title: 'AstroHigh 定例ミーティング',
-          body: '高校生天文学コミュニティ AstroHigh の定例オンラインミーティング。最新の天文ニュースについて議論。',
-          date: fmt(new Date(today.getTime() - 10 * 86400000)),
-          tags: ['AstroHigh', 'Community'], visibility: 'public',
-          relatedType: 'external', relatedId: null, relatedUrl: 'https://x.com/AstroHigh_Info'
-        },
-        {
-          id: 'demo-006', type: 'release', title: 'Q-Room アップデート v2.3',
-          body: 'リアルタイムオンラインクイズルーム Q-Room をアップデート。新ルール3種を追加・UIを改善。',
-          date: fmt(new Date(today.getTime() - 14 * 86400000)),
-          tags: ['Q-Room', 'Quiz', 'Release'], visibility: 'public',
-          relatedType: 'project', relatedId: 'q-room', relatedUrl: null
-        },
-        {
-          id: 'demo-007', type: 'note', title: '軌道力学シミュレーション 設計メモ',
-          body: 'ケプラー方程式の数値解法（二分法 / Newton-Raphson法）の比較と実装方針を整理。TypeScript + Canvas API で実装予定。',
-          date: fmt(new Date(today.getTime() - 18 * 86400000)),
-          tags: ['Simulation', 'TypeScript', 'Math'], visibility: 'public',
-          relatedType: null, relatedId: null, relatedUrl: null
-        }
-      ];
+    /* ── 空状態（取得失敗） ── */
+    function showLoadError() {
+      var timeline = document.getElementById('timeline');
+      if (timeline) {
+        timeline.innerHTML = [
+          '<div class="empty-state">',
+          '  <svg class="empty-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="32" cy="32" r="24"/><path d="M32 20v14l8 6"/></svg>',
+          '  <p class="empty-title">読み込みに失敗しました</p>',
+          '  <p class="empty-desc">活動ログの取得中に通信エラーが発生しました。時間をおいて再度お試しください。</p>',
+          '</div>'
+        ].join('\n');
+      }
+      var count = document.getElementById('result-count');
+      if (count) count.textContent = '';
     }
 
     /* ── メイン ── */
     function init() {
       var loading = document.getElementById('loading-state');
       var layout  = document.getElementById('log-layout');
-      var notice  = document.getElementById('demo-notice');
+      var filterBar = document.getElementById('filter-bar');
+      var recentCard = document.getElementById('recent-card');
 
       fetch('/assets/data/research-log.json')
         .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -299,16 +276,18 @@
             return (b.date||'').localeCompare(a.date||'');
           });
 
-          /* ログが空ならデモエントリを表示 */
-          if (logs.length === 0) {
-            state.all = injectDemoLogs();
-            if (notice) notice.style.display = 'block';
-          } else {
-            state.all = logs;
-          }
+          state.all = logs;
 
           if (loading) loading.style.display = 'none';
           if (layout)  layout.style.display  = '';
+
+          if (logs.length === 0) {
+            if (filterBar)  filterBar.style.display  = 'none';
+            if (recentCard) recentCard.style.display = 'none';
+            showComingSoon();
+            renderStats();
+            return;
+          }
 
           applyFilter();
           setupFilter();
@@ -319,15 +298,11 @@
         })
         .catch(function(err) {
           console.error('research-log.json load error:', err);
-          /* エラー時もデモ表示 */
-          state.all = injectDemoLogs();
           if (loading) loading.style.display = 'none';
           if (layout)  layout.style.display  = '';
-          if (notice)  notice.style.display  = 'block';
-          applyFilter();
-          setupFilter();
-          renderStats();
-          renderRecent();
+          if (filterBar)  filterBar.style.display  = 'none';
+          if (recentCard) recentCard.style.display = 'none';
+          showLoadError();
         });
     }
 
