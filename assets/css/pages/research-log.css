@@ -423,22 +423,6 @@
 
     .related-link svg { width: 14px; height: 14px; color: var(--text-2); flex-shrink: 0; }
 
-    /* ── 初期エントリ群（Coming Soonデモ） ── */
-    .demo-notice {
-      background: rgba(59,158,255,0.04);
-      border: 1px solid rgba(59,158,255,0.15);
-      border-radius: var(--r-md);
-      padding: 14px 18px;
-      font-family: var(--font-mono);
-      font-size: 0.60rem;
-      color: var(--text-2);
-      letter-spacing: 0.09em;
-      line-height: 1.7;
-      margin-bottom: 28px;
-    }
-
-    .demo-notice strong { color: var(--accent-blue); }
-
     /* ── 戻るリンク ── */
     .back-to-lab {
       display: inline-flex; align-items: center; gap: 10px;
