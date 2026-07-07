@@ -169,7 +169,13 @@
     document.getElementById("lab-chat-call-btn").addEventListener("click", callDeveloper);
     document.getElementById("lab-chat-send-btn").addEventListener("click", sendUserMessage);
     document.getElementById("lab-chat-input").addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && !e.shiftKey) {
+      /*
+        日本語IMEの変換確定Enterと、送信のためのEnterを区別する。
+        e.isComposing は多くのモダンブラウザで対応しているが、
+        古いSafari等でフラグが立たないケースに備えて keyCode === 229 も
+        併せてチェックする(IME変換中のkeydownはkeyCodeが229になる)。
+      */
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
         e.preventDefault();
         sendUserMessage();
       }
@@ -259,18 +265,33 @@
     });
   }
 
+  var sendingInFlight = false;
+
+  function setSendControlsDisabled(disabled) {
+    var sendBtn = document.getElementById("lab-chat-send-btn");
+    var input = document.getElementById("lab-chat-input");
+    if (sendBtn) sendBtn.disabled = disabled;
+    if (input) input.disabled = disabled;
+  }
+
   function sendUserMessage() {
+    if (sendingInFlight) return;
     var input = document.getElementById("lab-chat-input");
     var text = (input.value || "").trim();
     if (!text) return;
+    sendingInFlight = true;
+    setSendControlsDisabled(true);
     input.value = "";
     var scrubbed = scrubPII(text);
     postMessage("user", scrubbed).then(function () {
       recentMessages.push({ sender: "user", text: scrubbed });
-      maybeSendAIReply();
+      return maybeSendAIReply();
     }).catch(function (err) {
       console.error("メッセージ送信失敗:", err);
       showLocalNotice("送信に失敗しました。ページを再読み込みしてもう一度お試しください。");
+    }).finally(function () {
+      sendingInFlight = false;
+      setSendControlsDisabled(false);
     });
   }
 
@@ -290,7 +311,7 @@
     lastAutoReplyAt = now;
 
     showThinking();
-    callAI(recentMessages).then(function (text) {
+    return callAI(recentMessages).then(function (text) {
       var elapsed = Date.now() - thinkingShownAt;
       var wait = Math.max(0, MIN_THINKING_MS - elapsed);
       return new Promise(function (resolve) { setTimeout(resolve, wait); }).then(function () {

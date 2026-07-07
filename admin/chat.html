@@ -606,7 +606,14 @@
         text: text,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      /*
+        開発者が実際に返信した時点で、mode を自動的に developer へ切り替える。
+        従来は手動の「引き継ぐ」ボタンを押し忘れると、AIが並行して
+        自動応答を続けてしまい、開発者の返信とAIの返信が交錯する
+        原因になっていた。
+      */
       batch.update(sessionRef, {
+        mode: "developer",
         lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastMessagePreview: text.slice(0, 80)
       });
