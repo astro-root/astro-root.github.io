@@ -52,6 +52,29 @@ function corsHeaders(origin) {
   };
 }
 
+/* Geminiがまれに同じ文をループ生成することがあるため、
+   繰り返し単位を検出して最初の1回分だけに圧縮する */
+function dedupeRepeatedText(text) {
+  if (!text || text.length < 20) return text;
+
+  for (let unitLen = 4; unitLen <= Math.floor(text.length / 2); unitLen++) {
+    const unit = text.slice(0, unitLen);
+    if (!unit.trim()) continue;
+    let repeats = 0;
+    let pos = 0;
+    while (text.startsWith(unit, pos)) {
+      repeats++;
+      pos += unitLen;
+    }
+    const coveredLen = repeats * unitLen;
+    // ユニットが3回以上繰り返され、かつテキストの90%以上を占める場合のみループとみなす
+    if (repeats >= 3 && coveredLen / text.length > 0.9) {
+      return unit.trim();
+    }
+  }
+  return text;
+}
+
 async function handleAI(request, env, origin) {
   let body;
   try {
@@ -108,7 +131,8 @@ async function handleAI(request, env, origin) {
   }
 
   const data = await geminiRes.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  const text = dedupeRepeatedText(rawText);
 
   if (!text) {
     return new Response(JSON.stringify({ error: "empty_response" }), {
