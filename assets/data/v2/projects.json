@@ -6,12 +6,12 @@
     "note": "current: true のプロジェクトはTOPページ CURRENTLY セクションに表示される。featured: true は Featured Projects セクションに表示される。1箇所を編集すればTOP / Projects一覧 / Search 全てに反映される設計（要件定義書 115.）。"
   },
   "categories": [
-    { "id": "quiz",       "label": "Quiz" },
-    { "id": "web",        "label": "Web" },
-    { "id": "education",  "label": "Education" },
-    { "id": "utility",    "label": "Utility" },
-    { "id": "experiment", "label": "Experiment" },
-    { "id": "other",      "label": "Other" }
+    { "id": "quiz",       "label": "Quiz", "labelJa": "クイズ" },
+    { "id": "web",        "label": "Web", "labelJa": "Web" },
+    { "id": "education",  "label": "Education", "labelJa": "教育・学習" },
+    { "id": "utility",    "label": "Utility", "labelJa": "ユーティリティ" },
+    { "id": "experiment", "label": "Experiment", "labelJa": "実験" },
+    { "id": "other",      "label": "Other", "labelJa": "その他" }
   ],
   "statusConfig": {
     "idea":        { "label": "Idea",        "color": "#7891ab" },

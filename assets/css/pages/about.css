@@ -469,3 +469,65 @@
       .skills-grid { grid-template-columns: 1fr; }
       .about-card { padding: 20px; }
     }
+    /* ── v2: What I Build / What I Study のデータ駆動リスト ── */
+    .about-links {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 22px;
+    }
+
+    .about-link-row {
+      display: grid;
+      grid-template-columns: minmax(120px, auto) 1fr auto;
+      align-items: baseline;
+      gap: 6px 18px;
+      padding: 14px 4px;
+      border-top: 1px solid var(--border);
+      text-decoration: none;
+      transition: background var(--t);
+    }
+
+    .about-link-row:first-child { border-top: none; }
+    a.about-link-row:hover { background: rgba(255,255,255,0.02); }
+
+    .about-link-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-0);
+    }
+
+    .about-link-desc {
+      font-size: 0.74rem;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+
+    .about-link-status {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      white-space: nowrap;
+    }
+
+    .about-more {
+      display: inline-block;
+      margin-top: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      color: var(--accent-blue);
+      text-decoration: none;
+      transition: opacity var(--t);
+    }
+    .about-more:hover { opacity: 0.75; }
+
+    @media (max-width: 680px) {
+      .about-link-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+      .about-link-status { margin-top: 2px; }
+    }

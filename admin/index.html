@@ -12,6 +12,10 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
   <link rel="stylesheet" href="/assets/css/variables.css" />
   <link rel="stylesheet" href="/assets/css/base.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/firebase-init.js"></script>
   <style>
     body {
       display: flex;
@@ -180,7 +184,7 @@
         <label class="login-label" for="admin-password">Password</label>
         <input type="password" id="admin-password" class="login-input" autocomplete="current-password" required />
       </div>
-      <button type="submit" class="login-submit">ログイン</button>
+      <button type="submit" class="login-submit" id="login-submit-btn">ログイン</button>
       <div class="login-error" id="login-error" role="alert">パスワードが正しくありません。</div>
     </form>
 
@@ -194,21 +198,47 @@
     var form = document.getElementById("login-form");
     var pwd  = document.getElementById("admin-password");
     var err  = document.getElementById("login-error");
+    var btn  = document.getElementById("login-submit-btn");
 
-    if (AdminAuth.isAuthenticated()) {
-      window.location.href = "/admin/dashboard.html";
-      return;
+    var ERROR_MESSAGES = {
+      "auth/wrong-password": "パスワードが正しくありません。",
+      "auth/invalid-credential": "パスワードが正しくありません。",
+      "auth/user-not-found": "管理者アカウントが見つかりません。firebase-init.js の設定を確認してください。",
+      "auth/too-many-requests": "試行回数が多すぎます。しばらく待ってから再度お試しください。",
+      "auth/network-request-failed": "通信エラーが発生しました。接続を確認してください。",
+      "firebase_not_configured": "Firebase未設定です。assets/js/firebase-init.js を確認してください。",
+      "password_required": "パスワードを入力してください。"
+    };
+
+    function showError(code) {
+      err.textContent = ERROR_MESSAGES[code] || "ログインに失敗しました。";
+      err.classList.add("visible");
     }
+
+    function setLoading(loading) {
+      btn.disabled = loading;
+      btn.textContent = loading ? "確認中..." : "ログイン";
+    }
+
+    AdminAuth.getCurrentUser().then(function (user) {
+      if (user) window.location.href = "/admin/dashboard.html";
+    });
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      if (AdminAuth.login(pwd.value)) {
-        window.location.href = "/admin/dashboard.html";
-      } else {
-        err.classList.add("visible");
-        pwd.value = "";
-        pwd.focus();
-      }
+      err.classList.remove("visible");
+      setLoading(true);
+
+      AdminAuth.login(pwd.value)
+        .then(function () {
+          window.location.href = "/admin/dashboard.html";
+        })
+        .catch(function (error) {
+          setLoading(false);
+          showError(error && error.code ? error.code : error.message);
+          pwd.value = "";
+          pwd.focus();
+        });
     });
   })();
   </script>

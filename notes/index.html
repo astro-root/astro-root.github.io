@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blog | るーとの研究室</title>
-  <meta name="description" content="るーとの研究室ブログ。Webエンジニアリング・天文学・クイズ・日常の記録。" />
+  <title>Notes | るーとの研究室</title>
+  <meta name="description" content="るーとの研究室 開発・学習・実験の日常記録。Development / Quiz / Physics / Astronomy / Study / Misc の各テーマをタイムラインで公開。" />
   <meta name="author" content="るーと" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#020b18" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Blog | るーとの研究室" />
-  <meta property="og:description" content="Webエンジニアリング・天文学・クイズ・日常の記録。" />
-  <meta property="og:url" content="https://astro-root.com/blog/" />
+  <meta property="og:title" content="Notes | るーとの研究室" />
+  <meta property="og:description" content="開発・学習・実験の日常記録をタイムラインで公開。" />
+  <meta property="og:url" content="https://astro-root.com/notes/" />
   <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
   <meta property="og:locale" content="ja_JP" />
@@ -20,7 +20,7 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="canonical" href="https://astro-root.com/blog/" />
+  <link rel="canonical" href="https://astro-root.com/notes/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
   <link rel="stylesheet" href="/assets/css/search.css" />
-  <link rel="stylesheet" href="/assets/css/pages/blog.css" />
+  <link rel="stylesheet" href="/assets/css/pages/notes.css" />
 </head>
 <body>
   <div id="scroll-progress" aria-hidden="true"></div>
@@ -99,77 +99,105 @@
         <div class="page-header-inner">
           <div class="page-eyebrow">
             <div class="page-eyebrow-line" aria-hidden="true"></div>
-            <span class="page-eyebrow-text">Research Lab / Blog</span>
+            <span class="page-eyebrow-text">Root Lab / Notes</span>
           </div>
-          <h1 class="page-title">Lab <em>Notes</em></h1>
+          <h1 class="page-title">Notes</h1>
           <p class="page-desc">
-            Web エンジニアリング・天文学・クイズ・日常の記録。
-            研究室からの発信。
+            開発・学習・実験の日常記録。「勉強した」記録ではなく、
+            そのとき考えていたこと・つまずいたことをそのまま残す場所です。
           </p>
         </div>
       </header>
-
-      <!-- コントロール -->
-      <div class="controls-row reveal d1">
-        <div class="filter-group" role="group" aria-label="カテゴリフィルター" id="cat-filter-group">
-          <button class="filter-btn active" data-cat="all" aria-pressed="true">
-            <span class="filter-dot"></span>All
-          </button>
-          <button class="filter-btn" data-cat="tech" aria-pressed="false">
-            <span class="filter-dot"></span>Tech
-          </button>
-          <button class="filter-btn" data-cat="astronomy" aria-pressed="false">
-            <span class="filter-dot"></span>Astronomy
-          </button>
-          <button class="filter-btn" data-cat="quiz" aria-pressed="false">
-            <span class="filter-dot"></span>Quiz
-          </button>
-          <button class="filter-btn" data-cat="diary" aria-pressed="false">
-            <span class="filter-dot"></span>Diary
-          </button>
-          <button class="filter-btn" data-cat="review" aria-pressed="false">
-            <span class="filter-dot"></span>Review
-          </button>
-        </div>
-        <span class="result-count" id="result-count" aria-live="polite"></span>
-      </div>
 
       <!-- ローディング -->
       <div class="loading-state" id="loading-state" aria-live="polite">
         <div class="loading-dot"></div>
         <div class="loading-dot"></div>
         <div class="loading-dot"></div>
-        <span>記事データを読み込み中...</span>
-      </div>
-
-      <!-- エラー -->
-      <div class="error-state" id="error-state" role="alert">
-        <p class="error-state-text">通信エラー — 記事データの取得に失敗しました。研究室サーバーとの接続をご確認の上、再試行してください。</p>
-        <button type="button" class="retry-btn" id="retry-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-          再試行
-        </button>
+        <span>ノートを同期中...</span>
       </div>
 
       <!-- メインレイアウト -->
-      <div class="blog-layout" id="blog-layout" style="display:none">
+      <div class="log-layout" id="log-layout" style="display:none">
+
+        <!-- メインカラム -->
         <div>
-          <div class="articles-grid" id="articles-grid" aria-live="polite" aria-label="記事一覧"></div>
-          <div class="pagination" id="pagination" role="navigation" aria-label="ページナビゲーション"></div>
+          <!-- フィルターバー -->
+          <div class="filter-bar" role="group" aria-label="カテゴリフィルター" id="filter-bar">
+            <button class="filter-btn active" data-type="all" aria-pressed="true">
+              <span class="filter-dot"></span>All
+            </button>
+            <button class="filter-btn" data-type="development" aria-pressed="false">
+              <span class="filter-dot"></span>Development
+            </button>
+            <button class="filter-btn" data-type="quiz" aria-pressed="false">
+              <span class="filter-dot"></span>Quiz
+            </button>
+            <button class="filter-btn" data-type="physics" aria-pressed="false">
+              <span class="filter-dot"></span>Physics
+            </button>
+            <button class="filter-btn" data-type="astronomy" aria-pressed="false">
+              <span class="filter-dot"></span>Astronomy
+            </button>
+            <button class="filter-btn" data-type="study" aria-pressed="false">
+              <span class="filter-dot"></span>Study
+            </button>
+            <button class="filter-btn" data-type="misc" aria-pressed="false">
+              <span class="filter-dot"></span>Misc
+            </button>
+          </div>
+
+          <div class="result-info">
+            <span class="result-count" id="result-count" aria-live="polite"></span>
+          </div>
+
+          <!-- タイムライン -->
+          <div class="timeline" id="timeline" role="feed" aria-label="Notes タイムライン"></div>
         </div>
-        <aside class="sidebar" aria-label="サイドバー">
+
+        <!-- サイドバー -->
+        <aside class="sidebar" aria-label="Notesサイドバー">
+
+          <!-- 統計 -->
           <div class="sidebar-card">
             <p class="sidebar-title">Categories</p>
-            <div class="sidebar-cats" id="sidebar-cats"></div>
+            <div class="stat-list" id="stat-list">
+              <!-- JSで生成 -->
+            </div>
           </div>
-          <div class="sidebar-card" id="sidebar-tags-card">
-            <p class="sidebar-title">Tags</p>
-            <div class="tag-cloud" id="tag-cloud"></div>
+
+          <!-- 最近の活動 -->
+          <div class="sidebar-card" id="recent-card">
+            <p class="sidebar-title">Recent</p>
+            <div class="recent-list" id="recent-list"></div>
           </div>
-          <div class="sidebar-card" id="sidebar-archive-card">
-            <p class="sidebar-title">Archive</p>
-            <div class="archive-list" id="archive-list"></div>
+
+          <!-- 関連リンク -->
+          <div class="sidebar-card">
+            <p class="sidebar-title">Related</p>
+            <div class="related-links">
+              <a class="related-link" href="/research/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                Research
+              </a>
+              <a class="related-link" href="/projects/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Projects
+              </a>
+              <a class="related-link" href="/lab/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/>
+                </svg>
+                Lab
+              </a>
+            </div>
           </div>
+
         </aside>
       </div>
 
@@ -205,6 +233,6 @@
   <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/search-core.js"></script>
   <script src="/assets/js/search-overlay.js"></script>
-  <script src="/assets/js/pages/blog.js" defer></script>
+  <script src="/assets/js/pages/notes.js" defer></script>
 </body>
 </html>

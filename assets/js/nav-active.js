@@ -3,6 +3,8 @@
   var path = window.location.pathname;
   var key = "top";
   if (path.startsWith("/projects")) key = "projects";
+  else if (path.startsWith("/research")) key = "research";
+  else if (path.startsWith("/notes")) key = "notes";
   else if (path.startsWith("/study")) key = "study";
   else if (path.startsWith("/blog")) key = "blog";
   else if (path.startsWith("/lab")) key = "lab";

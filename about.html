@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About | るーとの研究室</title>
-  <meta name="description" content="るーとの研究室の運営者情報。高校生Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールとサイト概要。" />
+  <meta name="description" content="るーとの研究室の運営者情報。Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールとサイト概要。" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <meta name="author" content="るーと" />
   <meta name="theme-color" content="#020b18" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="About | るーとの研究室" />
-  <meta property="og:description" content="高校生Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールとサイト概要。" />
+  <meta property="og:description" content="Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールとサイト概要。" />
   <meta property="og:url" content="https://astro-root.com/about" />
   <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
@@ -18,7 +18,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@astro_root" />
   <meta name="twitter:title" content="About | るーとの研究室" />
-  <meta name="twitter:description" content="高校生Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールとサイト概要。" />
+  <meta name="twitter:description" content="Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールとサイト概要。" />
   <meta name="twitter:image" content="https://astro-root.com/ogp-image.png" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
+  <link rel="stylesheet" href="/assets/css/search.css" />
   <link rel="stylesheet" href="/assets/css/pages/about.css" />
 </head>
 <body>
@@ -70,6 +71,11 @@
           <li><a href="/about" data-nav-key="about">ABOUT</a></li>
           <li><a href="/contact" data-nav-key="contact">CONTACT</a></li>
         </ul>
+        <button class="nav-search-btn" data-search-trigger aria-label="サイト内検索を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span>Search</span>
+          <kbd>⌘K</kbd>
+        </button>
         <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
           <span></span><span></span><span></span>
         </button>
@@ -84,6 +90,7 @@
     <a href="/lab/" data-nav-key="lab">LAB</a>
     <a href="/about" data-nav-key="about">ABOUT</a>
     <a href="/contact" data-nav-key="contact">CONTACT</a>
+    <a href="#" data-search-trigger>SEARCH</a>
     <a href="/privacy">PRIVACY POLICY</a>
   </div>
 </header>
@@ -99,15 +106,16 @@
             <div class="page-eyebrow-line" aria-hidden="true"></div>
             <span class="page-eyebrow-text">Research Lab / About</span>
           </div>
-          <h1 class="page-title">About <em>Me</em></h1>
+          <h1 class="page-title">About <em>Root</em></h1>
           <p class="page-desc">
             ようこそ、研究室へ。<br>
-            高校生Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールです。
+            Webエンジニア・クイズプレイヤー・天文学研究者「るーと」のプロフィールです。
           </p>
         </div>
       </header>
 
       <!-- プロフィールヒーロー -->
+      <!-- ══════════ Who I Am ══════════ -->
       <div class="profile-hero reveal">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar">
@@ -119,11 +127,10 @@
           <h2 class="profile-name">るーと</h2>
           <p class="profile-handle">@astro_root</p>
           <p class="profile-role">
-            高校生 / Webエンジニア / クイズプレイヤー / 天文学研究者<br>
+            Webエンジニア / クイズプレイヤー / 天文学研究者<br>
             日本物理学会 学生会友 · AstroHigh 管理者
           </p>
           <div class="profile-tags" role="list" aria-label="属性タグ">
-            <span class="profile-tag" role="listitem">Student</span>
             <span class="profile-tag" role="listitem">Web Engineer</span>
             <span class="profile-tag" role="listitem">Quiz Player</span>
             <span class="profile-tag" role="listitem">Astronomy</span>
@@ -133,160 +140,118 @@
         </div>
       </div>
 
-      <!-- サイト概要 & プロフィール -->
-      <div class="info-grid">
-        <div class="about-card accent-blue reveal d1">
-          <h3 class="card-heading">
-            <span class="card-heading-bar blue" aria-hidden="true"></span>
-            サイト概要
-          </h3>
-          <div class="info-table">
-            <div class="info-row">
-              <span class="info-key">サイト名</span>
-              <span class="info-val">るーとの研究室</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">URL</span>
-              <span class="info-val">
-                <a href="https://astro-root.com/" target="_blank" rel="noopener noreferrer">astro-root.com</a>
-              </span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">コンセプト</span>
-              <span class="info-val">研究室を探索するWebサイト</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">開設</span>
-              <span class="info-val">2026年</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">目的</span>
-              <span class="info-val">ポートフォリオ・Webツール公開・学習記録</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">言語</span>
-              <span class="info-val">日本語（一部英語）</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="about-card accent-teal reveal d2">
-          <h3 class="card-heading">
-            <span class="card-heading-bar teal" aria-hidden="true"></span>
-            プロフィール
-          </h3>
-          <div class="info-table">
-            <div class="info-row">
-              <span class="info-key">HN</span>
-              <span class="info-val">るーと / astro_root</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">属性</span>
-              <span class="info-val">高校3年生（2026年現在）</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">活動</span>
-              <span class="info-val">Web開発・クイズ競技・天文学研究</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">所属</span>
-              <span class="info-val">日本物理学会 学生会友</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">コミュニティ</span>
-              <span class="info-val">AstroHigh 管理者</span>
-            </div>
-            <div class="info-row">
-              <span class="info-key">連絡</span>
-              <span class="info-val"><a href="/contact">お問い合わせページ</a></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- スキル -->
-      <div class="about-card accent-purple full reveal">
-        <h3 class="card-heading">
-          <span class="card-heading-bar purple" aria-hidden="true"></span>
-          Skills
-        </h3>
-        <div class="skills-grid">
-          <div class="skill-item">
-            <div class="skill-name">
-              <span>JavaScript</span>
-              <span class="skill-level">Expert</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-bar-fill" style="width:92%;background:linear-gradient(90deg,#3b9eff,#00e5b8)" role="progressbar" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100" aria-label="JavaScript スキルレベル 92%"></div>
-            </div>
-          </div>
-          <div class="skill-item">
-            <div class="skill-name">
-              <span>HTML / CSS</span>
-              <span class="skill-level">Expert</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-bar-fill" style="width:95%;background:linear-gradient(90deg,#3b9eff,#00e5b8)" role="progressbar" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100" aria-label="HTML/CSS スキルレベル 95%"></div>
-            </div>
-          </div>
-          <div class="skill-item">
-            <div class="skill-name">
-              <span>Firebase</span>
-              <span class="skill-level">Advanced</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-bar-fill" style="width:78%;background:linear-gradient(90deg,#ffb340,#ff6b6b)" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100" aria-label="Firebase スキルレベル 78%"></div>
-            </div>
-          </div>
-          <div class="skill-item">
-            <div class="skill-name">
-              <span>TypeScript</span>
-              <span class="skill-level">Intermediate</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-bar-fill" style="width:60%;background:linear-gradient(90deg,#3b9eff,#8b72ff)" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="TypeScript スキルレベル 60%"></div>
-            </div>
-          </div>
-          <div class="skill-item">
-            <div class="skill-name">
-              <span>Git / GitHub</span>
-              <span class="skill-level">Advanced</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-bar-fill" style="width:82%;background:linear-gradient(90deg,#ff6b6b,#ffb340)" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" aria-label="Git/GitHub スキルレベル 82%"></div>
-            </div>
-          </div>
-          <div class="skill-item">
-            <div class="skill-name">
-              <span>Astronomy</span>
-              <span class="skill-level">Advanced</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-bar-fill" style="width:80%;background:linear-gradient(90deg,#00e5b8,#8b72ff)" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" aria-label="天文学 スキルレベル 80%"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 運営方針 -->
-      <div class="about-card accent-teal full reveal">
-        <h3 class="card-heading">
-          <span class="card-heading-bar teal" aria-hidden="true"></span>
-          サイト運営方針
-        </h3>
-        <p class="policy-text">
-          当サイトは、クイズ大会支援Webツールの開発・公開およびポートフォリオとしての情報発信を目的として運営しています。
-          掲載するツール・コンテンツは、クイズ活動・天文学・プログラミングに関する実体験をもとに制作した独自のものです。
-          提供するツールは無償で公開しており、クイズシーン全体への技術的な貢献を目指しています。
-        </p>
-      </div>
-
-      <!-- SNS / 連絡先 -->
-      <div class="about-card accent-blue full reveal">
-        <h3 class="card-heading">
+      <section class="about-card accent-blue full reveal" aria-labelledby="sec-who">
+        <h2 class="card-heading" id="sec-who">
           <span class="card-heading-bar blue" aria-hidden="true"></span>
-          SNS &amp; 連絡先
-        </h3>
+          Who I Am
+        </h2>
+        <p class="policy-text">
+          「るーと」として、Webツールの開発と、天文学・物理学の独学を並行して続けています。
+          早押しクイズのプレイヤーでもあり、大会運営の現場で感じた不便をそのままツールにする、
+          というのが制作の出発点になることが多いです。
+        </p>
+        <div class="info-table" style="margin-top:20px;">
+          <div class="info-row">
+            <span class="info-key">HN</span>
+            <span class="info-val">るーと / astro_root</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">属性</span>
+            <span class="info-val">高校3年生（2026年現在）</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">所属</span>
+            <span class="info-val">日本物理学会 学生会友</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">コミュニティ</span>
+            <span class="info-val">AstroHigh 管理者</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ What I Build ══════════ -->
+      <section class="about-card accent-teal full reveal" aria-labelledby="sec-build">
+        <h2 class="card-heading" id="sec-build">
+          <span class="card-heading-bar teal" aria-hidden="true"></span>
+          What I Build
+        </h2>
+        <p class="policy-text">
+          クイズ大会の運営を支えるツール群を中心に開発しています。
+          得点表示・オンライン対戦・採点・作問といった、運営の各工程にそれぞれ必要なものを作ってきました。
+          フレームワークに頼らずVanilla JSで組み、リアルタイム性が要るところにFirebaseを使う構成が基本です。
+        </p>
+        <div class="about-links" id="about-projects">
+          <!-- projects.json から描画 -->
+        </div>
+        <a class="about-more" href="/projects/">Projects をすべて見る →</a>
+      </section>
+
+      <!-- ══════════ What I Study ══════════ -->
+      <section class="about-card accent-purple full reveal" aria-labelledby="sec-study">
+        <h2 class="card-heading" id="sec-study">
+          <span class="card-heading-bar purple" aria-hidden="true"></span>
+          What I Study
+        </h2>
+        <p class="policy-text">
+          天文学と物理学を独学で追いかけています。観測データを自分で処理してみる、
+          シミュレーションを書いて挙動を確かめる、といった「手を動かして確かめる」進め方を好みます。
+          進行中のテーマは Research にまとめています。
+        </p>
+        <div class="about-links" id="about-research">
+          <!-- research.json から描画 -->
+        </div>
+        <a class="about-more" href="/research/">Research をすべて見る →</a>
+      </section>
+
+      <!-- ══════════ What I Care About ══════════ -->
+      <section class="about-card accent-teal full reveal" aria-labelledby="sec-care">
+        <h2 class="card-heading" id="sec-care">
+          <span class="card-heading-bar teal" aria-hidden="true"></span>
+          What I Care About
+        </h2>
+        <p class="policy-text">
+          作ったツールは無償で公開しています。クイズは個人の趣味で続けられている部分が大きい競技なので、
+          運営側の負担を下げるものが共有されているほど、シーン全体にとって良いと考えているためです。
+        </p>
+        <p class="policy-text" style="margin-top:16px;">
+          記録についても、きれいに整った結果だけでなく、途中でつまずいたことや考えていたことを
+          そのまま残すようにしています。あとから読み返したときに役に立つのは、たいていそちらなので。
+        </p>
+      </section>
+
+      <!-- ══════════ Activities ══════════ -->
+      <section class="about-card accent-blue full reveal" aria-labelledby="sec-activities">
+        <h2 class="card-heading" id="sec-activities">
+          <span class="card-heading-bar blue" aria-hidden="true"></span>
+          Activities
+        </h2>
+        <div class="info-table">
+          <div class="info-row">
+            <span class="info-key">Web開発</span>
+            <span class="info-val">クイズ大会支援ツールの開発・公開・保守</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">クイズ</span>
+            <span class="info-val">早押しクイズのプレイ・大会運営・作問</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">天文学</span>
+            <span class="info-val">観測データの解析・シミュレーション・学習記録の公開</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">コミュニティ</span>
+            <span class="info-val">AstroHigh の運営・情報発信</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════ Links ══════════ -->
+      <section class="about-card accent-blue full reveal" aria-labelledby="sec-links">
+        <h2 class="card-heading" id="sec-links">
+          <span class="card-heading-bar blue" aria-hidden="true"></span>
+          Links
+        </h2>
         <div class="sns-grid">
 
           <a class="sns-link"
@@ -394,7 +359,8 @@
           </a>
 
         </div>
-      </div>
+      </section>
+
 
       <a href="/" class="back-to-lab reveal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
@@ -427,6 +393,8 @@
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/search-core.js"></script>
+  <script src="/assets/js/search-overlay.js"></script>
   <script src="/assets/js/pages/about.js" defer></script>
 </body>
 </html>

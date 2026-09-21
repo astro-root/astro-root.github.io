@@ -185,7 +185,7 @@
     'obj-monitor':    { name: '大型モニター',    dest: '→ Projects',  href: '/projects/' },
     'obj-bookshelf':  { name: '本棚',             dest: '→ Research',  href: '/research/' },
     'obj-whiteboard': { name: 'ホワイトボード',   dest: '→ Notes',     href: '/notes/' },
-    'obj-telescope':  { name: '天体望遠鏡',       dest: '→ Astronomy', href: '/research/astronomy' },
+    'obj-telescope':  { name: '天体望遠鏡',       dest: '→ Astronomy', href: '/research/' },
     'obj-server':     { name: 'サーバーラック',   dest: '→ Lab',       href: '/lab/' },
     'obj-cabinet':    { name: 'キャビネット',     dest: '→ Notes',     href: '/notes/' },
     'obj-envelope':   { name: '封筒',             dest: '→ Contact',   href: '/contact' },

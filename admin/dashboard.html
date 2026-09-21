@@ -12,6 +12,10 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
   <link rel="stylesheet" href="/assets/css/variables.css" />
   <link rel="stylesheet" href="/assets/css/base.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/firebase-init.js"></script>
   <style>
     body { display: flex; min-height: 100vh; }
 
@@ -249,6 +253,105 @@
     .status-pill[data-s="published"] { color: var(--accent-teal); background: rgba(30,235,192,0.08); }
     .status-pill[data-s="draft"]     { color: var(--accent-amber); background: rgba(255,194,92,0.08); }
     .status-pill[data-s="wip"]       { color: var(--text-2); background: rgba(255,255,255,0.04); }
+    .status-pill[data-s="active"]      { color: #4ba9ff; background: rgba(75,169,255,0.08); }
+    .status-pill[data-s="beta"]        { color: #1eebc0; background: rgba(30,235,192,0.08); }
+    .status-pill[data-s="development"]{ color: #ffc25c; background: rgba(255,194,92,0.08); }
+    .status-pill[data-s="design"]      { color: #9c87ff; background: rgba(156,135,255,0.08); }
+    .status-pill[data-s="idea"]        { color: var(--text-2); background: rgba(255,255,255,0.04); }
+    .status-pill[data-s="maintenance"] { color: var(--text-2); background: rgba(255,255,255,0.04); }
+    .status-pill[data-s="archived"]    { color: var(--text-2); background: rgba(255,255,255,0.03); }
+    .status-pill[data-s="ongoing"]     { color: #4ba9ff; background: rgba(75,169,255,0.08); }
+    .status-pill[data-s="completed"]   { color: #1eebc0; background: rgba(30,235,192,0.08); }
+    .status-pill[data-s="paused"]      { color: #ffc25c; background: rgba(255,194,92,0.08); }
+
+    .bool-pill {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      padding: 3px 9px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+    }
+    .bool-pill[data-on="1"] { color: var(--accent-blue); border-color: rgba(75,169,255,0.4); background: rgba(75,169,255,0.08); }
+
+    .modal-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .modal-checkbox-row input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: var(--accent-blue);
+    }
+    .modal-checkbox-row label {
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      color: var(--text-1);
+    }
+    /* ── Audit Log ── */
+    .audit-list { display: flex; flex-direction: column; }
+    .audit-row {
+      display: grid;
+      grid-template-columns: 150px 90px 1fr;
+      gap: 16px;
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      align-items: start;
+    }
+    .audit-row:first-child { border-top: none; }
+    .audit-time {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      white-space: nowrap;
+    }
+    .audit-action {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 99px;
+      height: fit-content;
+    }
+    .audit-action[data-a="created"] { color: var(--accent-teal); background: rgba(30,235,192,0.08); }
+    .audit-action[data-a="updated"] { color: var(--accent-blue); background: rgba(75,169,255,0.08); }
+    .audit-action[data-a="deleted"] { color: #f87171; background: rgba(248,113,113,0.08); }
+    .audit-body { min-width: 0; }
+    .audit-target {
+      font-size: var(--fs-sm);
+      color: var(--text-0);
+      margin-bottom: 4px;
+    }
+    .audit-target span {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      margin-left: 8px;
+    }
+    .audit-diff {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      line-height: 1.8;
+    }
+    .audit-diff .field { color: var(--text-1); }
+    .audit-diff .from { color: #f87171; }
+    .audit-diff .to { color: var(--accent-teal); }
+    .audit-user {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+    }
+
+    .modal-hint-sm {
+      font-family: var(--font-mono);
+      font-size: var(--fs-2xs);
+      color: var(--text-2);
+      margin-top: -10px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
 
     .row-actions { display: flex; gap: 6px; white-space: nowrap; }
 
@@ -485,17 +588,25 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
       Overview
     </button>
-    <button class="admin-nav-btn" data-view="articles">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/></svg>
-      Blog Articles
+    <button class="admin-nav-btn" data-view="projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Projects
     </button>
-    <button class="admin-nav-btn" data-view="study">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Study Items
+    <button class="admin-nav-btn" data-view="research">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Research
     </button>
-    <button class="admin-nav-btn" data-view="logs">
+    <button class="admin-nav-btn" data-view="notes">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Research Log
+      Notes
+    </button>
+    <button class="admin-nav-btn" data-view="technologies">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg>
+      Technologies
+    </button>
+    <button class="admin-nav-btn" data-view="auditlog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      Audit Log
     </button>
 
     <a class="admin-nav-btn" href="/admin/chat.html" style="text-decoration:none;">
@@ -520,20 +631,20 @@
       </div>
       <div class="admin-stats">
         <div class="admin-stat-card">
-          <div class="admin-stat-value" id="stat-articles">0</div>
-          <div class="admin-stat-label">Blog Articles</div>
+          <div class="admin-stat-value" id="stat-projects">0</div>
+          <div class="admin-stat-label">Projects</div>
         </div>
         <div class="admin-stat-card">
-          <div class="admin-stat-value" id="stat-study">0</div>
-          <div class="admin-stat-label">Study Items</div>
+          <div class="admin-stat-value" id="stat-research">0</div>
+          <div class="admin-stat-label">Research Themes</div>
         </div>
         <div class="admin-stat-card">
-          <div class="admin-stat-value" id="stat-logs">0</div>
-          <div class="admin-stat-label">Research Logs</div>
+          <div class="admin-stat-value" id="stat-notes">0</div>
+          <div class="admin-stat-label">Notes</div>
         </div>
         <div class="admin-stat-card">
-          <div class="admin-stat-value" id="stat-published">0</div>
-          <div class="admin-stat-label">Published</div>
+          <div class="admin-stat-value" id="stat-technologies">0</div>
+          <div class="admin-stat-label">Technologies</div>
         </div>
       </div>
       <div class="admin-panel">
@@ -551,119 +662,12 @@
       </div>
     </section>
 
-    <!-- Articles -->
-    <section id="view-articles" class="admin-view" hidden>
-      <div class="admin-header">
-        <h1 class="admin-title">Blog Articles</h1>
-        <div style="display:flex;gap:8px;">
-          <button class="admin-btn" id="import-articles">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            JSON読み込み
-          </button>
-          <button class="admin-btn" id="export-articles">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            JSON書き出し
-          </button>
-          <button class="admin-btn" id="add-article">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            新規記事
-          </button>
-        </div>
-      </div>
-      <div class="admin-panel">
-        <div class="admin-panel-header">
-          <span class="admin-panel-title">記事一覧<span class="row-count-badge" id="articles-count"></span></span>
-          <div class="admin-search-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="search" class="admin-search-input" id="search-articles" placeholder="タイトルで検索" aria-label="記事をタイトルで検索" />
-          </div>
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>タイトル</th><th>カテゴリ</th><th>状態</th><th>公開日</th><th>操作</th></tr>
-            </thead>
-            <tbody id="articles-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Study -->
-    <section id="view-study" class="admin-view" hidden>
-      <div class="admin-header">
-        <h1 class="admin-title">Study Items</h1>
-        <div style="display:flex;gap:8px;">
-          <button class="admin-btn" id="import-study">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            JSON読み込み
-          </button>
-          <button class="admin-btn" id="export-study">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            JSON書き出し
-          </button>
-          <button class="admin-btn" id="add-study">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            新規アイテム
-          </button>
-        </div>
-      </div>
-      <div class="admin-panel">
-        <div class="admin-panel-header">
-          <span class="admin-panel-title">Studyアイテム一覧<span class="row-count-badge" id="study-count"></span></span>
-          <div class="admin-search-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="search" class="admin-search-input" id="search-study" placeholder="タイトルで検索" aria-label="Studyアイテムをタイトルで検索" />
-          </div>
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>タイトル</th><th>カテゴリ</th><th>難易度</th><th>状態</th><th>操作</th></tr>
-            </thead>
-            <tbody id="study-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Research Log -->
-    <section id="view-logs" class="admin-view" hidden>
-      <div class="admin-header">
-        <h1 class="admin-title">Research Log</h1>
-        <div style="display:flex;gap:8px;">
-          <button class="admin-btn" id="import-logs">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            JSON読み込み
-          </button>
-          <button class="admin-btn" id="export-logs">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            JSON書き出し
-          </button>
-          <button class="admin-btn" id="add-log">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            新規ログ
-          </button>
-        </div>
-      </div>
-      <div class="admin-panel">
-        <div class="admin-panel-header">
-          <span class="admin-panel-title">ログ一覧<span class="row-count-badge" id="logs-count"></span></span>
-          <div class="admin-search-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="search" class="admin-search-input" id="search-logs" placeholder="タイトルで検索" aria-label="ログをタイトルで検索" />
-          </div>
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr><th>タイトル</th><th>タイプ</th><th>日付</th><th>操作</th></tr>
-            </thead>
-            <tbody id="logs-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <!-- Projects / Research / Notes / Technologies (共通テンプレートでJS描画) -->
+    <section id="view-projects" class="admin-view" hidden></section>
+    <section id="view-research" class="admin-view" hidden></section>
+    <section id="view-notes" class="admin-view" hidden></section>
+    <section id="view-technologies" class="admin-view" hidden></section>
+    <section id="view-auditlog" class="admin-view" hidden></section>
 
   </main>
 
@@ -698,7 +702,7 @@
         エクスポートしたJSON、またはassets/data配下のJSONファイルの内容を貼り付けてください。<br>
         同じIDのアイテムは上書き、新しいIDのアイテムは追加されます(既存データは削除されません)。
       </p>
-      <textarea class="modal-textarea" id="import-textarea" style="min-height:260px;font-family:var(--font-mono);font-size:0.7rem;" placeholder='{"articles": [...]}'></textarea>
+      <textarea class="modal-textarea" id="import-textarea" style="min-height:260px;font-family:var(--font-mono);font-size:0.7rem;" placeholder='{"projects": [...]}'></textarea>
       <div class="modal-actions">
         <button type="button" class="modal-btn-cancel" id="import-cancel">キャンセル</button>
         <button type="button" class="modal-btn-save" id="import-confirm">読み込む</button>
@@ -715,8 +719,6 @@
   (function () {
     "use strict";
 
-    AdminAuth.requireAuth();
-
     /* ── ビュー切り替え ── */
     var navBtns = document.querySelectorAll(".admin-nav-btn");
     var views   = document.querySelectorAll(".admin-view");
@@ -728,17 +730,121 @@
         views.forEach(function (v) {
           v.hidden = (v.id !== "view-" + target);
         });
+        if (target === "auditlog") renderAuditLog();
       });
     });
 
     document.getElementById("logout-btn").addEventListener("click", function () {
-      AdminAuth.logout();
-      window.location.href = "/admin/index.html";
+      AdminAuth.logout().then(function () {
+        window.location.href = "/admin/index.html";
+      });
     });
 
-    /* ── データ初期化 ── */
-    var DATA = { articles: [], study: [], logs: [] };
-    var SEARCH = { articles: "", study: "", logs: "" };
+    /* ── データ定義: v2データモデル(assets/data/v2/*.json)に対応 ── */
+
+    var TYPES = {
+      projects: {
+        label: "Projects",
+        jsonPath: "/assets/data/v2/projects.json",
+        wrapperKey: "projects",
+        titleKey: "name",
+        idPrefix: "proj",
+        columns: [
+          { key: "name",     label: "名前" },
+          { key: "_cat",     label: "カテゴリ", get: function (i) { return (i.categories || [])[0] || "—"; } },
+          { key: "status",   label: "状態", pill: true },
+          { key: "featured", label: "Featured", bool: true },
+          { key: "current",  label: "Currently", bool: true },
+          { key: "updatedAt", label: "更新日", date: true }
+        ],
+        form: [
+          { key: "name",        label: "名前", type: "text", required: true },
+          { key: "slug",        label: "スラッグ (URL / projects/<slug>/)", type: "text", required: true },
+          { key: "description", label: "説明 (1文)", type: "textarea", required: true },
+          { key: "longDescription", label: "詳細説明 (About this project)", type: "textarea" },
+          { key: "status",      label: "状態", type: "select", options: ["idea","design","development","beta","active","maintenance","archived"] },
+          { key: "categories",  label: "カテゴリ (カンマ区切り: quiz/web/education/utility/experiment/other)", type: "text" },
+          { key: "technologies", label: "使用技術 (カンマ区切り)", type: "text" },
+          { key: "startedAt",   label: "開始日 (YYYY-MM-DD)", type: "text" },
+          { key: "updatedAt",   label: "更新日 (YYYY-MM-DD)", type: "text" },
+          { key: "featured",    label: "Featured Projectsに表示", type: "checkbox" },
+          { key: "current",     label: "Currentlyセクションに表示", type: "checkbox" },
+          { key: "url",         label: "公開URL", type: "text" },
+          { key: "github",      label: "GitHub URL", type: "text" }
+        ]
+      },
+      research: {
+        label: "Research",
+        jsonPath: "/assets/data/v2/research.json",
+        wrapperKey: "items",
+        titleKey: "title",
+        idPrefix: "res",
+        columns: [
+          { key: "title",  label: "タイトル" },
+          { key: "category", label: "カテゴリ" },
+          { key: "status", label: "状態", pill: true },
+          { key: "updatedAt", label: "更新日", date: true }
+        ],
+        form: [
+          { key: "title",    label: "タイトル", type: "text", required: true },
+          { key: "slug",     label: "スラッグ", type: "text" },
+          { key: "category", label: "カテゴリ", type: "select", options: ["physics","astronomy","mathematics","cs","quiz","other"] },
+          { key: "summary",  label: "概要", type: "textarea", required: true },
+          { key: "content",  label: "本文", type: "textarea" },
+          { key: "status",   label: "状態", type: "select", options: ["idea","ongoing","completed","paused"] },
+          { key: "startedAt", label: "開始日 (YYYY-MM-DD)", type: "text" },
+          { key: "updatedAt", label: "更新日 (YYYY-MM-DD)", type: "text" },
+          { key: "tags",     label: "タグ (カンマ区切り)", type: "text" },
+          { key: "relatedProjects", label: "関連Project ID (カンマ区切り。例: q-score,q-room)", type: "text" }
+        ]
+      },
+      notes: {
+        label: "Notes",
+        jsonPath: "/assets/data/v2/notes.json",
+        wrapperKey: "items",
+        titleKey: "title",
+        idPrefix: "note",
+        columns: [
+          { key: "title",    label: "タイトル" },
+          { key: "category", label: "カテゴリ" },
+          { key: "date",     label: "日付", date: true }
+        ],
+        form: [
+          { key: "title",    label: "タイトル", type: "text", required: true },
+          { key: "date",     label: "日付 (YYYY-MM-DD)", type: "text", required: true },
+          { key: "category", label: "カテゴリ", type: "select", options: ["development","quiz","physics","astronomy","study","misc"] },
+          { key: "summary",  label: "概要", type: "textarea", required: true },
+          { key: "content",  label: "本文", type: "textarea" },
+          { key: "tags",     label: "タグ (カンマ区切り)", type: "text" },
+          { key: "relatedProject", label: "関連Project ID (1件。例: q-score)", type: "text" }
+        ]
+      },
+      technologies: {
+        label: "Technologies",
+        jsonPath: "/assets/data/v2/technologies.json",
+        wrapperKey: "items",
+        titleKey: "name",
+        idPrefix: "tech",
+        columns: [
+          { key: "name",     label: "名前" },
+          { key: "category", label: "カテゴリ" },
+          { key: "level",    label: "レベル" },
+          { key: "primary",  label: "Primary", bool: true }
+        ],
+        form: [
+          { key: "name",        label: "名前", type: "text", required: true },
+          { key: "category",    label: "カテゴリ", type: "select", options: ["frontend","backend","runtime","infrastructure","database","development","environment"] },
+          { key: "description", label: "説明", type: "textarea", required: true },
+          { key: "level",       label: "レベル", type: "select", options: ["primary","secondary"] },
+          { key: "primary",     label: "Primary Stackとして集計に含める", type: "checkbox" },
+          { key: "relatedProjects", label: "関連Project ID (カンマ区切り)", type: "text" }
+        ]
+      }
+    };
+
+    var DATA = {};
+    var SEARCH = {};
+    Object.keys(TYPES).forEach(function (t) { DATA[t] = []; SEARCH[t] = ""; });
 
     function todayIso() {
       return new Date().toISOString().slice(0, 10);
@@ -767,202 +873,172 @@
       }, 2600);
     }
 
-    function loadAll() {
-      return Promise.all([
-        AdminStore.initFromJson("articles", "/assets/data/articles.json", "articles"),
-        AdminStore.initFromJson("study",    "/assets/data/study.json",    "items"),
-        AdminStore.initFromJson("logs",     "/assets/data/research-log.json", "logs")
-      ]).then(function (results) {
-        DATA.articles = results[0];
-        DATA.study    = results[1];
-        DATA.logs     = results[2];
-        renderOverview();
-        renderArticles();
-        renderStudy();
-        renderLogs();
-      });
-    }
-
     function esc(s) {
-      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
     function fmtDate(iso) {
-      return iso ? iso.slice(0, 10) : "—";
+      return iso ? String(iso).slice(0, 10) : "—";
+    }
+
+    /* ── データ読み込み(初回のみ静的JSONから読み、以降はLocalStorageが正) ── */
+    function loadAll() {
+      var keys = Object.keys(TYPES);
+      return Promise.all(keys.map(function (t) {
+        return AdminStore.initFromJson(t, TYPES[t].jsonPath, TYPES[t].wrapperKey);
+      })).then(function (results) {
+        keys.forEach(function (t, i) { DATA[t] = results[i]; });
+        renderOverview();
+        keys.forEach(renderTable);
+      });
     }
 
     /* ── Overview ── */
     function renderOverview() {
-      document.getElementById("stat-articles").textContent = DATA.articles.length;
-      document.getElementById("stat-study").textContent = DATA.study.length;
-      document.getElementById("stat-logs").textContent = DATA.logs.length;
-      var pub = DATA.articles.filter(function (a) { return a.status === "published"; }).length
-              + DATA.study.filter(function (a) { return a.status === "published"; }).length;
-      document.getElementById("stat-published").textContent = pub;
+      document.getElementById("stat-projects").textContent = DATA.projects.length;
+      document.getElementById("stat-research").textContent = DATA.research.length;
+      document.getElementById("stat-notes").textContent = DATA.notes.length;
+      document.getElementById("stat-technologies").textContent = DATA.technologies.length;
     }
 
-    /* ── Articles テーブル ── */
-    function renderArticles() {
-      var tbody = document.getElementById("articles-tbody");
-      var countEl = document.getElementById("articles-count");
-      var q = SEARCH.articles.trim().toLowerCase();
-      var list = q ? DATA.articles.filter(function (a) { return (a.title || "").toLowerCase().indexOf(q) !== -1; }) : DATA.articles;
+    /* ── ビューのHTML骨格を初回に一度だけ描画 ── */
+    var viewsBuilt = {};
+    function buildViewShell(type) {
+      if (viewsBuilt[type]) return;
+      viewsBuilt[type] = true;
+      var def = TYPES[type];
+      var section = document.getElementById("view-" + type);
+      var headCells = def.columns.map(function (c) { return "<th>" + esc(c.label) + "</th>"; }).join("") + "<th>操作</th>";
 
-      if (countEl) countEl.textContent = q ? "(" + list.length + " / " + DATA.articles.length + "件)" : (DATA.articles.length ? "(" + DATA.articles.length + "件)" : "");
+      section.innerHTML = [
+        '<div class="admin-header">',
+        '  <h1 class="admin-title">' + esc(def.label) + '</h1>',
+        '  <div style="display:flex;gap:8px;">',
+        '    <button class="admin-btn" data-import="' + type + '">',
+        '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+        '      JSON読み込み',
+        '    </button>',
+        '    <button class="admin-btn" data-export="' + type + '">',
+        '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        '      JSON書き出し',
+        '    </button>',
+        '    <button class="admin-btn" data-add="' + type + '">',
+        '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+        '      新規' + esc(def.label),
+        '    </button>',
+        '  </div>',
+        '</div>',
+        '<div class="admin-panel">',
+        '  <div class="admin-panel-header">',
+        '    <span class="admin-panel-title">' + esc(def.label) + '一覧<span class="row-count-badge" id="count-' + type + '"></span></span>',
+        '    <div class="admin-search-wrap">',
+        '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
+        '      <input type="search" class="admin-search-input" data-search="' + type + '" placeholder="' + esc(def.titleKey === "name" ? "名前で検索" : "タイトルで検索") + '" aria-label="' + esc(def.label) + 'を検索" />',
+        '    </div>',
+        '  </div>',
+        '  <div class="admin-table-wrap">',
+        '    <table class="admin-table">',
+        '      <thead><tr>' + headCells + '</tr></thead>',
+        '      <tbody id="tbody-' + type + '"></tbody>',
+        '    </table>',
+        '  </div>',
+        '</div>'
+      ].join("\n");
+    }
 
-      if (DATA.articles.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">記事がありません。「新規記事」から追加してください。</td></tr>';
+    /* ── テーブル描画(型に依らず共通) ── */
+    function cellValue(item, col) {
+      var v = col.get ? col.get(item) : item[col.key];
+      if (col.bool) {
+        return '<span class="bool-pill" data-on="' + (v ? "1" : "0") + '">' + (v ? "Yes" : "—") + "</span>";
+      }
+      if (col.pill) {
+        return '<span class="status-pill" data-s="' + esc(v || "") + '">' + esc(v || "—") + "</span>";
+      }
+      if (col.date) {
+        return fmtDate(v);
+      }
+      return esc(v == null || v === "" ? "—" : v);
+    }
+
+    function renderTable(type) {
+      buildViewShell(type);
+      var def = TYPES[type];
+      var tbody = document.getElementById("tbody-" + type);
+      var countEl = document.getElementById("count-" + type);
+      var q = (SEARCH[type] || "").trim().toLowerCase();
+      var all = DATA[type];
+      var list = q ? all.filter(function (i) {
+        return String(i[def.titleKey] || "").toLowerCase().indexOf(q) !== -1;
+      }) : all;
+
+      if (countEl) countEl.textContent = q ? "(" + list.length + " / " + all.length + "件)" : (all.length ? "(" + all.length + "件)" : "");
+
+      var colCount = def.columns.length + 1;
+      if (all.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="' + colCount + '">' + esc(def.label) + 'がありません。「新規' + esc(def.label) + '」から追加してください。</td></tr>';
         return;
       }
       if (list.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">「' + esc(SEARCH.articles) + '」に一致する記事が見つかりません。</td></tr>';
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="' + colCount + '">「' + esc(SEARCH[type]) + '」に一致する項目が見つかりません。</td></tr>';
         return;
       }
-      tbody.innerHTML = list.map(function (a) {
+
+      tbody.innerHTML = list.map(function (item) {
+        var cells = def.columns.map(function (c) { return "<td>" + cellValue(item, c) + "</td>"; }).join("");
         return [
           "<tr>",
-          '<td class="row-title">' + esc(a.title) + "</td>",
-          "<td>" + esc(a.category || "—") + "</td>",
-          '<td><span class="status-pill" data-s="' + esc(a.status || "draft") + '">' + esc(a.status || "draft") + "</span></td>",
-          "<td>" + fmtDate(a.publishedAt) + "</td>",
+          cells,
           '<td><div class="row-actions">',
-          '<button class="icon-btn" data-edit="articles" data-id="' + esc(a.id) + '" title="編集"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
-          '<button class="icon-btn dup" data-dup="articles" data-id="' + esc(a.id) + '" title="複製"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>',
-          '<button class="icon-btn danger" data-del="articles" data-id="' + esc(a.id) + '" title="削除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
+          '<button class="icon-btn" data-edit="' + type + '" data-id="' + esc(item.id) + '" title="編集"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
+          '<button class="icon-btn dup" data-dup="' + type + '" data-id="' + esc(item.id) + '" title="複製"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>',
+          '<button class="icon-btn danger" data-del="' + type + '" data-id="' + esc(item.id) + '" title="削除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
           "</div></td>",
           "</tr>"
         ].join("");
       }).join("");
     }
 
-    /* ── Study テーブル ── */
-    function renderStudy() {
-      var tbody = document.getElementById("study-tbody");
-      var countEl = document.getElementById("study-count");
-      var q = SEARCH.study.trim().toLowerCase();
-      var list = q ? DATA.study.filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; }) : DATA.study;
+    var ARRAY_FIELDS = { categories: 1, technologies: 1, tags: 1, relatedProjects: 1 };
 
-      if (countEl) countEl.textContent = q ? "(" + list.length + " / " + DATA.study.length + "件)" : (DATA.study.length ? "(" + DATA.study.length + "件)" : "");
-
-      if (DATA.study.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">アイテムがありません。「新規アイテム」から追加してください。</td></tr>';
-        return;
-      }
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">「' + esc(SEARCH.study) + '」に一致するアイテムが見つかりません。</td></tr>';
-        return;
-      }
-      tbody.innerHTML = list.map(function (s) {
-        return [
-          "<tr>",
-          '<td class="row-title">' + esc(s.title) + "</td>",
-          "<td>" + esc(s.category || "—") + "</td>",
-          "<td>" + esc(s.difficulty || "—") + "/5</td>",
-          '<td><span class="status-pill" data-s="' + esc(s.status || "draft") + '">' + esc(s.status || "draft") + "</span></td>",
-          '<td><div class="row-actions">',
-          '<button class="icon-btn" data-edit="study" data-id="' + esc(s.id) + '" title="編集"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
-          '<button class="icon-btn dup" data-dup="study" data-id="' + esc(s.id) + '" title="複製"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>',
-          '<button class="icon-btn danger" data-del="study" data-id="' + esc(s.id) + '" title="削除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
-          "</div></td>",
-          "</tr>"
-        ].join("");
-      }).join("");
-    }
-
-    /* ── Logs テーブル ── */
-    function renderLogs() {
-      var tbody = document.getElementById("logs-tbody");
-      var countEl = document.getElementById("logs-count");
-      var q = SEARCH.logs.trim().toLowerCase();
-      var list = q ? DATA.logs.filter(function (l) { return (l.title || "").toLowerCase().indexOf(q) !== -1; }) : DATA.logs;
-
-      if (countEl) countEl.textContent = q ? "(" + list.length + " / " + DATA.logs.length + "件)" : (DATA.logs.length ? "(" + DATA.logs.length + "件)" : "");
-
-      if (DATA.logs.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">ログがありません。「新規ログ」から追加してください。</td></tr>';
-        return;
-      }
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">「' + esc(SEARCH.logs) + '」に一致するログが見つかりません。</td></tr>';
-        return;
-      }
-      tbody.innerHTML = list.map(function (l) {
-        return [
-          "<tr>",
-          '<td class="row-title">' + esc(l.title) + "</td>",
-          "<td>" + esc(l.type || "—") + "</td>",
-          "<td>" + fmtDate(l.date) + "</td>",
-          '<td><div class="row-actions">',
-          '<button class="icon-btn" data-edit="logs" data-id="' + esc(l.id) + '" title="編集"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>',
-          '<button class="icon-btn dup" data-dup="logs" data-id="' + esc(l.id) + '" title="複製"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>',
-          '<button class="icon-btn danger" data-del="logs" data-id="' + esc(l.id) + '" title="削除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>',
-          "</div></td>",
-          "</tr>"
-        ].join("");
-      }).join("");
-    }
-
-    /* ── モーダル：フォーム定義 ── */
-    var FORM_DEFS = {
-      articles: [
-        { key: "title",     label: "タイトル", type: "text", required: true },
-        { key: "slug",      label: "スラッグ (URL)", type: "text", required: true },
-        { key: "category",  label: "カテゴリ", type: "select", options: ["tech","astronomy","quiz","diary","review"] },
-        { key: "excerpt",   label: "要約", type: "textarea" },
-        { key: "body",      label: "本文 (Markdown)", type: "textarea" },
-        { key: "tags",      label: "タグ (カンマ区切り)", type: "text" },
-        { key: "status",    label: "状態", type: "select", options: ["draft","published","archived"] },
-        { key: "publishedAt", label: "公開日 (YYYY-MM-DD)", type: "text" }
-      ],
-      study: [
-        { key: "title",      label: "タイトル", type: "text", required: true },
-        { key: "slug",       label: "スラッグ (URL)", type: "text", required: true },
-        { key: "category",   label: "カテゴリ", type: "select", options: ["physics","astronomy","mathematics","simulations"] },
-        { key: "excerpt",    label: "要約", type: "textarea" },
-        { key: "difficulty", label: "難易度 (1-5)", type: "text" },
-        { key: "tags",       label: "タグ (カンマ区切り)", type: "text" },
-        { key: "status",     label: "状態", type: "select", options: ["wip","draft","published"] },
-        { key: "publishedAt", label: "公開日 (YYYY-MM-DD)", type: "text" }
-      ],
-      logs: [
-        { key: "title", label: "タイトル", type: "text", required: true },
-        { key: "type",  label: "タイプ", type: "select", options: ["release","update","study","observation","event","note"] },
-        { key: "body",  label: "本文", type: "textarea" },
-        { key: "date",  label: "日付 (YYYY-MM-DD)", type: "text", required: true },
-        { key: "tags",  label: "タグ (カンマ区切り)", type: "text" },
-        { key: "visibility", label: "公開設定", type: "select", options: ["public","private"] }
-      ]
-    };
-
-    var COLLECTION_NAMES = { articles: "Blog記事", study: "Studyアイテム", logs: "研究ログ" };
-
+    /* ── モーダル：編集/新規フォーム ── */
     var modalOverlay = document.getElementById("modal-overlay");
     var modalTitle   = document.getElementById("modal-title");
     var modalForm    = document.getElementById("modal-form");
-    var currentEditCollection = null;
+    var currentEditType = null;
     var currentEditId = null;
 
-    function openModal(collection, id) {
-      currentEditCollection = collection;
+    function openModal(type, id) {
+      currentEditType = type;
       currentEditId = id;
-      var def = FORM_DEFS[collection];
-      var existing = id ? DATA[collection].filter(function (i) { return i.id === id; })[0] : null;
+      var def = TYPES[type];
+      var existing = id ? DATA[type].filter(function (i) { return i.id === id; })[0] : null;
 
-      modalTitle.textContent = (existing ? "編集: " : "新規: ") + COLLECTION_NAMES[collection];
+      modalTitle.textContent = (existing ? "編集: " : "新規: ") + def.label;
 
-      var html = def.map(function (f) {
+      var html = def.form.map(function (f) {
         var val = existing ? existing[f.key] : "";
-        if (!existing && (f.key === "publishedAt" || f.key === "date")) {
-          val = todayIso();
+        if (!existing) {
+          if (f.key === "updatedAt" || f.key === "date") val = todayIso();
+          if (f.key === "featured" || f.key === "current" || f.key === "primary") val = false;
         }
-        if (f.key === "tags" && Array.isArray(val)) val = val.join(", ");
+        if (ARRAY_FIELDS[f.key] && Array.isArray(val)) val = val.join(", ");
+
+        if (f.type === "checkbox") {
+          return [
+            '<div class="modal-checkbox-row">',
+            '<input type="checkbox" id="field-' + f.key + '" name="' + f.key + '"' + (val ? " checked" : "") + " />",
+            '<label for="field-' + f.key + '">' + esc(f.label) + "</label>",
+            "</div>"
+          ].join("");
+        }
         if (f.type === "select") {
           var opts = f.options.map(function (o) {
             return '<option value="' + o + '"' + (val === o ? " selected" : "") + ">" + o + "</option>";
           }).join("");
           return [
             '<div class="modal-row">',
-            '<label class="modal-label">' + f.label + "</label>",
+            '<label class="modal-label">' + esc(f.label) + "</label>",
             '<select class="modal-select" name="' + f.key + '">' + opts + "</select>",
             "</div>"
           ].join("");
@@ -970,14 +1046,14 @@
         if (f.type === "textarea") {
           return [
             '<div class="modal-row">',
-            '<label class="modal-label">' + f.label + "</label>",
-            '<textarea class="modal-textarea" name="' + f.key + '">' + esc(val) + "</textarea>",
+            '<label class="modal-label">' + esc(f.label) + (f.required ? " *" : "") + "</label>",
+            '<textarea class="modal-textarea" name="' + f.key + '"' + (f.required ? " required" : "") + ">" + esc(val) + "</textarea>",
             "</div>"
           ].join("");
         }
         return [
           '<div class="modal-row">',
-          '<label class="modal-label">' + f.label + (f.required ? " *" : "") + "</label>",
+          '<label class="modal-label">' + esc(f.label) + (f.required ? " *" : "") + "</label>",
           '<input class="modal-input" type="text" name="' + f.key + '" value="' + esc(val) + '"' + (f.required ? " required" : "") + " />",
           "</div>"
         ].join("");
@@ -994,28 +1070,19 @@
       modalOverlay.classList.add("open");
 
       var slugField = modalForm.querySelector('[name="slug"]');
-      if (slugField && existing) {
-        slugField.dataset.userEdited = "1";
-      }
+      if (slugField && existing) slugField.dataset.userEdited = "1";
       if (slugField) {
-        slugField.addEventListener("input", function () {
-          slugField.dataset.userEdited = "1";
-        });
+        slugField.addEventListener("input", function () { slugField.dataset.userEdited = "1"; });
       }
-
-      var titleField = modalForm.querySelector('[name="title"]');
+      var titleField = modalForm.querySelector('[name="' + def.titleKey + '"]');
       if (titleField && slugField) {
         titleField.addEventListener("input", function () {
-          if (!slugField.dataset.userEdited) {
-            slugField.value = slugify(titleField.value);
-          }
+          if (!slugField.dataset.userEdited) slugField.value = slugify(titleField.value);
         });
       }
 
       var firstField = modalForm.querySelector(".modal-input, .modal-textarea, .modal-select");
-      if (firstField) {
-        setTimeout(function () { firstField.focus(); }, 50);
-      }
+      if (firstField) setTimeout(function () { firstField.focus(); }, 50);
 
       document.getElementById("modal-cancel").addEventListener("click", closeModal);
     }
@@ -1027,100 +1094,108 @@
 
     modalForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      var def = TYPES[currentEditType];
       var fd = new FormData(modalForm);
       var patch = {};
-      FORM_DEFS[currentEditCollection].forEach(function (f) {
+      def.form.forEach(function (f) {
+        if (f.type === "checkbox") {
+          patch[f.key] = modalForm.querySelector('[name="' + f.key + '"]').checked;
+          return;
+        }
         var v = fd.get(f.key) || "";
-        if (f.key === "tags") {
+        if (ARRAY_FIELDS[f.key]) {
           patch[f.key] = v.split(",").map(function (t) { return t.trim(); }).filter(Boolean);
-        } else if (f.key === "difficulty") {
-          patch[f.key] = parseInt(v, 10) || 1;
         } else {
           patch[f.key] = v;
         }
       });
 
-      var storeKeyMap = { articles: "articles", study: "study", logs: "logs" };
-      var storeName = storeKeyMap[currentEditCollection];
-
+      var label = patch[def.titleKey] || currentEditId;
       var wasEdit = !!currentEditId;
-
       if (currentEditId) {
-        var updated = AdminStore.update(storeName, currentEditId, patch);
-        var idx = DATA[currentEditCollection].findIndex(function (i) { return i.id === currentEditId; });
-        if (idx !== -1) DATA[currentEditCollection][idx] = updated;
+        var updated = AdminStore.update(currentEditType, currentEditId, patch, label);
+        var idx = DATA[currentEditType].findIndex(function (i) { return i.id === currentEditId; });
+        if (idx !== -1) DATA[currentEditType][idx] = updated;
       } else {
-        var created = AdminStore.create(storeName, patch, currentEditCollection);
-        DATA[currentEditCollection].unshift(created);
+        var created = AdminStore.create(currentEditType, patch, def.idPrefix, label);
+        DATA[currentEditType].unshift(created);
       }
 
       closeModal();
       renderOverview();
-      renderArticles();
-      renderStudy();
-      renderLogs();
+      renderTable(currentEditType);
       showToast(wasEdit ? "更新しました" : "作成しました");
     });
 
-    /* ── テーブル操作イベント（イベントデリゲーション） ── */
+    /* ── テーブル操作(編集・複製・削除) イベントデリゲーション ── */
     document.addEventListener("click", function (e) {
       var editBtn = e.target.closest("[data-edit]");
-      if (editBtn) {
-        openModal(editBtn.dataset.edit, editBtn.dataset.id);
-        return;
-      }
+      if (editBtn) { openModal(editBtn.dataset.edit, editBtn.dataset.id); return; }
+
       var delBtn = e.target.closest("[data-del]");
       if (delBtn) {
-        var collection = delBtn.dataset.del;
+        var type = delBtn.dataset.del;
         var id = delBtn.dataset.id;
+        var targetItem = DATA[type].filter(function (i) { return i.id === id; })[0];
+        var targetLabel = targetItem ? targetItem[TYPES[type].titleKey] : id;
         if (!window.confirm("本当に削除しますか？この操作は元に戻せません。")) return;
-        AdminStore.remove(collection, id);
-        DATA[collection] = DATA[collection].filter(function (i) { return i.id !== id; });
+        AdminStore.remove(type, id, targetLabel);
+        DATA[type] = DATA[type].filter(function (i) { return i.id !== id; });
         renderOverview();
-        renderArticles();
-        renderStudy();
-        renderLogs();
+        renderTable(type);
         showToast("削除しました");
         return;
       }
 
       var dupBtn = e.target.closest("[data-dup]");
       if (dupBtn) {
-        var dupCollection = dupBtn.dataset.dup;
+        var dupType = dupBtn.dataset.dup;
         var dupId = dupBtn.dataset.id;
-        var original = DATA[dupCollection].filter(function (i) { return i.id === dupId; })[0];
+        var def = TYPES[dupType];
+        var original = DATA[dupType].filter(function (i) { return i.id === dupId; })[0];
         if (!original) return;
         var clone = Object.assign({}, original);
         delete clone.id;
-        clone.title = (clone.title || "") + " (コピー)";
+        clone[def.titleKey] = (clone[def.titleKey] || "") + " (コピー)";
         if (clone.slug) clone.slug = clone.slug + "-copy";
-        if (clone.status) clone.status = "draft";
-        var newItem = AdminStore.create(dupCollection, clone, dupCollection);
-        DATA[dupCollection].unshift(newItem);
+        if (clone.status) clone.status = "idea";
+        if (clone.featured) clone.featured = false;
+        if (clone.current) clone.current = false;
+        var newItem = AdminStore.create(dupType, clone, def.idPrefix, clone[def.titleKey]);
+        DATA[dupType].unshift(newItem);
         renderOverview();
-        renderArticles();
-        renderStudy();
-        renderLogs();
-        showToast("複製しました(下書きとして追加)");
+        renderTable(dupType);
+        showToast("複製しました");
+        return;
       }
+
+      var addBtn = e.target.closest("[data-add]");
+      if (addBtn) { openModal(addBtn.dataset.add, null); return; }
+
+      var exportBtn = e.target.closest("[data-export]");
+      if (exportBtn) { openExport(exportBtn.dataset.export); return; }
+
+      var importBtn = e.target.closest("[data-import]");
+      if (importBtn) { openImport(importBtn.dataset.import); return; }
     });
 
-    document.getElementById("add-article").addEventListener("click", function () { openModal("articles", null); });
-    document.getElementById("add-study").addEventListener("click", function () { openModal("study", null); });
-    document.getElementById("add-log").addEventListener("click", function () { openModal("logs", null); });
+    document.addEventListener("input", function (e) {
+      var searchInput = e.target.closest("[data-search]");
+      if (searchInput) {
+        var type = searchInput.dataset.search;
+        SEARCH[type] = searchInput.value;
+        renderTable(type);
+      }
+    });
 
     /* ── JSON書き出し ── */
     var exportOverlay = document.getElementById("export-overlay");
     var exportTextarea = document.getElementById("export-textarea");
 
-    function openExport(collection, wrapperKey) {
-      exportTextarea.value = AdminStore.exportJson(collection, wrapperKey);
+    function openExport(type) {
+      exportTextarea.value = AdminStore.exportJson(type, TYPES[type].wrapperKey);
       exportOverlay.classList.add("open");
     }
-
-    document.getElementById("export-articles").addEventListener("click", function () { openExport("articles", "articles"); });
-    document.getElementById("export-study").addEventListener("click", function () { openExport("study", "items"); });
-    document.getElementById("export-logs").addEventListener("click", function () { openExport("logs", "logs"); });
 
     document.getElementById("export-close").addEventListener("click", function () {
       exportOverlay.classList.remove("open");
@@ -1136,130 +1211,151 @@
       showToast("コピーしました");
     });
 
-    /* ── 検索ボックス配線 ── */
-    var searchArticlesEl = document.getElementById("search-articles");
-    var searchStudyEl    = document.getElementById("search-study");
-    var searchLogsEl      = document.getElementById("search-logs");
-
-    if (searchArticlesEl) {
-      searchArticlesEl.addEventListener("input", function () {
-        SEARCH.articles = searchArticlesEl.value;
-        renderArticles();
-      });
-    }
-    if (searchStudyEl) {
-      searchStudyEl.addEventListener("input", function () {
-        SEARCH.study = searchStudyEl.value;
-        renderStudy();
-      });
-    }
-    if (searchLogsEl) {
-      searchLogsEl.addEventListener("input", function () {
-        SEARCH.logs = searchLogsEl.value;
-        renderLogs();
-      });
-    }
-
     /* ── JSON読み込み(インポート) ── */
     var importOverlay = document.getElementById("import-overlay");
     var importTextarea = document.getElementById("import-textarea");
-    var importTargetCollection = null;
-    var importTargetWrapperKey = null;
+    var importTargetType = null;
 
-    function openImport(collection, wrapperKey) {
-      importTargetCollection = collection;
-      importTargetWrapperKey = wrapperKey;
+    function openImport(type) {
+      importTargetType = type;
       importTextarea.value = "";
       importOverlay.classList.add("open");
       setTimeout(function () { importTextarea.focus(); }, 50);
     }
 
-    var importArticlesBtn = document.getElementById("import-articles");
-    var importStudyBtn    = document.getElementById("import-study");
-    var importLogsBtn     = document.getElementById("import-logs");
-    if (importArticlesBtn) importArticlesBtn.addEventListener("click", function () { openImport("articles", "articles"); });
-    if (importStudyBtn)    importStudyBtn.addEventListener("click", function () { openImport("study", "items"); });
-    if (importLogsBtn)     importLogsBtn.addEventListener("click", function () { openImport("logs", "logs"); });
+    document.getElementById("import-cancel").addEventListener("click", function () {
+      importOverlay.classList.remove("open");
+    });
 
-    var importCancelBtn = document.getElementById("import-cancel");
-    if (importCancelBtn) {
-      importCancelBtn.addEventListener("click", function () {
-        importOverlay.classList.remove("open");
+    document.getElementById("import-confirm").addEventListener("click", function () {
+      var raw = importTextarea.value.trim();
+      if (!raw) { showToast("貼り付け内容が空です", "error"); return; }
+
+      var parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        showToast("JSONの形式が正しくありません", "error");
+        return;
+      }
+
+      var wrapperKey = TYPES[importTargetType].wrapperKey;
+      var incoming = Array.isArray(parsed) ? parsed
+        : (wrapperKey && Array.isArray(parsed[wrapperKey]) ? parsed[wrapperKey] : null);
+
+      if (!incoming) { showToast("想定した形式のJSONではありません", "error"); return; }
+
+      var existingItems = AdminStore.getAll(importTargetType);
+      var byId = {};
+      existingItems.forEach(function (i) { if (i && i.id) byId[i.id] = i; });
+
+      var addedCount = 0, updatedCount = 0;
+      incoming.forEach(function (i) {
+        if (!i || !i.id) return;
+        if (byId[i.id]) updatedCount++; else addedCount++;
+        byId[i.id] = Object.assign({}, byId[i.id] || {}, i);
       });
+
+      var merged = Object.keys(byId).map(function (k) { return byId[k]; });
+      AdminStore.setAll(importTargetType, merged);
+      DATA[importTargetType] = merged;
+
+      importOverlay.classList.remove("open");
+      renderOverview();
+      renderTable(importTargetType);
+      showToast("読み込み完了(新規" + addedCount + "件 / 更新" + updatedCount + "件)");
+    });
+
+    /* ── Audit Log ビュー ── */
+    var IGNORED_DIFF_KEYS = { updatedAt: 1, createdAt: 1 };
+
+    function diffSummary(before, after) {
+      if (!before || !after) return "";
+      var lines = [];
+      var keys = {};
+      Object.keys(before).forEach(function (k) { keys[k] = 1; });
+      Object.keys(after).forEach(function (k) { keys[k] = 1; });
+      Object.keys(keys).forEach(function (k) {
+        if (IGNORED_DIFF_KEYS[k] || k === "id") return;
+        var b = JSON.stringify(before[k]);
+        var a = JSON.stringify(after[k]);
+        if (b === a) return;
+        lines.push(
+          '<div><span class="field">' + esc(k) + ":</span> " +
+          '<span class="from">' + esc(before[k] == null || before[k] === "" ? "(空)" : before[k]) + "</span>" +
+          " → " +
+          '<span class="to">' + esc(after[k] == null || after[k] === "" ? "(空)" : after[k]) + "</span></div>"
+        );
+      });
+      return lines.join("");
     }
 
-    var importConfirmBtn = document.getElementById("import-confirm");
-    if (importConfirmBtn) {
-      importConfirmBtn.addEventListener("click", function () {
-        var raw = importTextarea.value.trim();
-        if (!raw) {
-          showToast("貼り付け内容が空です", "error");
-          return;
-        }
-        var parsed;
-        try {
-          parsed = JSON.parse(raw);
-        } catch (e) {
-          showToast("JSONの形式が正しくありません", "error");
-          return;
-        }
+    var auditViewBuilt = false;
+    function renderAuditLog() {
+      var section = document.getElementById("view-auditlog");
+      if (!auditViewBuilt) {
+        auditViewBuilt = true;
+        section.innerHTML = [
+          '<div class="admin-header">',
+          '  <h1 class="admin-title">Audit Log</h1>',
+          '  <button class="admin-btn" id="clear-audit-log">',
+          '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+          '    ログを消去',
+          '  </button>',
+          '</div>',
+          '<div class="admin-panel">',
+          '  <div class="admin-panel-header">',
+          '    <span class="admin-panel-title">変更履歴<span class="row-count-badge" id="audit-count"></span></span>',
+          '  </div>',
+          '  <div class="audit-list" id="audit-list"></div>',
+          '</div>'
+        ].join("\n");
 
-        var incoming = null;
-        if (Array.isArray(parsed)) {
-          incoming = parsed;
-        } else if (importTargetWrapperKey && Array.isArray(parsed[importTargetWrapperKey])) {
-          incoming = parsed[importTargetWrapperKey];
-        }
-
-        if (!incoming) {
-          showToast("想定した形式のJSONではありません", "error");
-          return;
-        }
-
-        var existingItems = AdminStore.getAll(importTargetCollection);
-        var byId = {};
-        existingItems.forEach(function (i) { if (i && i.id) byId[i.id] = i; });
-
-        var addedCount = 0;
-        var updatedCount = 0;
-        incoming.forEach(function (i) {
-          if (!i || !i.id) return;
-          if (byId[i.id]) {
-            updatedCount++;
-          } else {
-            addedCount++;
-          }
-          byId[i.id] = Object.assign({}, byId[i.id] || {}, i);
+        document.getElementById("clear-audit-log").addEventListener("click", function () {
+          if (!window.confirm("Audit Logを全て消去します。よろしいですか？")) return;
+          AdminStore.clearAuditLog();
+          renderAuditLog();
+          showToast("Audit Logを消去しました");
         });
+      }
 
-        var merged = Object.keys(byId).map(function (k) { return byId[k]; });
-        AdminStore.setAll(importTargetCollection, merged);
-        DATA[importTargetCollection] = merged;
+      var log = AdminStore.getAuditLog(200);
+      document.getElementById("audit-count").textContent = log.length ? "(" + log.length + "件)" : "";
 
-        importOverlay.classList.remove("open");
-        renderOverview();
-        renderArticles();
-        renderStudy();
-        renderLogs();
-        showToast("読み込み完了(新規" + addedCount + "件 / 更新" + updatedCount + "件)");
-      });
+      var list = document.getElementById("audit-list");
+      if (log.length === 0) {
+        list.innerHTML = '<div class="audit-row"><div></div><div></div><div class="audit-body" style="color:var(--text-2);font-family:var(--font-mono);font-size:var(--fs-xs);">まだ変更履歴がありません。</div></div>';
+        return;
+      }
+
+      list.innerHTML = log.map(function (entry) {
+        var diff = entry.action === "updated" ? diffSummary(entry.before, entry.after) : "";
+        return [
+          '<div class="audit-row">',
+          '  <span class="audit-time">' + esc(entry.timestamp ? entry.timestamp.replace("T", " ").slice(0, 16) : "—") + "</span>",
+          '  <span class="audit-action" data-a="' + esc(entry.action) + '">' + esc(entry.action) + "</span>",
+          '  <div class="audit-body">',
+          '    <div class="audit-target">' + esc(TYPES[entry.collection] ? TYPES[entry.collection].label : entry.collection) + " — " + esc(entry.target) + '<span>' + esc(entry.user) + "</span></div>",
+          diff ? '<div class="audit-diff">' + diff + "</div>" : "",
+          "  </div>",
+          "</div>"
+        ].join("\n");
+      }).join("\n");
     }
 
     /* ── Escキーで開いているモーダルを閉じる ── */
     document.addEventListener("keydown", function (e) {
       if (e.key !== "Escape") return;
-      if (modalOverlay.classList.contains("open")) {
-        closeModal();
-      }
-      if (exportOverlay.classList.contains("open")) {
-        exportOverlay.classList.remove("open");
-      }
-      if (importOverlay.classList.contains("open")) {
-        importOverlay.classList.remove("open");
-      }
+      if (modalOverlay.classList.contains("open")) closeModal();
+      if (exportOverlay.classList.contains("open")) exportOverlay.classList.remove("open");
+      if (importOverlay.classList.contains("open")) importOverlay.classList.remove("open");
     });
 
-    loadAll();
+    AdminAuth.requireAuth(function (user) {
+      AdminStore.setCurrentUser(user && user.email ? user.email : "unknown");
+      loadAll();
+    });
+  
   })();
   </script>
 </body>

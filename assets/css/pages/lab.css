@@ -366,3 +366,58 @@
     @media (max-width: 360px) {
       .tech-grid { grid-template-columns: 1fr; }
     }
+    /* ── ローディング / エラー状態(v2でJS描画化に伴い追加) ── */
+    .loading-state {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 80px 0;
+      font-family: var(--font-mono); font-size: 0.70rem;
+      color: var(--text-2); letter-spacing: 0.14em;
+    }
+    .loading-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-blue);
+      animation: labLoadingPulse 1.2s ease-in-out infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes labLoadingPulse {
+      0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
+      40%           { transform: scale(1.0); opacity: 1.0; }
+    }
+
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px; padding: 72px 32px; text-align: center;
+    }
+    .empty-title {
+      font-family: var(--font-display); font-size: 1.05rem;
+      font-weight: 700; color: var(--text-1);
+    }
+    .empty-desc {
+      font-size: 0.78rem; color: var(--text-2);
+      line-height: 1.75; max-width: 340px;
+    }
+
+    /* ── 関連プロジェクトリンク(Technology → Project) ── */
+    .tech-related {
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      color: var(--text-2);
+    }
+    .tech-related a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      transition: opacity var(--t);
+    }
+    .tech-related a:hover { opacity: 0.75; }
+
+    /* ── ハッシュ経由の直リンク先を一時的にハイライト ── */
+    @keyframes highlightFlash {
+      0%, 100% { box-shadow: none; }
+      25%, 75% { box-shadow: 0 0 0 2px var(--accent-blue); }
+    }
+    .highlight-flash {
+      animation: highlightFlash 2s ease-in-out;
+    }

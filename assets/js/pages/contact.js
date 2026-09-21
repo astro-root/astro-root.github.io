@@ -117,6 +117,14 @@
         var em = form.from_email.value.trim();
         var s  = form.subject.value.trim();
         var m  = form.message.value.trim();
+        var c  = form.category ? form.category.value : '';
+
+        var CATEGORY_LABELS = {
+          general:       'General Inquiry',
+          bug:           'Bug Report',
+          collaboration: 'Project Collaboration',
+          other:         'Other'
+        };
 
         setLoading(true);
         msgOk.className = 'form-msg';
@@ -127,6 +135,7 @@
           from_email: em,
           subject:    s,
           message:    m,
+          category:   CATEGORY_LABELS[c] || c,
           reply_to:   em,
           to_name:    n,
           to_email:   em

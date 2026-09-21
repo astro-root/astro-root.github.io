@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
+  <link rel="stylesheet" href="/assets/css/search.css" />
   <link rel="stylesheet" href="/assets/css/pages/contact.css" />
 </head>
 <body>
@@ -75,6 +76,11 @@
           <li><a href="/about" data-nav-key="about">ABOUT</a></li>
           <li><a href="/contact" data-nav-key="contact">CONTACT</a></li>
         </ul>
+        <button class="nav-search-btn" data-search-trigger aria-label="サイト内検索を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span>Search</span>
+          <kbd>⌘K</kbd>
+        </button>
         <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
           <span></span><span></span><span></span>
         </button>
@@ -89,6 +95,7 @@
     <a href="/lab/" data-nav-key="lab">LAB</a>
     <a href="/about" data-nav-key="about">ABOUT</a>
     <a href="/contact" data-nav-key="contact">CONTACT</a>
+    <a href="#" data-search-trigger>SEARCH</a>
     <a href="/privacy">PRIVACY POLICY</a>
   </div>
 </header>
@@ -319,6 +326,27 @@
             </div>
 
             <div class="form-row">
+              <label for="category" class="form-label">
+                お問い合わせ種別<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span>
+              </label>
+              <select
+                id="category"
+                name="category"
+                class="form-input form-select"
+                required
+                aria-required="true"
+                aria-describedby="category-error"
+              >
+                <option value="" disabled selected>種別を選択してください</option>
+                <option value="general">General Inquiry — 一般的なお問い合わせ</option>
+                <option value="bug">Bug Report — 不具合のご報告</option>
+                <option value="collaboration">Project Collaboration — コラボのご提案</option>
+                <option value="other">Other — その他</option>
+              </select>
+              <p class="form-error" id="category-error" role="alert">お問い合わせ種別を選択してください。</p>
+            </div>
+
+            <div class="form-row">
               <label for="subject" class="form-label">
                 件名<span class="req" aria-hidden="true">*</span><span class="sr-only">（必須）</span>
               </label>
@@ -406,6 +434,8 @@
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/search-core.js"></script>
+  <script src="/assets/js/search-overlay.js"></script>
   <script src="/assets/js/pages/contact.js" defer></script>
 </body>
 </html>

@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
+  <link rel="stylesheet" href="/assets/css/search.css" />
   <link rel="stylesheet" href="/assets/css/pages/project-detail.css" />
 </head>
 <body>
@@ -63,6 +64,11 @@
           <li><a href="/about" data-nav-key="about">ABOUT</a></li>
           <li><a href="/contact" data-nav-key="contact">CONTACT</a></li>
         </ul>
+        <button class="nav-search-btn" data-search-trigger aria-label="サイト内検索を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span>Search</span>
+          <kbd>⌘K</kbd>
+        </button>
         <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
           <span></span><span></span><span></span>
         </button>
@@ -77,6 +83,7 @@
     <a href="/lab/" data-nav-key="lab">LAB</a>
     <a href="/about" data-nav-key="about">ABOUT</a>
     <a href="/contact" data-nav-key="contact">CONTACT</a>
+    <a href="#" data-search-trigger>SEARCH</a>
     <a href="/privacy">PRIVACY POLICY</a>
   </div>
 </header>
@@ -126,6 +133,10 @@
         </div>
       </section>
 
+      
+
+      
+
       <a href="/projects/" class="pd-back reveal d5">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
         Back to Projects
@@ -153,5 +164,7 @@
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/search-core.js"></script>
+  <script src="/assets/js/search-overlay.js"></script>
 </body>
 </html>

@@ -12,11 +12,24 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const dataPath = path.join(root, 'assets/data/v2/projects.json');
+const researchPath = path.join(root, 'assets/data/v2/research.json');
+const notesPath = path.join(root, 'assets/data/v2/notes.json');
 const outDir = path.join(root, 'projects');
 
 const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+const researchData = JSON.parse(fs.readFileSync(researchPath, 'utf-8'));
+const notesData = JSON.parse(fs.readFileSync(notesPath, 'utf-8'));
 const header = fs.readFileSync(path.join(root, 'partials/header.html'), 'utf-8').trim();
 const footer = fs.readFileSync(path.join(root, 'partials/footer.html'), 'utf-8').trim();
+
+// プロジェクトIDから関連Research/Notesを逆引き(single source of truth:
+// research.json / notes.json 側の relatedProjects / relatedProject を正とする)
+function findRelatedResearch(projectId) {
+  return researchData.items.filter((r) => (r.relatedProjects || []).includes(projectId));
+}
+function findRelatedNotes(projectId) {
+  return notesData.items.filter((n) => n.relatedProject === projectId);
+}
 
 const catLabel = {};
 data.categories.forEach((c) => { catLabel[c.id] = c.label; });
@@ -40,6 +53,8 @@ function renderPage(p) {
   const techTags = (p.technologies || [])
     .map((t) => `<span class="pd-tech-tag">${esc(t)}</span>`)
     .join('\n          ');
+  const relatedResearch = findRelatedResearch(p.id);
+  const relatedNotes = findRelatedNotes(p.id);
 
   const liveLink = p.url
     ? `<a class="btn btn-primary" href="${esc(p.url)}" target="_blank" rel="noopener">
@@ -80,6 +95,7 @@ function renderPage(p) {
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
+  <link rel="stylesheet" href="/assets/css/search.css" />
   <link rel="stylesheet" href="/assets/css/pages/project-detail.css" />
 </head>
 <body>
@@ -145,6 +161,20 @@ ${header}
         </div>
       </section>
 
+      ${relatedResearch.length ? `<section class="pd-section reveal d4">
+        <h2 class="pd-section-title">// Related Research</h2>
+        <ul class="pd-related-list">
+          ${relatedResearch.map((r) => `<li><a href="/research/#${esc(r.id)}">${esc(r.title)}</a><span class="pd-related-summary">${esc(r.summary)}</span></li>`).join('\n          ')}
+        </ul>
+      </section>` : ''}
+
+      ${relatedNotes.length ? `<section class="pd-section reveal d4">
+        <h2 class="pd-section-title">// Related Notes</h2>
+        <ul class="pd-related-list">
+          ${relatedNotes.map((n) => `<li><a href="/notes/#${esc(n.id)}">${esc(n.title)}</a><span class="pd-related-summary">${esc(n.date)}</span></li>`).join('\n          ')}
+        </ul>
+      </section>` : ''}
+
       <a href="/projects/" class="pd-back reveal d5">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
         Back to Projects
@@ -163,6 +193,8 @@ ${footer}
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/search-core.js"></script>
+  <script src="/assets/js/search-overlay.js"></script>
 </body>
 </html>
 `;

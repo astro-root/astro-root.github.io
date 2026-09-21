@@ -156,3 +156,41 @@ main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 96px; }
   width: 16px;
   height: 16px;
 }
+
+/* ── 関連Research/Notes(要件10: Related Notes / Related Research) ── */
+.pd-related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pd-related-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-top: 1px solid var(--border);
+}
+
+.pd-related-list li:first-child { border-top: none; }
+
+.pd-related-list a {
+  color: var(--text-0);
+  font-size: var(--fs-sm);
+  transition: color var(--t);
+}
+
+.pd-related-list a:hover { color: var(--accent-blue); }
+
+.pd-related-summary {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  max-width: 45%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

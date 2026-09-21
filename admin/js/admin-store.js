@@ -11,9 +11,16 @@
   */
 
   var PREFIX = "lab_admin_data_";
+  var AUDIT_KEY = "lab_admin_audit_log";
+  var AUDIT_MAX = 500; /* 肥大化防止。古いものから切り捨てる */
 
   var AdminStore = {};
   window.AdminStore = AdminStore;
+
+  var currentUserEmail = "unknown";
+  AdminStore.setCurrentUser = function (email) {
+    currentUserEmail = email || "unknown";
+  };
 
   function readCollection(name) {
     var raw;
@@ -81,7 +88,55 @@
     return items.filter(function (i) { return i.id === id; })[0] || null;
   };
 
-  AdminStore.create = function (name, item, idPrefix) {
+  /*
+    Audit Log(要件96-97準拠)。
+    項目: Timestamp / User / Action / Target / Before / After
+    create / update / remove から自動で記録される。呼び出し側で
+    個別にログを書く必要はない。
+  */
+  function readAuditLog() {
+    try {
+      var raw = localStorage.getItem(AUDIT_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function logAudit(action, collection, target, before, after) {
+    var log = readAuditLog();
+    log.unshift({
+      timestamp: nowIso(),
+      user: currentUserEmail,
+      action: action,       /* "created" | "updated" | "deleted" */
+      collection: collection,
+      target: target,       /* 対象の表示名(name/title等) */
+      before: before || null,
+      after: after || null
+    });
+    if (log.length > AUDIT_MAX) log = log.slice(0, AUDIT_MAX);
+    try {
+      localStorage.setItem(AUDIT_KEY, JSON.stringify(log));
+    } catch (e) {
+      console.error("Audit log write failed:", e);
+    }
+  }
+
+  AdminStore.getAuditLog = function (limit) {
+    var log = readAuditLog();
+    return typeof limit === "number" ? log.slice(0, limit) : log;
+  };
+
+  AdminStore.clearAuditLog = function () {
+    try {
+      localStorage.removeItem(AUDIT_KEY);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  AdminStore.create = function (name, item, idPrefix, targetLabel) {
     var items = AdminStore.getAll(name);
     var record = Object.assign({}, item);
     if (!record.id) record.id = genId(idPrefix || name);
@@ -89,22 +144,27 @@
     record.updatedAt = nowIso();
     items.unshift(record);
     writeCollection(name, items);
+    logAudit("created", name, targetLabel || record.id, null, record);
     return record;
   };
 
-  AdminStore.update = function (name, id, patch) {
+  AdminStore.update = function (name, id, patch, targetLabel) {
     var items = AdminStore.getAll(name);
     var idx = items.findIndex(function (i) { return i.id === id; });
     if (idx === -1) return null;
+    var before = Object.assign({}, items[idx]);
     items[idx] = Object.assign({}, items[idx], patch, { updatedAt: nowIso() });
     writeCollection(name, items);
+    logAudit("updated", name, targetLabel || id, before, items[idx]);
     return items[idx];
   };
 
-  AdminStore.remove = function (name, id) {
+  AdminStore.remove = function (name, id, targetLabel) {
     var items = AdminStore.getAll(name);
+    var removed = items.filter(function (i) { return i.id === id; })[0] || null;
     var filtered = items.filter(function (i) { return i.id !== id; });
     writeCollection(name, filtered);
+    if (removed) logAudit("deleted", name, targetLabel || id, removed, null);
     return filtered.length !== items.length;
   };
 

@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>元素タイピング | Projects | るーとの研究室</title>
-  <meta name="description" content="元素記号・元素名を覚えながら遊べるタイピングゲーム。" />
+  <title>Research | るーとの研究室</title>
+  <meta name="description" content="るーとの研究室 Research。物理学・天文学・数学・情報科学・クイズにまたがる考察や調査、実験の記録。" />
   <meta name="author" content="るーと" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#020b18" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="元素タイピング | るーとの研究室" />
-  <meta property="og:description" content="元素記号・元素名を覚えながら遊べるタイピングゲーム。" />
-  <meta property="og:url" content="https://astro-root.com/projects/typing/" />
+  <meta property="og:title" content="Research | るーとの研究室" />
+  <meta property="og:description" content="物理学・天文学・数学・情報科学・クイズにまたがる考察や調査、実験の記録。" />
+  <meta property="og:url" content="https://astro-root.com/research/" />
   <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@astro_root" />
   <link rel="icon" href="/favicon.ico" />
-  <link rel="canonical" href="https://astro-root.com/projects/typing/" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="canonical" href="https://astro-root.com/research/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
@@ -27,7 +30,7 @@
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
   <link rel="stylesheet" href="/assets/css/search.css" />
-  <link rel="stylesheet" href="/assets/css/pages/project-detail.css" />
+  <link rel="stylesheet" href="/assets/css/pages/research.css" />
 </head>
 <body>
   <div id="scroll-progress" aria-hidden="true"></div>
@@ -45,7 +48,7 @@
   <div id="cursor-dot" aria-hidden="true"></div>
   <div id="cursor-ring" aria-hidden="true"></div>
 
-<!-- PARTIAL:HEADER:START -->
+  <!-- PARTIAL:HEADER:START -->
 <header role="banner">
   <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
     <div class="container">
@@ -91,55 +94,42 @@
 
   <main id="main-content">
     <div class="container">
-      <p class="pd-breadcrumb reveal"><a href="/projects/">Projects</a> / 元素タイピング</p>
 
-      <div class="pd-header reveal d1">
-        <h1 class="pd-title">元素タイピング</h1>
-        <span class="pd-status-pill" style="color:#7891ab;border-color:#7891ab55;background:#7891ab14;">Maintenance</span>
+      <header class="page-header reveal">
+        <div class="page-header-inner">
+          <div class="page-eyebrow">
+            <div class="page-eyebrow-line" aria-hidden="true"></div>
+            <span class="page-eyebrow-text">Root Lab / Research</span>
+          </div>
+          <h1 class="page-title">Research</h1>
+          <p class="page-desc">
+            「勉強した」という記録ではなく、考察・実験・調査そのものを公開する場所。
+            物理学・天文学・数学・情報科学・クイズにまたがるテーマを扱います。
+          </p>
+        </div>
+      </header>
+
+      <!-- ローディング -->
+      <div class="loading-state" id="loading-state" aria-live="polite">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <span>テーマを同期中...</span>
       </div>
 
-      <p class="pd-desc reveal d2">元素記号・元素名を覚えながら遊べるタイピングゲーム。</p>
-
-      <div class="pd-actions reveal d2">
-        <a class="btn btn-primary" href="https://typing.astro-root.com/" target="_blank" rel="noopener">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M7 17L17 7M7 7h10v10"/></svg>
-          公開ページを開く
-        </a>
-        
+      <div id="research-layout" style="display:none">
+        <div class="filter-bar" id="filter-bar" role="group" aria-label="カテゴリフィルター"></div>
+        <div class="result-info"><span class="result-count" id="result-count" aria-live="polite"></span></div>
+        <div class="research-grid" id="research-grid" role="list"></div>
       </div>
 
-      <div class="pd-meta-grid reveal d3">
-        <div class="pd-meta-item">
-          <div class="pd-meta-label">Category</div>
-          <div class="pd-meta-value">Education / Experiment</div>
-        </div>
-        <div class="pd-meta-item">
-          <div class="pd-meta-label">Started</div>
-          <div class="pd-meta-value">2024年10月1日</div>
-        </div>
-        <div class="pd-meta-item">
-          <div class="pd-meta-label">Updated</div>
-          <div class="pd-meta-value">2026年1月15日</div>
-        </div>
-      </div>
-
-      
-
-      <section class="pd-section reveal d4">
-        <h2 class="pd-section-title">// Technologies</h2>
-        <div class="pd-tech-list">
-          <span class="pd-tech-tag">JavaScript</span>
-        </div>
-      </section>
-
-      
-
-      
-
-      <a href="/projects/" class="pd-back reveal d5">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
-        Back to Projects
+      <a href="/" class="back-to-lab reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
+        </svg>
+        Back to Lab
       </a>
+
     </div>
   </main>
 
@@ -165,5 +155,6 @@
   <script src="/assets/js/chat-widget.js"></script>
   <script src="/assets/js/search-core.js"></script>
   <script src="/assets/js/search-overlay.js"></script>
+  <script src="/assets/js/pages/research.js" defer></script>
 </body>
 </html>

@@ -5,12 +5,12 @@
     "description": "ROOT LAB v2 — Note データ。要件定義書 12.3 の Note 型に準拠。日常的な開発・学習・実験記録。"
   },
   "categories": [
-    { "id": "development", "label": "Development" },
-    { "id": "quiz",        "label": "Quiz" },
-    { "id": "physics",     "label": "Physics" },
-    { "id": "astronomy",   "label": "Astronomy" },
-    { "id": "study",       "label": "Study" },
-    { "id": "misc",        "label": "Misc" }
+    { "id": "development", "label": "Development", "labelJa": "開発" },
+    { "id": "quiz",        "label": "Quiz", "labelJa": "クイズ" },
+    { "id": "physics",     "label": "Physics", "labelJa": "物理学" },
+    { "id": "astronomy",   "label": "Astronomy", "labelJa": "天文学" },
+    { "id": "study",       "label": "Study", "labelJa": "学習" },
+    { "id": "misc",        "label": "Misc", "labelJa": "その他" }
   ],
   "items": [
     {

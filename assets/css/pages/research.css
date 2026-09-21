@@ -1,0 +1,212 @@
+body { display: flex; flex-direction: column; min-height: 100vh; }
+main { flex: 1; padding-top: calc(var(--nav-h) + 56px); padding-bottom: 40px; }
+
+/* ── ページヘッダー ── */
+.page-header { margin-bottom: 40px; }
+.page-header-inner { display: flex; flex-direction: column; gap: 20px; }
+.page-eyebrow { display: flex; align-items: center; gap: 14px; }
+.page-eyebrow-line { width: 32px; height: 1px; background: var(--accent-blue); opacity: 0.6; }
+.page-eyebrow-text { font-family: var(--font-mono); font-size: 0.60rem; color: var(--accent-teal); letter-spacing: 0.28em; text-transform: uppercase; }
+.page-desc { font-size: 0.88rem; color: var(--text-1); line-height: 1.85; max-width: 560px; }
+
+/* ── フィルターバー(projects.cssと同系統) ── */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  padding: 8px 15px;
+  border-radius: 99px;
+  border: 1px solid var(--border-m);
+  background: transparent;
+  color: var(--text-1);
+  transition: border-color var(--t), color var(--t), background var(--t);
+}
+
+.filter-btn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+.filter-btn:hover { color: var(--text-0); border-color: var(--border-hover); }
+.filter-btn.active { color: var(--accent-blue); border-color: var(--accent-blue); background: rgba(75,169,255,0.08); }
+
+.result-info { margin-bottom: 18px; }
+.result-count { font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-2); letter-spacing: var(--ls-normal); }
+
+/* ── ローディング / 空状態 ── */
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 80px 0;
+  font-family: var(--font-mono); font-size: 0.70rem;
+  color: var(--text-2); letter-spacing: 0.14em;
+}
+.loading-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-blue); animation: rsLoadingPulse 1.2s ease-in-out infinite; }
+.loading-dot:nth-child(2){ animation-delay: 0.2s; }
+.loading-dot:nth-child(3){ animation-delay: 0.4s; }
+@keyframes rsLoadingPulse { 0%,80%,100%{ transform:scale(0.5); opacity:0.3; } 40%{ transform:scale(1.0); opacity:1.0; } }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 72px 32px; text-align: center; }
+.empty-icon { width: 52px; height: 52px; color: var(--text-2); opacity: 0.4; }
+.empty-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text-1); }
+.empty-desc { font-size: 0.78rem; color: var(--text-2); line-height: 1.75; max-width: 320px; }
+
+/* ── Researchカード ── */
+.research-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.research-card {
+  padding: 24px 26px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: border-color var(--t), background var(--t);
+}
+
+.research-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
+.research-card-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.research-cat-badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--rc-color, var(--accent-purple));
+  border: 1px solid var(--rc-color, var(--accent-purple));
+  border-radius: 99px;
+  padding: 3px 11px;
+  opacity: 0.9;
+}
+
+.research-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  letter-spacing: var(--ls-normal);
+  text-transform: uppercase;
+}
+
+.research-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.research-status[data-status="ongoing"]   { color: var(--accent-blue); }
+.research-status[data-status="completed"] { color: var(--accent-teal); }
+.research-status[data-status="idea"]      { color: var(--text-2); }
+.research-status[data-status="paused"]    { color: var(--accent-amber); }
+
+.research-updated {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+}
+
+.research-card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  margin-bottom: 8px;
+}
+
+.research-card-summary {
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  line-height: 1.8;
+  margin-bottom: 14px;
+  max-width: 720px;
+}
+
+.research-card-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+
+.research-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.research-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+}
+
+.research-related {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.research-related a {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent-blue);
+  letter-spacing: var(--ls-normal);
+}
+
+/* ── 戻るリンク ── */
+.back-to-lab {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 0.62rem;
+  color: var(--text-2); letter-spacing: 0.14em;
+  text-transform: uppercase; text-decoration: none;
+  transition: color var(--t); margin-top: 56px;
+}
+.back-to-lab:hover { color: var(--accent-blue); }
+.back-to-lab svg { width: 14px; height: 14px; transform: rotate(180deg); }
+
+@media (max-width: 640px) {
+  .research-related { margin-left: 0; }
+  .research-updated { margin-left: 0; }
+}
+
+/* ── ハッシュ経由の直リンク先を一時的にハイライト ── */
+@keyframes highlightFlash {
+  0%, 100% { box-shadow: none; }
+  25%, 75% { box-shadow: 0 0 0 2px var(--accent-blue); }
+}
+.highlight-flash {
+  animation: highlightFlash 2s ease-in-out;
+  border-radius: var(--r-lg, 14px);
+}

@@ -33,59 +33,7 @@
       margin-bottom: 8px;
     }
 
-    .fb-login-wrap {
-      max-width: 360px;
-      margin: 80px auto;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-xl);
-      padding: 24px;
-    }
-
-    .fb-login-wrap p.fb-login-note {
-      font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
-      color: var(--text-2);
-      margin-bottom: 16px;
-      line-height: 1.6;
-    }
-
-    .fb-login-field {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 10px 12px;
-      color: var(--text-0);
-      font-size: var(--fs-sm);
-      outline: none;
-      margin-bottom: 10px;
-    }
-
-    .fb-login-field:focus { border-color: var(--accent-blue); }
-
-    .fb-login-btn {
-      width: 100%;
-      padding: 10px;
-      border-radius: var(--r-sm);
-      border: none;
-      background: linear-gradient(120deg, var(--accent-blue), var(--accent-teal));
-      color: var(--bg-0);
-      font-family: var(--font-mono);
-      font-size: var(--fs-xs);
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .fb-login-error {
-      color: #ff6b6b;
-      font-family: var(--font-mono);
-      font-size: var(--fs-2xs);
-      margin-top: 10px;
-      min-height: 1em;
-    }
-
-    #chat-admin-main { display: none; }
+    #chat-admin-main { display: block; }
 
     .chat-admin-layout {
       max-width: 960px;
@@ -361,19 +309,6 @@
 </head>
 <body>
 
-  <div class="fb-login-wrap" id="fb-login-wrap">
-    <p class="chat-admin-title">開発者ログイン</p>
-    <p class="fb-login-note">
-      Firestoreセキュリティルールにより、Live Chat機能はFirebase Authenticationでの
-      ログインを必須にしています。事前にFirebaseコンソールの
-      Authentication &gt; Users で作成した開発者アカウントでログインしてください。
-    </p>
-    <input type="email" class="fb-login-field" id="fb-login-email" placeholder="メールアドレス" autocomplete="username" />
-    <input type="password" class="fb-login-field" id="fb-login-password" placeholder="パスワード" autocomplete="current-password" />
-    <button class="fb-login-btn" id="fb-login-btn">ログイン</button>
-    <p class="fb-login-error" id="fb-login-error"></p>
-  </div>
-
   <div id="chat-admin-main">
     <div class="chat-admin-header">
       <p class="chat-admin-title">Live Chat 対応</p>
@@ -413,10 +348,6 @@
   (function () {
     "use strict";
 
-    /* 既存の簡易パスワードゲート(サイト全体の管理画面共通)。
-       Firebase Authとは別の防御層として維持する。 */
-    AdminAuth.requireAuth();
-
     var db = null;
     var currentSessionId = null;
     var unsubMessages = null;
@@ -427,40 +358,14 @@
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
-    /* ── Firebase Authログイン ── */
-    function showLoginError(msg) {
-      document.getElementById("fb-login-error").textContent = msg;
-    }
-
-    function attemptLogin() {
-      if (!window.LAB_FIREBASE) {
-        showLoginError("Firebase未設定です。assets/js/firebase-init.js を確認してください。");
-        return;
-      }
-      var email = document.getElementById("fb-login-email").value.trim();
-      var password = document.getElementById("fb-login-password").value;
-      if (!email || !password) {
-        showLoginError("メールアドレスとパスワードを入力してください。");
-        return;
-      }
-      showLoginError("");
-      window.LAB_FIREBASE.auth.signInWithEmailAndPassword(email, password)
-        .catch(function (err) {
-          console.error("ログイン失敗:", err);
-          showLoginError("ログインに失敗しました。メールアドレスとパスワードを確認してください。");
-        });
-    }
-
-    document.getElementById("fb-login-btn").addEventListener("click", attemptLogin);
-    document.getElementById("fb-login-password").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") attemptLogin();
-    });
-
-    function unlockUI() {
-      document.getElementById("fb-login-wrap").style.display = "none";
-      document.getElementById("chat-admin-main").style.display = "block";
+    /*
+      AdminAuth.requireAuth() が認証確認(未認証ならログインページへリダイレクト)を
+      済ませてから、この画面固有の初期化(Firestore購読)を行う。
+      Live Chat機能はAdmin共通ログインと同じFirebaseアカウントを使うため、
+      画面独自のログインフォームは不要(admin/index.htmlに一本化)。
+    */
+    AdminAuth.requireAuth(function () {
       db = window.LAB_FIREBASE.db;
-
       subscribeInbox();
 
       var queryId = new URLSearchParams(window.location.search).get("session");
@@ -468,20 +373,7 @@
         document.getElementById("session-id-input").value = queryId;
         openSession(queryId);
       }
-    }
-
-    if (window.LAB_FIREBASE) {
-      window.LAB_FIREBASE.auth.onAuthStateChanged(function (user) {
-        if (user && !user.isAnonymous) {
-          unlockUI();
-        } else {
-          document.getElementById("fb-login-wrap").style.display = "block";
-          document.getElementById("chat-admin-main").style.display = "none";
-        }
-      });
-    } else {
-      showLoginError("Firebase未設定です。assets/js/firebase-init.js を確認してください。");
-    }
+    });
 
     /* ── 受信箱(全セッション一覧、AI対応済みチャットも含む) ── */
     var MODE_LABEL = {

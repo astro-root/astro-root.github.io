@@ -4,20 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>るーとの研究室 | ROOT LAB</title>
-  <meta name="description" content="高校生Webエンジニア「るーと」の研究室。クイズ大会支援ツール（Q-Score / Q-Room / Q-Mark / Q-Panel / Q-Cumber）の開発・公開と、天文学・物理学の探求を行う研究室。" />
+  <meta name="description" content="Webエンジニア「るーと」の研究室。クイズ大会支援ツール（Q-Score / Q-Room / Q-Mark / Q-Panel / Q-Cumber）の開発・公開と、天文学・物理学の探求を行う研究室。" />
   <meta name="author" content="るーと" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#020b18" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="るーとの研究室 | クイズツール開発・天文学・高校生Webエンジニア" />
-  <meta property="og:description" content="高校生Webエンジニア「るーと」の研究室。クイズ大会支援ツールの開発と天文学の探求を行う研究室。" />
+  <meta property="og:title" content="るーとの研究室 | クイズツール開発・天文学・Webエンジニア" />
+  <meta property="og:description" content="Webエンジニア「るーと」の研究室。クイズ大会支援ツールの開発と天文学の探求を行う研究室。" />
   <meta property="og:url" content="https://astro-root.com/" />
   <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@astro_root" />
-  <meta name="twitter:title" content="るーとの研究室 | クイズツール開発・天文学・高校生Webエンジニア" />
+  <meta name="twitter:title" content="るーとの研究室 | クイズツール開発・天文学・Webエンジニア" />
   <meta name="twitter:image" content="https://astro-root.com/ogp-image.png" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
+  <link rel="stylesheet" href="/assets/css/search.css" />
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"るーと","alternateName":"astro_root","url":"https://astro-root.com/","image":"https://astro-root.com/icon.png","sameAs":["https://x.com/astro_root","https://x.com/root_qscore","https://x.com/AstroHigh_Info"]}
   </script>
@@ -72,6 +73,11 @@
           <li><a href="/about" data-nav-key="about">ABOUT</a></li>
           <li><a href="/contact" data-nav-key="contact">CONTACT</a></li>
         </ul>
+        <button class="nav-search-btn" data-search-trigger aria-label="サイト内検索を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span>Search</span>
+          <kbd>⌘K</kbd>
+        </button>
         <button class="nav-toggle" id="nav-toggle" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="nav-mobile">
           <span></span><span></span><span></span>
         </button>
@@ -86,6 +92,7 @@
     <a href="/lab/" data-nav-key="lab">LAB</a>
     <a href="/about" data-nav-key="about">ABOUT</a>
     <a href="/contact" data-nav-key="contact">CONTACT</a>
+    <a href="#" data-search-trigger>SEARCH</a>
     <a href="/privacy">PRIVACY POLICY</a>
   </div>
 </header>
@@ -98,7 +105,7 @@
     ══════════════════════════════════════════════ -->
     <section class="hero-v2">
       <div class="container">
-        <p class="hero-v2-eyebrow reveal">高校生 &middot; Webエンジニア &middot; 天文学研究者</p>
+        <p class="hero-v2-eyebrow reveal">Webエンジニア &middot; クイズプレイヤー &middot; 天文学研究者</p>
         <h1 class="hero-v2-title reveal d1">
           るーとの研究室
           <span class="hero-v2-title-en">ROOT LAB</span>
@@ -361,6 +368,8 @@
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
+  <script src="/assets/js/search-core.js"></script>
+  <script src="/assets/js/search-overlay.js"></script>
   <script src="/assets/js/pages/index.js" defer></script>
 </body>
 </html>
