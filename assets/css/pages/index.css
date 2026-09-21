@@ -1,444 +1,585 @@
-    /* ── ページ固有スタイル ── */
-    body { overflow: hidden; height: 100vh; }
+/* ═══════════════════════════════════════════════════════
+   ROOT LAB v2 — Top Page
+   Hero / Currently / Featured Projects / Research / Notes /
+   Lab Status / Explore CTA + Explore Modal
+═══════════════════════════════════════════════════════ */
 
-    /* 研究室ビューポート */
-    .lab-viewport {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      cursor: default;
-    }
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
-    /* 研究室SVGラッパー */
-    .lab-scene-wrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+main {
+  flex: 1;
+}
 
-    .lab-scene-svg {
-      width: 100%;
-      height: 100%;
-      max-width: 100vw;
-      max-height: 100vh;
-      object-fit: contain;
-    }
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
 
-    /* ── ヒーローオーバーレイ（左上） ── */
-    .hero-overlay {
-      position: absolute;
-      top: calc(var(--nav-h) + 24px);
-      left: clamp(20px, 5vw, 64px);
-      z-index: 20;
-      pointer-events: none;
-      animation: heroFadeIn 1s var(--ease-out) 0.4s both;
-    }
+/* ── 1. HERO ── */
+.hero-v2 {
+  padding: calc(var(--nav-h) + 88px) 0 72px;
+}
 
-    @keyframes heroFadeIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+.hero-v2-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent-teal);
+  letter-spacing: var(--ls-label);
+  margin-bottom: 18px;
+}
 
-    .hero-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 0.60rem;
-      color: var(--accent-teal);
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
+.hero-v2-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 6.5vw, 4.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 26px;
+}
 
-    .hero-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      background: linear-gradient(135deg, var(--text-0) 0%, var(--accent-blue) 60%, var(--accent-teal) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
+.hero-v2-title-en {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(0.85rem, 1.6vw, 1.1rem);
+  letter-spacing: 0.32em;
+  color: var(--accent-blue);
+}
 
-    .hero-sub {
-      font-size: 0.75rem;
-      color: var(--text-1);
-      line-height: 1.8;
-    }
+.hero-v2-lede {
+  max-width: 620px;
+  color: var(--text-1);
+  font-size: var(--fs-md);
+  line-height: 1.9;
+  margin-bottom: 36px;
+}
 
-    /* ── クイックリンク（ヒーロー下） ── */
-    .hero-quicklinks {
-      position: absolute;
-      top: calc(var(--nav-h) + 24px + 96px);
-      left: clamp(20px, 5vw, 64px);
-      z-index: 20;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      animation: heroFadeIn 1s var(--ease-out) 0.6s both;
-    }
-    .hero-quicklink {
-      pointer-events: auto;
-      font-family: var(--font-mono);
-      font-size: 0.66rem;
-      letter-spacing: 0.04em;
-      color: var(--text-0);
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: 999px;
-      text-decoration: none;
-      transition: background 0.15s ease, border-color 0.15s ease;
-      backdrop-filter: blur(4px);
-    }
-    .hero-quicklink:hover {
-      background: rgba(75,169,255,0.12);
-      border-color: var(--accent-blue);
-    }
+.hero-v2-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
 
-    /* ── ヒントラベル（右下） ── */
-    .explore-hint {
-      position: absolute;
-      bottom: 28px;
-      right: clamp(20px, 5vw, 64px);
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      animation: heroFadeIn 1.2s var(--ease-out) 1.2s both;
-      pointer-events: none;
-    }
+/* ── SECTION SHELL ── */
+.section-v2 {
+  padding: 64px 0;
+  border-top: 1px solid var(--border);
+}
 
-    .explore-hint-text {
-      font-family: var(--font-mono);
-      font-size: 0.58rem;
-      color: var(--text-2);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
+.section-v2-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 32px;
+}
 
-    .explore-hint-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent-blue);
-      animation: hintPulse 2s ease-in-out infinite;
-    }
+.section-v2-kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent-teal);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  width: 100%;
+}
 
-    @keyframes hintPulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.3; transform: scale(0.6); }
-    }
+.section-v2-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  letter-spacing: -0.01em;
+}
 
-    /* ── ツールチップ ── */
-    .lab-tooltip {
-      position: fixed;
-      z-index: 200;
-      background: rgba(4, 12, 24, 0.92);
-      border: 1px solid var(--border-m);
-      border-radius: var(--r-md);
-      padding: 10px 16px;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      pointer-events: none;
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
-      white-space: nowrap;
-    }
+.section-v2-more {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-1);
+  letter-spacing: var(--ls-normal);
+  transition: color var(--t);
+}
 
-    .lab-tooltip.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+.section-v2-more:hover {
+  color: var(--accent-blue);
+}
 
-    .lab-tooltip-name {
-      font-family: var(--font-display);
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-0);
-      margin-bottom: 2px;
-    }
+/* ── 2. CURRENTLY ── */
+.currently-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
-    .lab-tooltip-dest {
-      font-family: var(--font-mono);
-      font-size: 0.60rem;
-      color: var(--accent-teal);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
+.currently-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border-m);
+  background: var(--bg-card);
+  font-size: var(--fs-sm);
+}
 
-    /* ── クリッカブル設備：ホバーエフェクト ── */
-    .lab-obj {
-      cursor: pointer;
-      transition: filter 0.22s var(--ease);
-    }
+.currently-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot-color, var(--accent-blue));
+  box-shadow: 0 0 8px var(--dot-color, var(--accent-blue));
+  flex-shrink: 0;
+}
 
-    .lab-obj:hover {
-      filter: brightness(1.3) drop-shadow(0 0 8px rgba(59,158,255,0.6));
-    }
+.currently-name {
+  color: var(--text-0);
+  font-weight: 500;
+}
 
-    .lab-obj:focus-visible {
-      outline: none;
-      filter: brightness(1.4) drop-shadow(0 0 12px rgba(59,158,255,0.9));
-    }
+.currently-status {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
 
-    /* ── モバイル用ナビゲーションメニュー ── */
-    .mobile-menu-btn {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 300;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      background: rgba(4,12,24,0.90);
-      border: 1px solid var(--border-m);
-      border-radius: 99px;
-      padding: 10px 22px;
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--accent-blue);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      cursor: pointer;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: background var(--t), border-color var(--t);
-    }
+/* ── 3. FEATURED PROJECTS ── */
+.project-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
 
-    .mobile-menu-btn:hover {
-      background: rgba(59,158,255,0.10);
-      border-color: var(--accent-blue);
-    }
+.project-card-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: border-color var(--t), transform var(--t) var(--ease-out), background var(--t);
+}
 
-    .mobile-menu-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--accent-teal);
-      animation: hintPulse 2s ease-in-out infinite;
-    }
+.project-card-v2:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+}
 
-    /* モバイルメニュー（全画面グリッド） */
-    .mobile-nav-sheet {
-      position: fixed;
-      inset: 0;
-      z-index: 400;
-      background: rgba(2,11,24,0.97);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      padding: 40px 24px;
-    }
+.project-card-v2-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
 
-    .mobile-nav-sheet.open {
-      display: flex;
-      animation: sheetIn 0.28s var(--ease-out) forwards;
-    }
+.project-card-v2-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+}
 
-    @keyframes sheetIn {
-      from { opacity: 0; transform: scale(0.97); }
-      to   { opacity: 1; transform: scale(1); }
-    }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--pill-color, var(--accent-blue));
+  white-space: nowrap;
+}
 
-    .mobile-nav-sheet-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: 1px solid var(--border-m);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      color: var(--text-1);
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color var(--t), color var(--t);
-    }
+.status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
-    .mobile-nav-sheet-close:hover {
-      border-color: var(--accent-blue);
-      color: var(--text-0);
-    }
+.project-card-v2-desc {
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  line-height: 1.75;
+  flex: 1;
+}
 
-    .mobile-nav-title {
-      font-family: var(--font-mono);
-      font-size: 0.60rem;
-      color: var(--accent-teal);
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      margin-bottom: 32px;
-    }
+.project-card-v2-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
-    .mobile-nav-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      width: 100%;
-      max-width: 340px;
-    }
+.project-card-v2-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+}
 
-    .mobile-nav-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 20px 16px;
-      text-align: center;
-      text-decoration: none;
-      color: var(--text-0);
-      transition: border-color var(--t), background var(--t), transform var(--t) var(--ease);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
+.project-card-v2-link {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--accent-blue);
+  letter-spacing: var(--ls-normal);
+}
 
-    .mobile-nav-item:hover {
-      border-color: var(--border-m);
-      background: var(--bg-card-hover);
-      transform: translateY(-2px);
-    }
+/* ── 4. RESEARCH ── */
+.research-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
 
-    .mobile-nav-item-icon {
-      width: 36px;
-      height: 36px;
-      color: var(--accent-blue);
-    }
+.research-chip {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border-m);
+  color: var(--text-1);
+  background: transparent;
+}
 
-    .mobile-nav-item-label {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--accent-teal);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
+.research-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
-    .mobile-nav-item-name {
-      font-family: var(--font-display);
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
+.research-item {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
 
-    @media (max-width: 780px) {
-      .mobile-menu-btn { display: flex; }
-      .explore-hint { display: none; }
-    }
+.research-item:first-child {
+  border-top: none;
+}
 
-    @media (max-width: 480px) {
-      .hero-overlay { top: calc(var(--nav-h) + 16px); }
-      .hero-title { font-size: 1.4rem; }
-    }
+.research-item-cat {
+  flex-shrink: 0;
+  width: 92px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent-purple);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
 
-    /* ══════════════════════════════════════════════
-       モバイル操作性改善
-       768px以下: SVG研究室を「眺めるだけ」の装飾に変更し、
-       実際の操作はカード型グリッドメニューに一本化する。
-       理由: 1枚の大きなSVGを縮小表示すると個々の設備が
-       タップ判定的にも視認的にも極小になり、
-       「どこを押せばいいかわからない」状態になるため。
-    ══════════════════════════════════════════════ */
-    @media (max-width: 768px) {
+.research-item-body {
+  flex: 1;
+  min-width: 0;
+}
 
-      .lab-viewport {
-        height: auto;
-        min-height: 46vh;
-        max-height: 52vh;
-        overflow: hidden;
-      }
+.research-item-title {
+  color: var(--text-0);
+  font-size: var(--fs-base);
+  margin-bottom: 4px;
+}
 
-      /* SVG内の各設備はタップ不可・装飾専用に切り替え */
-      .lab-obj {
-        pointer-events: none;
-      }
+.research-item-summary {
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+}
 
-      .lab-obj:hover {
-        filter: none;
-      }
+.research-item-status {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  letter-spacing: var(--ls-normal);
+}
 
-      .lab-scene-svg {
-        object-fit: cover;
-        object-position: center 30%;
-      }
+/* ── 5. NOTES ── */
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
-      /* ツールチップはモバイルで不要（ホバー前提のUIのため） */
-      .lab-tooltip { display: none !important; }
+.note-item {
+  display: flex;
+  gap: 18px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  align-items: baseline;
+}
 
-      /* 探索ヒントの文言をタップ前提に変更 */
-      .explore-hint { display: none; }
+.note-item:first-child {
+  border-top: none;
+}
 
-      /* ヒーローオーバーレイをコンパクトに */
-      .hero-overlay {
-        top: calc(var(--nav-h) + 14px);
-        left: 16px;
-        right: 16px;
-      }
+.note-item-date {
+  flex-shrink: 0;
+  width: 84px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+}
 
-      .hero-sub {
-        display: none;
-      }
+.note-item-body {
+  flex: 1;
+  min-width: 0;
+}
 
-      /* モバイルメニューボタンを非表示にし、
-         代わりにグリッドメニューを常時インライン表示する */
-      .mobile-menu-btn { display: none !important; }
+.note-item-title {
+  color: var(--text-0);
+  font-size: var(--fs-base);
+  margin-bottom: 4px;
+}
 
-      /* モバイルナビシートをモーダルではなく
-         ページ内コンテンツとして常時表示に変更 */
-      .mobile-nav-sheet {
-        position: static;
-        inset: auto;
-        display: flex !important;
-        background: transparent;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        padding: 20px 16px 40px;
-        animation: none;
-        z-index: auto;
-      }
+.note-item-summary {
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+}
 
-      .mobile-nav-sheet-close { display: none; }
+.note-item-cat {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent-teal);
+  letter-spacing: var(--ls-normal);
+}
 
-      .mobile-nav-title {
-        margin-bottom: 16px;
-        text-align: center;
-        font-size: 0.62rem;
-      }
+/* ── 6. LAB STATUS ── */
+.lab-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
 
-      .mobile-nav-grid {
-        max-width: 480px;
-        margin: 0 auto;
-        gap: 10px;
-      }
+.lab-stat {
+  padding: 22px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
 
-      .mobile-nav-item {
-        padding: 18px 12px;
-        min-height: 92px;
-        justify-content: center;
-      }
+.lab-stat dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
 
-      .mobile-nav-item-icon { width: 30px; height: 30px; }
+.lab-stat dd {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.9rem;
+  color: var(--text-0);
+}
 
-      .mobile-nav-item-label { font-size: 0.56rem; }
+.lab-stat dd span {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-2);
+  margin-left: 4px;
+}
 
-      .mobile-nav-item-name { font-size: 0.78rem; }
+/* ── 7. EXPLORE CTA ── */
+.explore-cta-v2 {
+  padding-bottom: 96px;
+}
 
-      /* body のスクロール固定を解除（モバイルではページ全体をスクロールする構成に変更） */
-      body { overflow: visible; height: auto; }
-    }
+.explore-cta-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 40px;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border-m);
+  background: linear-gradient(135deg, rgba(75,169,255,0.06), rgba(30,235,192,0.04));
+}
 
-    @media (max-width: 420px) {
-      .mobile-nav-grid { grid-template-columns: 1fr 1fr; }
-      .lab-viewport { min-height: 38vh; max-height: 42vh; }
-    }
+.explore-cta-desc {
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  max-width: 460px;
+  margin-top: 12px;
+  line-height: 1.8;
+}
+
+.explore-cta-btn {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EXPLORE MODAL — 研究室探索モード
+   通常ナビゲーションを置き換えないオプトイン・オーバーレイ
+═══════════════════════════════════════════════════════ */
+.explore-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.explore-modal[hidden] {
+  display: none;
+}
+
+.explore-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 14, 0.88);
+  backdrop-filter: blur(6px);
+}
+
+.explore-modal-panel {
+  position: relative;
+  width: min(1200px, 94vw);
+  height: min(760px, 88vh);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border-m);
+  background: var(--bg-1);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+}
+
+.explore-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-m);
+  background: var(--bg-glass);
+  color: var(--text-1);
+  transition: color var(--t), border-color var(--t);
+}
+
+.explore-modal-close:hover {
+  color: var(--text-0);
+  border-color: var(--accent-blue);
+}
+
+.explore-modal .explore-hint {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  letter-spacing: var(--ls-normal);
+}
+
+.explore-hint-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  box-shadow: 0 0 8px var(--accent-teal);
+  animation: explore-pulse 2s ease-in-out infinite;
+}
+
+@keyframes explore-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.lab-viewport {
+  width: 100%;
+  height: 100%;
+}
+
+.lab-scene-wrap {
+  width: 100%;
+  height: 100%;
+}
+
+.lab-scene-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lab-scene-svg g[role="button"] {
+  transition: opacity 0.2s var(--ease);
+}
+
+.lab-scene-svg g[role="button"]:hover,
+.lab-scene-svg g[role="button"]:focus {
+  opacity: 0.8;
+  outline: none;
+}
+
+.lab-tooltip {
+  position: fixed;
+  z-index: var(--z-toast);
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-m);
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.lab-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lab-tooltip-name {
+  font-size: var(--fs-xs);
+  color: var(--text-0);
+  font-weight: 500;
+}
+
+.lab-tooltip-dest {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent-blue);
+  margin-top: 2px;
+}
+
+@media (max-width: 720px) {
+  .explore-cta-inner {
+    padding: 28px;
+  }
+  .research-item, .note-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .research-item-cat, .note-item-date {
+    width: auto;
+  }
+}

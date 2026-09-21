@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Study | るーとの研究室</title>
-  <meta name="description" content="るーとの研究室のStudyページ。物理学・天文学・数学・シミュレーションの学習ノートとインタラクティブシミュレーション。" />
+  <title>Q-Mark | Projects | るーとの研究室</title>
+  <meta name="description" content="ペーパークイズの採点をデジタル化するツール。手作業の採点工程を効率化。" />
   <meta name="author" content="るーと" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#020b18" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Study | るーとの研究室" />
-  <meta property="og:description" content="物理学・天文学・数学・シミュレーションの学習ノートとインタラクティブシミュレーション。" />
-  <meta property="og:url" content="https://astro-root.com/study/" />
+  <meta property="og:title" content="Q-Mark | るーとの研究室" />
+  <meta property="og:description" content="ペーパークイズの採点をデジタル化するツール。手作業の採点工程を効率化。" />
+  <meta property="og:url" content="https://astro-root.com/projects/q-mark/" />
   <meta property="og:image" content="https://astro-root.com/ogp-image.png" />
   <meta property="og:site_name" content="るーとの研究室" />
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@astro_root" />
   <link rel="icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="canonical" href="https://astro-root.com/study/" />
+  <link rel="canonical" href="https://astro-root.com/projects/q-mark/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap" />
@@ -29,7 +26,7 @@
   <link rel="stylesheet" href="/assets/css/nav.css" />
   <link rel="stylesheet" href="/assets/css/footer.css" />
   <link rel="stylesheet" href="/assets/css/chat-widget.css" />
-  <link rel="stylesheet" href="/assets/css/pages/study.css" />
+  <link rel="stylesheet" href="/assets/css/pages/project-detail.css" />
 </head>
 <body>
   <div id="scroll-progress" aria-hidden="true"></div>
@@ -47,7 +44,7 @@
   <div id="cursor-dot" aria-hidden="true"></div>
   <div id="cursor-ring" aria-hidden="true"></div>
 
-  <!-- PARTIAL:HEADER:START -->
+<!-- PARTIAL:HEADER:START -->
 <header role="banner">
   <nav class="nav" id="lab-nav" aria-label="メインナビゲーション">
     <div class="container">
@@ -87,59 +84,51 @@
 
   <main id="main-content">
     <div class="container">
+      <p class="pd-breadcrumb reveal"><a href="/projects/">Projects</a> / Q-Mark</p>
 
-      <header class="page-header reveal">
-        <div class="page-header-inner">
-          <div class="page-eyebrow">
-            <div class="page-eyebrow-line" aria-hidden="true"></div>
-            <span class="page-eyebrow-text">Research Lab / Study</span>
-          </div>
-          <h1 class="page-title">Study <em>Notes</em></h1>
-          <p class="page-desc">
-            物理学・天文学・数学の学習ノートと、
-            JavaScript / TypeScript によるインタラクティブシミュレーション。
-          </p>
-        </div>
-      </header>
-
-      <!-- ローディング -->
-      <div class="loading-state" id="loading-state" aria-live="polite">
-        <div class="loading-dot"></div>
-        <div class="loading-dot"></div>
-        <div class="loading-dot"></div>
-        <span>研究ノートを読み込み中...</span>
+      <div class="pd-header reveal d1">
+        <h1 class="pd-title">Q-Mark</h1>
+        <span class="pd-status-pill" style="color:#4ba9ff;border-color:#4ba9ff55;background:#4ba9ff14;">Active</span>
       </div>
 
-      <!-- エラー -->
-      <div class="error-state" id="error-state" role="alert">
-        <p class="error-state-text">通信エラー — 研究ノートデータの取得に失敗しました。研究室サーバーとの接続をご確認の上、再試行してください。</p>
-        <button type="button" class="retry-btn" id="retry-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-          再試行
-        </button>
+      <p class="pd-desc reveal d2">ペーパークイズの採点をデジタル化するツール。手作業の採点工程を効率化。</p>
+
+      <div class="pd-actions reveal d2">
+        <a class="btn btn-primary" href="https://q-mark.astro-root.com/" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          公開ページを開く
+        </a>
+        
       </div>
 
-      <!-- タブ & コンテンツ（JS で挿入） -->
-      <div id="study-root"></div>
-      <noscript>
-        <div class="study-noscript-list">
-          <p>学習ノートは現在準備中です。以下のカテゴリで公開を予定しています。</p>
-          <ul>
-            <li><strong>物理学</strong> — 力学・電磁気学・熱力学・量子力学・相対性理論</li>
-            <li><strong>天文学</strong> — 宇宙論・恒星進化・銀河・惑星科学・天体観測</li>
-            <li><strong>数学</strong> — 微積分学・線形代数・確率統計・微分方程式・数論</li>
-            <li><strong>シミュレーション</strong> — 軌道力学・多体問題・波動・流体力学など、JavaScript/TypeScriptによるインタラクティブ教材</li>
-          </ul>
+      <div class="pd-meta-grid reveal d3">
+        <div class="pd-meta-item">
+          <div class="pd-meta-label">Category</div>
+          <div class="pd-meta-value">Quiz / Utility</div>
         </div>
-      </noscript>
+        <div class="pd-meta-item">
+          <div class="pd-meta-label">Started</div>
+          <div class="pd-meta-value">2024年6月1日</div>
+        </div>
+        <div class="pd-meta-item">
+          <div class="pd-meta-label">Updated</div>
+          <div class="pd-meta-value">2026年6月28日</div>
+        </div>
+      </div>
 
-      <a href="/" class="back-to-lab reveal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-          <path d="M5 12H19M19 12L13 6M19 12L13 18"/>
-        </svg>
-        Back to Lab
+      
+
+      <section class="pd-section reveal d4">
+        <h2 class="pd-section-title">// Technologies</h2>
+        <div class="pd-tech-list">
+          <span class="pd-tech-tag">JavaScript</span>
+        </div>
+      </section>
+
+      <a href="/projects/" class="pd-back reveal d5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
+        Back to Projects
       </a>
-
     </div>
   </main>
 
@@ -163,6 +152,5 @@
   <script src="/assets/js/lab-common.js"></script>
   <script src="/assets/js/nav-active.js"></script>
   <script src="/assets/js/chat-widget.js"></script>
-  <script src="/assets/js/pages/study.js" defer></script>
 </body>
 </html>

@@ -145,6 +145,24 @@
       background: rgba(139, 114, 255, 0.06);
     }
 
+    .category-label[data-cat="web"] {
+      color: var(--accent-purple);
+      border-color: rgba(139, 114, 255, 0.28);
+      background: rgba(139, 114, 255, 0.06);
+    }
+
+    .category-label[data-cat="education"] {
+      color: var(--accent-amber);
+      border-color: rgba(255, 194, 92, 0.28);
+      background: rgba(255, 194, 92, 0.06);
+    }
+
+    .category-label[data-cat="experiment"] {
+      color: var(--accent-teal);
+      border-color: rgba(0, 229, 184, 0.28);
+      background: rgba(0, 229, 184, 0.06);
+    }
+
     .category-title {
       font-family: var(--font-display);
       font-size: 1.15rem;
@@ -296,6 +314,9 @@
     .card-icon-wrap[data-cat="quiz"]    { background: rgba(59, 158, 255, 0.06); }
     .card-icon-wrap[data-cat="utility"] { background: rgba(0, 229, 184, 0.06); }
     .card-icon-wrap[data-cat="other"]   { background: rgba(139, 114, 255, 0.06); }
+    .card-icon-wrap[data-cat="web"]         { background: rgba(139, 114, 255, 0.06); }
+    .card-icon-wrap[data-cat="education"]   { background: rgba(255, 194, 92, 0.06); }
+    .card-icon-wrap[data-cat="experiment"]  { background: rgba(0, 229, 184, 0.06); }
 
     /* カードテキスト */
     .card-name {

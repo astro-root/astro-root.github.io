@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "version": "2.0.0",
+    "schema": "technology",
+    "description": "ROOT LAB v2 — Technology データ。要件定義書 13.2 の Technology 型に準拠。"
+  },
+  "categories": [
+    { "id": "frontend",      "label": "Frontend" },
+    { "id": "backend",       "label": "Backend" },
+    { "id": "runtime",       "label": "Runtime" },
+    { "id": "infrastructure","label": "Infrastructure" },
+    { "id": "database",      "label": "Database" },
+    { "id": "development",   "label": "Development" },
+    { "id": "environment",   "label": "Environment" }
+  ],
+  "items": [
+    { "id": "html5",       "name": "HTML5",             "category": "frontend",       "description": "セマンティックなマークアップの基盤。", "level": "advanced", "primary": true,  "relatedProjects": [] },
+    { "id": "css3",        "name": "CSS3",              "category": "frontend",       "description": "CSS変数・Gridを中心としたスタイリング。", "level": "advanced", "primary": true,  "relatedProjects": [] },
+    { "id": "javascript",  "name": "JavaScript",        "category": "frontend",       "description": "フレームワークに依存しないVanilla JSを主軸に採用。", "level": "advanced", "primary": true,  "relatedProjects": ["q-score", "q-room", "mekuru"] },
+    { "id": "svg",         "name": "SVG",               "category": "frontend",       "description": "研究室探索モードのシーン描画に使用。", "level": "intermediate", "primary": false, "relatedProjects": [] },
+    { "id": "firebase-auth","name": "Firebase Authentication", "category": "backend", "description": "Admin認証・ユーザー認証基盤として利用。", "level": "intermediate", "primary": true, "relatedProjects": [] },
+    { "id": "firestore",   "name": "Cloud Firestore",   "category": "database",       "description": "Projects / Research / Notes等の構造化データストア。", "level": "intermediate", "primary": true,  "relatedProjects": ["q-score", "q-room"] },
+    { "id": "realtime-db", "name": "Firebase Realtime Database", "category": "database","description": "得点表示等、低遅延な同期が必要な機能に使用。", "level": "intermediate", "primary": false, "relatedProjects": ["q-score"] },
+    { "id": "cloudflare-workers", "name": "Cloudflare Workers", "category": "infrastructure", "description": "問い合わせフォームの中継・AI応答処理。", "level": "intermediate", "primary": true, "relatedProjects": [] },
+    { "id": "github-pages","name": "GitHub Pages",      "category": "infrastructure", "description": "公開サイトの静的ホスティング先。", "level": "advanced", "primary": true,  "relatedProjects": [] },
+    { "id": "nodejs",      "name": "Node.js",           "category": "runtime",        "description": "partials同期スクリプト等、ビルド前処理に使用。", "level": "intermediate", "primary": false, "relatedProjects": [] },
+    { "id": "git",         "name": "Git",               "category": "development",    "description": "バージョン管理。", "level": "advanced", "primary": true,  "relatedProjects": [] },
+    { "id": "github",      "name": "GitHub",            "category": "development",    "description": "リポジトリ管理・GitHub Actions。", "level": "advanced", "primary": true,  "relatedProjects": [] },
+    { "id": "vscode",      "name": "VS Code",           "category": "environment",    "description": "主要な開発エディタ。", "level": "advanced", "primary": true,  "relatedProjects": [] },
+    { "id": "emailjs",     "name": "EmailJS",           "category": "backend",        "description": "Contact機能でのメール送信に使用。", "level": "basic", "primary": false, "relatedProjects": [] },
+    { "id": "pwa",         "name": "PWA", "category": "frontend", "description": "Q-Room等でオフライン対応・ホーム画面追加に対応。", "level": "intermediate", "primary": false, "relatedProjects": ["q-room"] }
+  ]
+}

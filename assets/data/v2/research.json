@@ -1,0 +1,82 @@
+{
+  "_meta": {
+    "version": "2.0.0",
+    "schema": "research",
+    "description": "ROOT LAB v2 — Research データ。要件定義書 11.3 の Research 型に準拠。"
+  },
+  "categories": [
+    { "id": "physics",  "label": "Physics",          "labelJa": "物理学" },
+    { "id": "astronomy","label": "Astronomy",        "labelJa": "天文学" },
+    { "id": "mathematics","label": "Mathematics",    "labelJa": "数学" },
+    { "id": "cs",       "label": "Computer Science",  "labelJa": "情報科学" },
+    { "id": "quiz",     "label": "Quiz",              "labelJa": "クイズ" },
+    { "id": "other",    "label": "Other",             "labelJa": "その他" }
+  ],
+  "items": [
+    {
+      "id": "variable-star-lightcurve",
+      "title": "変光星の光度曲線を自作スクリプトで解析する",
+      "slug": "variable-star-lightcurve",
+      "category": "astronomy",
+      "summary": "観測画像から測光データを抽出し、周期解析で変光周期を推定する試み。",
+      "content": "",
+      "status": "ongoing",
+      "startedAt": "2026-05-01",
+      "updatedAt": "2026-09-05",
+      "tags": ["観測", "測光", "Python"],
+      "relatedProjects": []
+    },
+    {
+      "id": "double-pendulum-chaos",
+      "title": "二重振り子のカオス的挙動をシミュレーションで確認する",
+      "slug": "double-pendulum-chaos",
+      "category": "physics",
+      "summary": "初期条件のわずかな差が発散する様子を数値シミュレーションで検証。",
+      "content": "",
+      "status": "completed",
+      "startedAt": "2026-02-10",
+      "updatedAt": "2026-03-01",
+      "tags": ["力学", "カオス", "シミュレーション"],
+      "relatedProjects": []
+    },
+    {
+      "id": "probability-in-quiz-buzzer",
+      "title": "早押しクイズにおける押しタイミングの確率モデル",
+      "slug": "probability-in-quiz-buzzer",
+      "category": "mathematics",
+      "summary": "問題文の情報量と反応時間の関係を単純なモデルで近似できないか検討。",
+      "content": "",
+      "status": "ongoing",
+      "startedAt": "2026-06-01",
+      "updatedAt": "2026-08-15",
+      "tags": ["確率", "クイズ", "モデリング"],
+      "relatedProjects": ["q-score", "q-room"]
+    },
+    {
+      "id": "static-site-perf-budget",
+      "title": "ビルドレスな静的サイトでのパフォーマンス予算の立て方",
+      "slug": "static-site-perf-budget",
+      "category": "cs",
+      "summary": "フレームワークを使わない構成でCore Web Vitalsをどこまで詰められるか。",
+      "content": "",
+      "status": "ongoing",
+      "startedAt": "2026-07-20",
+      "updatedAt": "2026-09-12",
+      "tags": ["Web", "パフォーマンス"],
+      "relatedProjects": []
+    },
+    {
+      "id": "hr-diagram-open-data",
+      "title": "公開星表データからHR図を再現する",
+      "slug": "hr-diagram-open-data",
+      "category": "astronomy",
+      "summary": "Gaiaの公開データを使い、恒星の分類を自分の手でプロットして確認する。",
+      "content": "",
+      "status": "idea",
+      "startedAt": null,
+      "updatedAt": "2026-08-30",
+      "tags": ["天体物理", "データ分析"],
+      "relatedProjects": []
+    }
+  ]
+}

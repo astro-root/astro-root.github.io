@@ -1,5 +1,8 @@
+// 注: /projects/<slug>/ (Project Detail)は scripts/generate-project-pages.js で
+// partials/header.html・footer.html を直接読み込んで都度生成しているため、
+// このリストに含める必要はない。header/footerを編集したら generate-project-pages.js も再実行すること。
 module.exports = [
-  "index.html", /* footerマーカーは意図的に付けていない(1画面完結のため) */
+  "index.html",
   "about.html",
   "contact.html",
   "contact-success.html",

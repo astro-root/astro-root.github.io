@@ -12,7 +12,7 @@
 | Q-Room  | [q-room.astro-root.com](https://q-room.astro-root.com/)   | リアルタイムオンラインクイズルーム |
 | Q-Mark  | [q-mark.astro-root.com](https://q-mark.astro-root.com/)   | ペーパークイズ デジタル採点ツール |
 | Q-Panel | [q-panel.astro-root.com](https://q-panel.astro-root.com/) | パネル開放クイズシステム |
-| Q-Cumber | [q-cumber.astro-root.com](https://q-cumber.astro-root.com/) | クイズ得点管理サイト |
+| Q-Cumber | [q-cumber.astro-root.com](https://q-cumber.astro-root.com/) | - |
 | Typing  | [typing.astro-root.com](https://typing.astro-root.com/)   | タイピングゲーム |
 
 ## サイト構成

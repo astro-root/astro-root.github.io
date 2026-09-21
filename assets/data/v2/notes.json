@@ -1,0 +1,67 @@
+{
+  "_meta": {
+    "version": "2.0.0",
+    "schema": "note",
+    "description": "ROOT LAB v2 — Note データ。要件定義書 12.3 の Note 型に準拠。日常的な開発・学習・実験記録。"
+  },
+  "categories": [
+    { "id": "development", "label": "Development" },
+    { "id": "quiz",        "label": "Quiz" },
+    { "id": "physics",     "label": "Physics" },
+    { "id": "astronomy",   "label": "Astronomy" },
+    { "id": "study",       "label": "Study" },
+    { "id": "misc",        "label": "Misc" }
+  ],
+  "items": [
+    {
+      "id": "note-2026-09-12",
+      "title": "Quiz Editorの共同編集まわりの競合解決を検討",
+      "date": "2026-09-12",
+      "category": "development",
+      "tags": ["Quiz Editor", "設計"],
+      "summary": "複数人が同時に問題を編集したときの競合をどう解決するか、簡易なlast-write-winsから始める方針に。",
+      "content": "",
+      "relatedProject": "quiz-editor"
+    },
+    {
+      "id": "note-2026-09-05",
+      "title": "変光星観測の3夜分のデータを整理",
+      "date": "2026-09-05",
+      "category": "astronomy",
+      "tags": ["観測", "測光"],
+      "summary": "天候に恵まれた3夜分の測光データをまとめて整理。周期解析は次のノートで。",
+      "content": "",
+      "relatedProject": null
+    },
+    {
+      "id": "note-2026-08-20",
+      "title": "めくるのカード送りUIをFLIPアニメーションで実装",
+      "date": "2026-08-20",
+      "category": "development",
+      "tags": ["めくる", "アニメーション"],
+      "summary": "FLIPテクニックでカードがめくれる感覚を軽量に再現。reduced motion時は即時切り替えに。",
+      "content": "",
+      "relatedProject": "mekuru"
+    },
+    {
+      "id": "note-2026-08-02",
+      "title": "二重振り子シミュレーションのRK4実装メモ",
+      "date": "2026-08-02",
+      "category": "physics",
+      "tags": ["数値計算", "力学"],
+      "summary": "オイラー法だとすぐ発散したため4次のルンゲ=クッタ法に切り替えたメモ。",
+      "content": "",
+      "relatedProject": null
+    },
+    {
+      "id": "note-2026-07-18",
+      "title": "早押しクイズの反応時間データを取り直し",
+      "date": "2026-07-18",
+      "category": "quiz",
+      "tags": ["確率", "クイズ"],
+      "summary": "以前のサンプルサイズが小さすぎたため、練習会の記録を追加で収集。",
+      "content": "",
+      "relatedProject": "q-score"
+    }
+  ]
+}
